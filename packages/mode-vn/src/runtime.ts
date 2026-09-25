@@ -554,6 +554,7 @@ export class VNRuntime implements GameRuntime {
     if (effect.type === 'stop') {
       if (effect.channel === 'music') audio.stopBgm(Math.round((effect.fadeout ?? 0.5) * 1000));
       else if (effect.channel === 'voice') audio.stopVoice();
+      else audio.stopSfx();
       return;
     }
     // En mode « passer », seuls les changements de musique sont conservés.
@@ -566,7 +567,7 @@ export class VNRuntime implements GameRuntime {
         ? audio.playBgm(url, { fadeMs, loop: effect.loop })
         : effect.channel === 'voice'
           ? audio.playVoice(url)
-          : audio.playSfx(url);
+          : audio.playSfx(url, { loop: effect.loop });
     playing.catch((error: unknown) =>
       this.warnOnce(`audio:${effect.ref}`, `Lecture audio impossible : « ${effect.ref} » (${errorMessage(error)})`),
     );

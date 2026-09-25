@@ -18,6 +18,7 @@ export class AudioManager {
   private readonly buffers = new Map<string, Promise<AudioBuffer>>();
   private bgm: { url: string; source: AudioBufferSourceNode; gain: GainNode } | null = null;
   private voice: AudioBufferSourceNode | null = null;
+  private readonly sounds = new Set<AudioBufferSourceNode>();
   private muted = false;
 
   constructor(private readonly fetchImpl: typeof fetch = (...args) => fetch(...args)) {}
@@ -127,16 +128,32 @@ export class AudioManager {
     current.source.stop(end + 0.05);
   }
 
+  /** Joue un effet sonore (éventuellement en boucle, jusqu'à `stopSfx`). */
   async playSfx(url: string, options: PlayOptions = {}): Promise<void> {
     const ctx = this.context();
     if (!ctx) return;
     const buffer = await this.load(url);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
+    source.loop = options.loop ?? false;
     const gain = ctx.createGain();
     gain.gain.value = options.volume ?? 1;
     source.connect(gain).connect(this.gains.get('sfx') as GainNode);
+    this.sounds.add(source);
+    source.onended = () => this.sounds.delete(source);
     source.start();
+  }
+
+  /** Arrête tous les effets sonores en cours (notamment ceux en boucle). */
+  stopSfx(): void {
+    for (const source of this.sounds) {
+      try {
+        source.stop();
+      } catch {
+        // déjà arrêté
+      }
+    }
+    this.sounds.clear();
   }
 
   async playVoice(url: string, options: PlayOptions = {}): Promise<void> {
@@ -165,6 +182,7 @@ export class AudioManager {
   stopAll(): void {
     this.stopBgm(0);
     this.stopVoice();
+    this.stopSfx();
   }
 
   async dispose(): Promise<void> {

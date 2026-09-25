@@ -292,7 +292,8 @@ export class Fader extends Graphics {
   fadeTo(alpha: number, seconds: number): Promise<void> {
     this.resolveFn?.();
     this.target = alpha;
-    if (seconds <= 0) {
+    // Déjà à la cible : rien à animer (sinon `update` ne résoudrait jamais la promesse).
+    if (seconds <= 0 || Math.abs(this.alpha - alpha) < 1e-4) {
       this.alpha = alpha;
       this.resolveFn = null;
       return Promise.resolve();
