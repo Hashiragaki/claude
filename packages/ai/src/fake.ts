@@ -21,7 +21,8 @@ export class FakeLlmClient implements LlmClient {
     this.queue.push(typeof response === 'function' ? response : () => response);
   }
 
-  async send(request: LlmRequest, handlers: LlmStreamHandlers = {}): Promise<BetaMessage> {
+  async send(request: LlmRequest, handlers: LlmStreamHandlers = {}, signal?: AbortSignal): Promise<BetaMessage> {
+    signal?.throwIfAborted();
     // Copie : l'appelant continue de modifier son tableau de messages.
     this.requests.push({ ...request, messages: [...request.messages] });
     const next = this.queue.shift();

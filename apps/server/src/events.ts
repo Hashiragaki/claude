@@ -2,7 +2,7 @@ import type { ServerResponse } from 'node:http';
 
 /** Événement diffusé aux éditeurs connectés à un projet (Server-Sent Events). */
 export interface ProjectEvent {
-  type: 'job' | 'asset' | 'manifest' | 'planner' | 'chat' | 'file';
+  type: 'job' | 'asset' | 'manifest' | 'planner' | 'chat' | 'file' | 'autopilot';
   data: unknown;
 }
 

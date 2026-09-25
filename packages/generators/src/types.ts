@@ -49,6 +49,11 @@ export interface GeneratorDefinition<P = any, S = any> {
   systemPrompt: string;
   /** Message utilisateur envoyé à Claude pour ces paramètres. */
   buildPrompt(params: P): string;
+  /**
+   * Indications données à l'IA lors de la critique visuelle du rendu (disposition d'une planche,
+   * lecture des lignes/colonnes…). Présent seulement pour les générateurs dont le rendu est une image.
+   */
+  reviewHint?: string;
   /** Message pour modifier une spec existante selon une instruction (« plus sombre »). */
   buildEditPrompt(spec: S, instruction: string, params: P): string;
   /** Génération procédurale déterministe (repli hors-ligne, modèles de projet, tests). */

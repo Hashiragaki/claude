@@ -26,6 +26,8 @@ export interface RunOptions {
   startMap?: string;
   startX?: number;
   startY?: number;
+  /** Plateformer : niveau de départ. */
+  startLevel?: string;
   /** Affiche des informations de débogage (collisions, FPS…). */
   debug?: boolean;
   /** Passe l'écran titre. */
@@ -102,6 +104,11 @@ export interface GameModeDefinition {
   createRuntime(ctx: RuntimeContext): GameRuntime | Promise<GameRuntime>;
   /** Vérifie les fichiers du projet (erreurs de script, références manquantes…). */
   validate?(bundle: ProjectBundle): Promise<Diagnostic[]>;
+  /**
+   * Guide (français, concis) des fichiers du mode pour l'assistant IA : où sont les scripts,
+   * cartes ou niveaux, leur format et les pièges à éviter. Injecté dans le contexte du chat.
+   */
+  aiGuide?: string;
 }
 
 /** Registre des modes disponibles. */

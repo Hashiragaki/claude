@@ -449,9 +449,10 @@ export class Planner {
   }
 
   /** Prochaines actions : en cours d'abord, puis par priorité, échéance et ordre. */
-  nextActions(limit = 5): Task[] {
+  nextActions(limit = 5, filter: { assignee?: 'user' | 'ai' } = {}): Task[] {
     return this.state.tasks
       .filter((t) => this.isActionable(t))
+      .filter((t) => !filter.assignee || t.assignee === filter.assignee)
       .sort((a, b) => {
         if (a.status !== b.status) return a.status === 'in_progress' ? -1 : 1;
         const p = PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
