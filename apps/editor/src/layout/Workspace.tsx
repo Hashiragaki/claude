@@ -15,6 +15,7 @@ import { GamePanel } from '../panels/GamePanel';
 import { InspectorPanel } from '../panels/InspectorPanel';
 import { PlannerPanel } from '../panels/PlannerPanel';
 import { PropertiesPanel } from '../panels/PropertiesPanel';
+import { UsagePanel } from '../panels/UsagePanel';
 import { translate } from '../i18n';
 import {
   closeDocument,
@@ -37,12 +38,13 @@ const components: Record<string, FunctionComponent<IDockviewPanelProps>> = {
   console: () => <ConsolePanel />,
   inspector: () => <InspectorPanel />,
   files: () => <FilesPanel />,
+  usage: () => <UsagePanel />,
   document: (props) => <DocumentPanel docId={(props.params as { docId: string }).docId} />,
 };
 
-type PanelId = 'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files';
+type PanelId = 'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files' | 'usage';
 
-const TITLE_KEYS: Record<PanelId, Parameters<typeof translate>[1]> = {
+const TITLE_KEYS: Record<Exclude<PanelId, 'usage'>, Parameters<typeof translate>[1]> = {
   game: 'panel.game',
   assets: 'panel.assets',
   properties: 'panel.properties',
@@ -53,9 +55,28 @@ const TITLE_KEYS: Record<PanelId, Parameters<typeof translate>[1]> = {
   files: 'panel.files',
 };
 
+/** Titres hors i18n.ts (hors périmètre de cette tâche) : bilingue directement ici. */
+const EXTRA_TITLES: Partial<Record<PanelId, { fr: string; en: string }>> = {
+  usage: { fr: 'Coûts IA', en: 'AI costs' },
+};
+
 function title(id: PanelId): string {
-  return translate(store.get().locale, TITLE_KEYS[id]);
+  const extra = EXTRA_TITLES[id];
+  if (extra) return extra[store.get().locale];
+  return translate(store.get().locale, TITLE_KEYS[id as Exclude<PanelId, 'usage'>]);
 }
+
+const PANEL_IDS: readonly PanelId[] = [
+  'game',
+  'assets',
+  'properties',
+  'chat',
+  'planner',
+  'console',
+  'inspector',
+  'files',
+  'usage',
+];
 
 /** Position par défaut de chaque panneau (utilisée aussi pour le rouvrir après fermeture). */
 function addDefault(api: DockviewApi, id: PanelId): void {
@@ -100,7 +121,18 @@ function addDefault(api: DockviewApi, id: PanelId): void {
 
 function buildDefaultLayout(api: DockviewApi): void {
   api.clear();
-  for (const id of ['game', 'planner', 'chat', 'properties', 'assets', 'files', 'console', 'inspector'] as PanelId[]) {
+  const order: PanelId[] = [
+    'game',
+    'planner',
+    'chat',
+    'properties',
+    'assets',
+    'files',
+    'console',
+    'inspector',
+    'usage',
+  ];
+  for (const id of order) {
     addDefault(api, id);
   }
   api.getPanel('game')?.api.setActive();
@@ -134,7 +166,7 @@ export function Workspace() {
       if (!api) return;
       const panel = api.getPanel(id);
       if (panel) panel.api.setActive();
-      else if (id in TITLE_KEYS) {
+      else if ((PANEL_IDS as readonly string[]).includes(id)) {
         addDefault(api, id as PanelId);
         api.getPanel(id)?.api.setActive();
       }

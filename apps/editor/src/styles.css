@@ -739,3 +739,33 @@ body,
 .fg-game-mount canvas:focus {
   outline: none;
 }
+
+/* ---------------------------------------------------------------- Panneau Coûts IA */
+.fg-usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.fg-usage-table th,
+.fg-usage-table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--fg-bg-0);
+}
+.fg-usage-table th {
+  color: var(--fg-text-2);
+  font-weight: 600;
+}
+.fg-usage-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 60px;
+  padding: 4px 0;
+}
+.fg-usage-bar {
+  flex: 1;
+  min-width: 3px;
+  background: var(--fg-accent);
+  border-radius: 1px 1px 0 0;
+}

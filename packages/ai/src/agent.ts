@@ -1,13 +1,18 @@
 import type { z } from 'zod';
 import {
   AiRefusalError,
+  addUsage,
   isApiError,
   messageText,
+  usageOf,
+  ZERO_USAGE,
   type BetaMessageParam,
   type BetaTextBlockParam,
   type BetaToolResultBlockParam,
   type BetaToolUseBlock,
+  type LlmCallMeta,
   type LlmClient,
+  type LlmUsage,
 } from './llm';
 import { formatZodError, toInputSchema, truncate } from './schema';
 
@@ -43,6 +48,8 @@ export interface AgentRunOptions {
   compaction?: boolean;
   signal?: AbortSignal;
   onEvent?(event: AgentEvent): void;
+  /** Contexte de routage/comptabilité, transmis à chaque requête. */
+  meta?: LlmCallMeta;
 }
 
 export interface AgentRunResult {
@@ -50,6 +57,8 @@ export interface AgentRunResult {
   added: BetaMessageParam[];
   text: string;
   stopReason: string | null;
+  /** Jetons cumulés de tous les appels du tour. */
+  usage: LlmUsage;
 }
 
 /**
@@ -77,6 +86,7 @@ export async function runAgent(options: AgentRunOptions): Promise<AgentRunResult
   let finalText = '';
   let stopReason: string | null = null;
   let jsonRetries = 0;
+  let usage: LlmUsage = { ...ZERO_USAGE };
 
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     let response;
@@ -88,6 +98,7 @@ export async function runAgent(options: AgentRunOptions): Promise<AgentRunResult
           tools: apiTools,
           maxTokens: options.maxTokens ?? 32000,
           compaction: options.compaction,
+          meta: options.meta,
         },
         {
           onText: (delta) => emit({ type: 'text', delta }),
@@ -101,6 +112,7 @@ export async function runAgent(options: AgentRunOptions): Promise<AgentRunResult
       if (!isApiError(error) && jsonRetries++ < 2) continue;
       throw error;
     }
+    usage = addUsage(usage, usageOf(response));
     stopReason = response.stop_reason;
     if (response.stop_reason === 'refusal') throw new AiRefusalError();
 
@@ -120,7 +132,7 @@ export async function runAgent(options: AgentRunOptions): Promise<AgentRunResult
   }
 
   emit({ type: 'done', stopReason, text: finalText });
-  return { added, text: finalText, stopReason };
+  return { added, text: finalText, stopReason, usage };
 }
 
 async function executeCall(

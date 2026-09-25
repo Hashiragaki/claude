@@ -1,7 +1,10 @@
 import type { BetaContentBlock, BetaMessage, LlmClient, LlmRequest, LlmStreamHandlers } from './llm';
 
-/** Réponse préparée : champs de message facultatifs, contenu libre. */
-export type FakeResponse = Omit<Partial<BetaMessage>, 'content'> & { content: unknown[] };
+/** Réponse préparée : champs de message facultatifs, contenu libre, usage partiel accepté. */
+export type FakeResponse = Omit<Partial<BetaMessage>, 'content' | 'usage'> & {
+  content: unknown[];
+  usage?: Partial<BetaMessage['usage']>;
+};
 type Responder = (request: LlmRequest) => FakeResponse;
 
 /**
@@ -32,6 +35,10 @@ export class FakeLlmClient implements LlmClient {
       if (block.type === 'text') handlers.onText?.(block.text);
     }
     const hasTool = (partial.content as BetaContentBlock[]).some((b) => b.type === 'tool_use');
+    // `usage` fourni peut être partiel (ex. seulement les compteurs de cache) : on complète les
+    // compteurs manquants avec les valeurs par défaut plutôt que de remplacer l'objet entier.
+    const defaultUsage = { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 };
+    const usage = { ...defaultUsage, ...(partial.usage as Partial<typeof defaultUsage> | undefined) };
     return {
       id: `msg_fake_${this.requests.length}`,
       type: 'message',
@@ -39,8 +46,8 @@ export class FakeLlmClient implements LlmClient {
       model: this.model,
       stop_reason: hasTool ? 'tool_use' : 'end_turn',
       stop_sequence: null,
-      usage: { input_tokens: 10, output_tokens: 20 },
       ...partial,
+      usage,
     } as unknown as BetaMessage;
   }
 }

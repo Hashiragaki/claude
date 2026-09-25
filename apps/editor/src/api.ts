@@ -84,6 +84,51 @@ export interface GenerateRequest {
   review?: boolean;
 }
 
+/**
+ * Miroir des types de `packages/ai` (jamais importés ici : le navigateur ne dépend pas du serveur).
+ * Voir `packages/ai/src/llm.ts` (`LlmRole`, `LlmUsage`, `LlmCallMeta`) et `router.ts` (`UsageEvent`).
+ */
+export type LlmRole = 'chat' | 'autopilot' | 'plan' | 'generate' | 'review' | 'summary';
+
+export interface LlmUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+}
+
+export interface LlmCallMeta {
+  role: LlmRole;
+  projectId?: string;
+  label?: string;
+}
+
+export interface UsageEvent {
+  meta: LlmCallMeta;
+  model: string;
+  effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+  usage: LlmUsage;
+  costUsd: number;
+  /** Date ISO. */
+  at: string;
+}
+
+/** Miroir de `GET /api/projects/:id/usage`. */
+export interface UsageSummary {
+  budgetUsd: number | null;
+  spentUsd: number;
+  calls: number;
+  usage: LlmUsage;
+  /** `cacheReadTokens / (inputTokens + cacheReadTokens + cacheWriteTokens)`, 0 si aucun. */
+  cacheHitRate: number;
+  byRole: Partial<Record<LlmRole, { calls: number; costUsd: number; usage: LlmUsage }>>;
+  byModel: Record<string, { calls: number; costUsd: number }>;
+  /** 30 derniers jours, ordre croissant. */
+  byDay: { day: string; calls: number; costUsd: number }[];
+  /** 50 derniers appels, plus récent en premier. */
+  recent: UsageEvent[];
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -187,6 +232,10 @@ export const api = {
   sendChat: (id: string, message: string) => request<{ ok: boolean }>('POST', `${p(id)}/chat`, { message }),
   stopChat: (id: string) => request<{ ok: boolean }>('POST', `${p(id)}/chat/stop`),
   clearChat: (id: string) => request<{ ok: boolean }>('DELETE', `${p(id)}/chat`),
+
+  usage: (id: string) => request<UsageSummary>('GET', `${p(id)}/usage`),
+  setUsageBudget: (id: string, budgetUsd: number | null) =>
+    request<UsageSummary>('PUT', `${p(id)}/usage/budget`, { budgetUsd }),
 
   eventsUrl: (id: string) => `${p(id)}/events`,
 };
