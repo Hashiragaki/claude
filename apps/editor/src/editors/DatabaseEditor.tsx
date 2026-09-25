@@ -29,8 +29,7 @@ import SaveFloppy from '@spectrum-icons/workflow/SaveFloppy';
 import { useEffect, useState, type ReactNode } from 'react';
 import { api } from '../api';
 import { log, toastError, useApp, validateProject } from '../state/app';
-
-type Category = 'actors' | 'items' | 'skills' | 'enemies' | 'troops';
+import { canAddEntry, newEntry, type Category, type Entry } from './databaseEntries';
 
 const CATEGORY_LABELS: Record<Category, string> = {
   actors: 'Héros',
@@ -49,47 +48,46 @@ const TARGET_LABELS: Record<string, string> = {
   self: 'Soi-même',
 };
 
-type Entry = { id: string; name: string } & Record<string, unknown>;
-
-function newEntry(category: Category, id: string): Entry {
-  switch (category) {
-    case 'actors':
-      return { id, name: 'Nouveau héros', charset: '', level: 1, maxHp: 40, maxMp: 10, atk: 10, def: 8, mag: 8, agi: 8, skills: [] };
-    case 'items':
-      return { id, name: 'Nouvel objet', description: '', price: 10, consumable: true, key: false, effect: { type: 'heal', value: 30 } };
-    case 'skills':
-      return { id, name: 'Nouvelle compétence', description: '', mpCost: 3, power: 12, type: 'damage', target: 'enemy' };
-    case 'enemies':
-      return { id, name: 'Nouvel ennemi', battler: '', maxHp: 20, maxMp: 0, atk: 8, def: 4, mag: 4, agi: 6, exp: 5, gold: 5, drops: [], skills: [] };
-    case 'troops':
-      return { id, name: 'Nouvelle troupe', members: [] };
-  }
-}
-
 /** Base de données du RPG : héros, objets, compétences, ennemis, troupes, et réglages système. */
 export function DatabaseEditor({ path }: { path: string }) {
   const project = useApp((s) => s.project);
   const revision = useApp((s) => s.fileRevision[path] ?? 0);
   const [db, setDb] = useState<RpgDatabase | null>(null);
   const [system, setSystem] = useState<RpgSystem | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [category, setCategory] = useState<Category | 'system'>('actors');
   const [selected, setSelected] = useState<string | null>(null);
   const projectId = project?.id ?? '';
   const systemPath = project?.entry ?? 'data/system.json';
+  const systemRevision = useApp((s) => s.fileRevision[systemPath] ?? 0);
 
   useEffect(() => {
     if (!projectId) return;
     void Promise.all([api.readJson<unknown>(projectId, path), api.readJson<unknown>(projectId, systemPath)]).then(
       ([rawDb, rawSystem]) => {
-        setDb(RpgDatabaseSchema.parse(rawDb));
-        setSystem(RpgSystemSchema.parse(rawSystem));
+        const dbResult = RpgDatabaseSchema.safeParse(rawDb);
+        if (!dbResult.success) {
+          const detail = dbResult.error.issues[0]?.message ?? 'erreur inconnue';
+          setLoadError(`Base de données invalide (${path}) : ${detail}.`);
+          return;
+        }
+        const systemResult = RpgSystemSchema.safeParse(rawSystem);
+        if (!systemResult.success) {
+          const detail = systemResult.error.issues[0]?.message ?? 'erreur inconnue';
+          setLoadError(`Système invalide (${systemPath}) : ${detail}.`);
+          return;
+        }
+        setLoadError(null);
+        setDb(dbResult.data);
+        setSystem(systemResult.data);
         setDirty(false);
       },
       toastError,
     );
-  }, [projectId, path, systemPath, revision]);
+  }, [projectId, path, systemPath, revision, systemRevision]);
 
+  if (loadError) return <div className="fg-empty">{loadError}</div>;
   if (!db || !system || !project) return <div className="fg-empty">Chargement…</div>;
 
   const assetsOf = (kind: AssetMeta['kind']) => project.assets.filter((a) => a.kind === kind && a.alias);
@@ -112,12 +110,18 @@ export function DatabaseEditor({ path }: { path: string }) {
     setDb({ ...db, [category]: list.map((e) => (e.id === entry.id ? { ...e, ...patch } : e)) } as RpgDatabase);
     setDirty(true);
   };
+  const newEntryCtx = {
+    firstCharsetAlias: assetsOf('charset')[0]?.alias,
+    firstBattlerAlias: assetsOf('image')[0]?.alias,
+    firstEnemyId: db.enemies[0]?.id,
+  };
+  const canAdd = category !== 'system' && canAddEntry(category, newEntryCtx);
   const addEntry = () => {
-    if (category === 'system') return;
+    if (category === 'system' || !canAddEntry(category, newEntryCtx)) return;
     const prefix = { actors: 'hero', items: 'objet', skills: 'comp', enemies: 'ennemi', troops: 'troupe' }[category];
     let n = list.length + 1;
     while (list.some((e) => e.id === `${prefix}${n}`)) n++;
-    const created = newEntry(category, `${prefix}${n}`);
+    const created = newEntry(category, `${prefix}${n}`, newEntryCtx);
     setDb({ ...db, [category]: [...list, created] } as RpgDatabase);
     setSelected(created.id);
     setDirty(true);
@@ -384,7 +388,7 @@ export function DatabaseEditor({ path }: { path: string }) {
         <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
           <div style={{ width: 240, borderRight: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)' }}>
             <Flex margin="size-100" gap="size-100">
-              <ActionButton onPress={addEntry}>
+              <ActionButton onPress={addEntry} isDisabled={!canAdd}>
                 <Add />
                 <Text>Ajouter</Text>
               </ActionButton>

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { parseGlb, readAccessor } from '../encode/glb';
 import type { RenderContext } from '../types';
-import { eulerDegToQuat } from './build';
+import { buildModel, eulerDegToQuat } from './build';
 import { model3dSpecSchema, type Model3dSpec } from './dsl';
 import { model3dGenerator } from './model3d';
 import { detectTemplate, MODEL_TEMPLATE_NAMES } from './templates';
@@ -256,6 +256,18 @@ describe('générateur de modèles 3D', () => {
     );
     expect(loaded.scene.getObjectByName('flamme')?.parent?.name).toBe('tete');
     expect(loaded.animations[0].tracks).toHaveLength(2);
+  });
+
+  it('rend visible des deux côtés un plan ou un lathe sans matériau explicite', () => {
+    const spec = model3dSpecSchema.parse({
+      name: 'Sans matériau',
+      materials: {},
+      nodes: [{ id: 'drapeau', shape: { type: 'plane', size: [0.3, 0.2] } }],
+    });
+    const { glb } = buildModel(spec);
+    const { json } = parseGlb(glb);
+    const def = json.materials!.find((m) => m.name === 'default') as Record<string, any>;
+    expect(def.doubleSided).toBe(true);
   });
 
   it('convertit les rotations Euler XYZ en quaternions et garde leur continuité', async () => {

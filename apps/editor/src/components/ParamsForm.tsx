@@ -67,6 +67,17 @@ export function ParamsForm(props: {
         const label = LABELS[key] ?? key;
         const value = props.values[key];
         const placeholder = schema.default !== undefined ? `Défaut : ${String(schema.default)}` : 'Automatique';
+        // `z.literal(x)` est traduit en JSON Schema par `const` (absent du type JsonSchema partagé) :
+        // on le traite comme une énumération à une seule valeur, verrouillée en lecture seule.
+        const constValue = (schema as JsonSchema & { const?: unknown }).const;
+        if (constValue !== undefined) {
+          const label2 = String(constValue);
+          return (
+            <Picker key={key} label={label} selectedKey={label2} isDisabled width="100%">
+              <Item key={label2}>{label2}</Item>
+            </Picker>
+          );
+        }
         if (schema.enum) {
           return (
             <Picker

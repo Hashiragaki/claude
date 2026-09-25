@@ -102,7 +102,8 @@ export function buildModel(spec: Model3dSpec): BuiltModel {
     spec.nodes.filter((n) => n.shape?.type === 'plane' || n.shape?.type === 'lathe').map((n) => n.material ?? ''),
   );
   const materials = materialIds.map((id) => convertMaterial(id, spec.materials[id], doubleSidedIds.has(id)));
-  let defaultMaterial = -1;
+  // Un matériau par défaut par valeur de doubleSided (un nœud sans matériau peut être un plan/lathe).
+  const defaultMaterials = new Map<boolean, number>();
 
   const nodes = spec.nodes.map(convertNode);
   spec.nodes.forEach((n, i) => {
@@ -119,11 +120,14 @@ export function buildModel(spec: Model3dSpec): BuiltModel {
     if (!n.shape) return;
     let material = n.material !== undefined ? materialIds.indexOf(n.material) : -1;
     if (material < 0) {
-      if (defaultMaterial < 0) {
-        materials.push(convertMaterial('default', DEFAULT_MATERIAL, false));
-        defaultMaterial = materials.length - 1;
+      const doubleSided = doubleSidedIds.has(n.material ?? '');
+      let index = defaultMaterials.get(doubleSided);
+      if (index === undefined) {
+        materials.push(convertMaterial('default', DEFAULT_MATERIAL, doubleSided));
+        index = materials.length - 1;
+        defaultMaterials.set(doubleSided, index);
       }
-      material = defaultMaterial;
+      material = index;
     }
     const flat = n.material !== undefined && spec.materials[n.material]?.flatShading === true;
     const key = `${JSON.stringify(n.shape)}|${material}|${flat}`;

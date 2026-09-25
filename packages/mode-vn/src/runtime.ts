@@ -113,7 +113,9 @@ export class VNRuntime implements GameRuntime {
     if (this.destroyed) return;
     this.destroyed = true;
     this.overlays = [];
-    this.trash = [];
+    // Vider la corbeille avant de la jeter : ces vues sont déjà détachées de l'arbre Pixi,
+    // donc shell.destroy() (qui ne suit que les vues encore attachées) ne les atteindrait pas.
+    for (const view of this.trash.splice(0)) if (!view.destroyed) view.destroy({ children: true });
     this.ctx.audio.stopAll();
     this.shell?.destroy();
     this.shell = null;

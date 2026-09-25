@@ -99,6 +99,11 @@ export class RpgWorld {
   private roles: Map<number, TileRole> = roleTable(DEFAULT_TILESET_INFO);
   private main: MainRun | null = null;
   private readonly parallels = new Map<string, EventInterpreter>();
+  /**
+   * Scripts parallèles qui ont quitté leur carte (téléportation demandée par eux-mêmes) : ils vont
+   * au bout de leurs commandes, puis disparaissent (leur événement n'existe plus sur la carte).
+   */
+  private detached = new Set<EventInterpreter>();
   private readonly routeWaiters = new Map<EventInterpreter, Character>();
 
   constructor(private readonly options: WorldOptions) {
@@ -193,11 +198,17 @@ export class RpgWorld {
   // Cartes, état, téléportation
   // -------------------------------------------------------------------------
 
-  private loadMap(id: string, resetEncounters: boolean): void {
+  /**
+   * Recharge la carte. `keep`, si fourni, est l'interpréteur (parallèle) demandeur en cours de
+   * reprise : on ne l'arrête pas ici, pour ne pas perdre les commandes qui suivent la
+   * téléportation dans son propre script (voir `resume()`).
+   */
+  private loadMap(id: string, resetEncounters: boolean, keep?: EventInterpreter): void {
     const map = this.options.maps.get(id);
     if (!map) throw new Error(`Carte introuvable : « ${id} »`);
-    for (const interp of this.parallels.values()) interp.stop();
+    for (const interp of [...this.parallels.values(), ...this.detached]) if (interp !== keep) interp.stop();
     this.parallels.clear();
+    this.detached = new Set(keep && keep !== this.main?.interp ? [keep] : []);
     this.routeWaiters.clear();
     if (this.main) this.main.event = null;
     this.map = map;
@@ -226,15 +237,19 @@ export class RpgWorld {
     this.loadMap(state.map, state.encounterCount <= 0);
   }
 
-  /** Transfère le joueur (efface les événements « erase » de la carte). */
-  teleport(mapId: string, x: number, y: number, direction?: Direction): boolean {
+  /**
+   * Transfère le joueur (efface les événements « erase » de la carte). `keep` (usage interne)
+   * préserve l'interpréteur parallèle qui demande la téléportation, pour qu'il puisse continuer
+   * son script après reprise.
+   */
+  teleport(mapId: string, x: number, y: number, direction?: Direction, keep?: EventInterpreter): boolean {
     if (!this.options.maps.has(mapId)) {
       this.report(`Téléportation : carte introuvable « ${mapId} »`);
       return false;
     }
     this.state.player = { x, y, direction: direction ?? this.player.direction };
     this.state.erased = [];
-    this.loadMap(mapId, true);
+    this.loadMap(mapId, true, keep);
     return true;
   }
 
@@ -280,7 +295,7 @@ export class RpgWorld {
     const owner = this.requestOwner();
     if (!owner) return;
     const wait = owner.waiting as WorldRequest;
-    if (wait.kind === 'teleport') this.teleport(wait.map, wait.x, wait.y, wait.direction);
+    if (wait.kind === 'teleport') this.teleport(wait.map, wait.x, wait.y, wait.direction, owner);
     owner.resume(result);
     this.pump(owner);
     this.refresh();
@@ -355,7 +370,9 @@ export class RpgWorld {
   private requestOwner(): EventInterpreter | null {
     const main = this.main?.interp;
     if (main?.waiting && HOST_KINDS.has(main.waiting.kind)) return main;
-    for (const p of this.parallels.values()) if (p.waiting && HOST_KINDS.has(p.waiting.kind)) return p;
+    for (const p of [...this.parallels.values(), ...this.detached]) {
+      if (p.waiting && HOST_KINDS.has(p.waiting.kind)) return p;
+    }
     return null;
   }
 
@@ -399,6 +416,14 @@ export class RpgWorld {
   private updateInterpreters(dt: number): void {
     if (this.main) {
       const interp = this.main.interp;
+      interp.update(dt);
+      this.pump(interp);
+    }
+    for (const interp of [...this.detached]) {
+      if (interp.finished) {
+        this.detached.delete(interp);
+        continue;
+      }
       interp.update(dt);
       this.pump(interp);
     }

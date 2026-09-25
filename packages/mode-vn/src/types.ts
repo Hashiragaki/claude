@@ -210,7 +210,13 @@ export type Instruction = InstrBase &
   (
     | ({ op: 'say'; transition: string | null } & SayData)
     | { op: 'centered'; text: string }
-    | { op: 'menu'; caption: SayData | null; choices: { text: string; cond: string | null; target: number }[] }
+    | {
+        op: 'menu';
+        caption: SayData | null;
+        choices: { text: string; cond: string | null; target: number }[];
+        /** Instruction qui suit le bloc (reprise quand aucun choix n'est disponible). */
+        end: number;
+      }
     | { op: 'goto'; target: number }
     | { op: 'gotoIfNot'; cond: string; target: number }
     | { op: 'jump'; label: string }

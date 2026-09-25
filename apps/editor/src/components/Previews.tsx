@@ -61,12 +61,17 @@ export function SpritesheetPreview({ asset }: { asset: AssetMeta }) {
 
   useEffect(() => {
     if (!atlasPath) return;
+    let cancelled = false;
     void fetch(assetUrl(asset, atlasPath))
       .then((r) => r.json() as Promise<Atlas>)
       .then((a) => {
+        if (cancelled) return;
         setAtlas(a);
         setAnimation(Object.keys(a.animations ?? {})[0] ?? '');
       });
+    return () => {
+      cancelled = true;
+    };
   }, [asset, atlasPath]);
 
   useEffect(() => {
@@ -125,9 +130,15 @@ export function TilesetPreview({ asset }: { asset: AssetMeta }) {
   const [hover, setHover] = useState<string>('');
   useEffect(() => {
     if (!asset.extra.tiles) return;
+    let cancelled = false;
     void fetch(assetUrl(asset, asset.extra.tiles))
       .then((r) => r.json() as Promise<TilesJson>)
-      .then(setTiles);
+      .then((t) => {
+        if (!cancelled) setTiles(t);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [asset]);
   const size = tiles?.tileSize ?? 16;
   const columns = tiles?.columns ?? 8;

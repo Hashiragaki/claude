@@ -369,6 +369,12 @@ export class VNInterpreter {
           text: this.text(c.text, ins),
           enabled: c.cond === null || this.condition(c.cond, ins),
         }));
+        if (choices.length > 0 && choices.every((c) => !c.enabled)) {
+          // Comme Ren'Py : un menu sans aucun choix disponible est ignoré (sinon le jeu serait bloqué).
+          this.log('warn', `${ins.file}, ligne ${ins.line} : aucun choix disponible, menu ignoré`);
+          st.pc = ins.end;
+          return null;
+        }
         return this.present(pc, { kind: 'menu', caption, choices, effects: this.takeEffects() }, caption);
       }
       case 'pause':

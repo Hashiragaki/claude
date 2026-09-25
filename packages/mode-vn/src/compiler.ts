@@ -211,7 +211,7 @@ class Compiler {
   private menu(node: MenuNode): void {
     if (node.label) this.registerLabel(node.label, node.line, node.column);
     const caption = node.caption ? this.sayData(node.caption) : null;
-    const index = this.emit({ op: 'menu', caption, choices: [] }, node.line);
+    const index = this.emit({ op: 'menu', caption, choices: [], end: -1 }, node.line);
     const menu = this.instructions[index] as Extract<Instruction, { op: 'menu' }>;
     const exits: number[] = [];
     node.choices.forEach((choice, i) => {
@@ -220,6 +220,7 @@ class Compiler {
       if (i < node.choices.length - 1) exits.push(this.emit({ op: 'goto', target: -1 }, choice.line));
     });
     for (const exit of exits) this.patch(exit, this.instructions.length);
+    menu.end = this.instructions.length;
   }
 
   private patch(index: number, target: number): void {
