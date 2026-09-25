@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { promises as fs } from 'node:fs';
+import { promises as fs, type Dirent } from 'node:fs';
 import path from 'node:path';
 import { guessMime, normalizeProjectPath, parseManifest, type ProjectFiles, type ProjectManifest } from '@forge/core';
 
@@ -102,7 +102,14 @@ export class ProjectStore {
   }
 
   async list(): Promise<ProjectSummary[]> {
-    const entries = await fs.readdir(this.root, { withFileTypes: true });
+    let entries: Dirent[];
+    try {
+      entries = await fs.readdir(this.root, { withFileTypes: true });
+    } catch (error) {
+      // Dossier de données supprimé ou pas encore créé : aucun projet (plutôt qu'une erreur 500).
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
     const out: ProjectSummary[] = [];
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;

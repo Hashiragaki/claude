@@ -139,3 +139,11 @@ describe('ProjectStore.createManifest', () => {
     expect(raw.name).toBe('demo-abcd');
   });
 });
+
+describe('ProjectStore.list', () => {
+  it('renvoie une liste vide si le dossier de données a disparu', async () => {
+    const store = await makeStore();
+    await rm(dir!, { recursive: true, force: true });
+    await expect(store.list()).resolves.toEqual([]);
+  });
+});

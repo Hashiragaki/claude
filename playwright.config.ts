@@ -7,7 +7,9 @@ const chromium =
   process.env.FORGE_CHROMIUM ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 
 const dataDir = path.resolve('test-results/e2e-workspace');
-rmSync(dataDir, { recursive: true, force: true });
+// Ce fichier est réévalué dans chaque processus de test : on ne vide le dossier qu'une fois, dans le processus
+// principal (avant le démarrage du serveur), sinon il disparaîtrait sous le serveur en cours d'exécution.
+if (process.env.TEST_WORKER_INDEX === undefined) rmSync(dataDir, { recursive: true, force: true });
 
 export default defineConfig({
   testDir: 'e2e',

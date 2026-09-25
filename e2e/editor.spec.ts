@@ -128,8 +128,9 @@ test('3D : création et jeu', async ({ page }) => {
   await page.getByRole('button', { name: 'Lancer le jeu' }).click();
   const canvas = page.locator('.fg-game-mount canvas');
   await expect(canvas).toBeVisible();
-  await page.waitForTimeout(2500);
-  await canvas.click();
+  // Écran titre du mode 3D : le bouton « Cliquer pour commencer » recouvre le canvas.
+  await page.getByText('Cliquer pour commencer').click();
+  await page.waitForTimeout(1000);
   await page.keyboard.down('ArrowUp');
   await page.waitForTimeout(900);
   await page.keyboard.up('ArrowUp');
