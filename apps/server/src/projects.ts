@@ -11,7 +11,7 @@ import { z } from 'zod';
 import type { EventHub } from './events';
 import type { GenerationService } from './generation';
 import type { PlannerService } from './plannerService';
-import type { ProjectStore } from './storage';
+import { ConflictError, type ProjectStore } from './storage';
 
 export const CreateProjectSchema = z.object({
   name: z.string().trim().min(1, 'Le nom du projet est obligatoire').max(80),
@@ -45,25 +45,36 @@ export class ProjectService {
     const mode = this.modes.get(modeId);
     const template = mode.templates.find((t) => t.id === templateId) ?? mode.templates[0];
     if (!template) throw new Error(`Le mode ${mode.name} ne propose aucun modèle.`);
-    const id = `${slugify(name, 40)}-${shortId('', 4)}`;
-    const now = nowIso();
-    const manifest: ProjectManifest = {
-      format: PROJECT_FORMAT,
-      id,
-      name,
-      description: description ?? template.manifest.description ?? template.description,
-      mode: mode.id,
-      version: '0.1.0',
-      locale: template.manifest.locale ?? 'fr',
-      locales: ['fr', 'en'],
-      resolution: template.manifest.resolution ?? { width: 1280, height: 720 },
-      pixelArt: template.manifest.pixelArt ?? false,
-      entry: template.manifest.entry,
-      createdAt: now,
-      updatedAt: now,
-      assets: [],
-    };
-    await this.store.createManifest(manifest);
+    // Le suffixe aléatoire de l'id peut, rarement, coïncider avec un projet déjà présent sur le
+    // disque : createManifest échoue alors (EEXIST) sans rien écraser, et on retire un autre id.
+    let id: string;
+    for (let attempt = 0; ; attempt++) {
+      id = `${slugify(name, 40)}-${shortId('', 4)}`;
+      const now = nowIso();
+      const manifest: ProjectManifest = {
+        format: PROJECT_FORMAT,
+        id,
+        name,
+        description: description ?? template.manifest.description ?? template.description,
+        mode: mode.id,
+        version: '0.1.0',
+        locale: template.manifest.locale ?? 'fr',
+        locales: ['fr', 'en'],
+        resolution: template.manifest.resolution ?? { width: 1280, height: 720 },
+        pixelArt: template.manifest.pixelArt ?? false,
+        entry: template.manifest.entry,
+        createdAt: now,
+        updatedAt: now,
+        assets: [],
+      };
+      try {
+        await this.store.createManifest(manifest);
+        break;
+      } catch (error) {
+        if (error instanceof ConflictError && attempt < 19) continue;
+        throw error;
+      }
+    }
     try {
       for (const file of template.files) {
         const content = typeof file.content === 'string' ? file.content : `${JSON.stringify(file.content, null, 2)}\n`;

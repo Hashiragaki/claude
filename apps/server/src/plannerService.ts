@@ -69,7 +69,11 @@ export class PlannerService {
     }
     const planner = await this.parsePlanner(projectId, raw);
     planner.onChange((reason) => {
-      void this.save(projectId, planner);
+      // Écriture en tâche de fond : si le projet a été supprimé entre-temps, writeFile échoue
+      // (NotFoundError) ; on l'ignore au lieu de laisser une promesse rejetée arrêter le serveur.
+      this.save(projectId, planner).catch((error: unknown) => {
+        if (!(error instanceof NotFoundError)) console.error(`Sauvegarde du planning ${projectId} :`, error);
+      });
       this.hub.publish(projectId, { type: 'planner', data: { reason } });
     });
     return planner;

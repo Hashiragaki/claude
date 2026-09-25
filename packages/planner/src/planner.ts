@@ -1,8 +1,14 @@
 import { shortId } from '@forge/core';
+import { z } from 'zod';
 import { addDays, addMonths, daysBetween, toDateString } from './dates';
 import {
+  DateSchema,
   PRIORITY_WEIGHT,
   PlannerDataSchema,
+  PrioritySchema,
+  RecurrenceSchema,
+  TaskLinkSchema,
+  TaskStatusSchema,
   type LogEntry,
   type MemoryNote,
   type Milestone,
@@ -88,6 +94,67 @@ export interface PlannerOptions {
 
 const OPEN: TaskStatus[] = ['todo', 'in_progress', 'blocked'];
 
+/** Estimation maximale plausible pour une tâche, pour éviter des plannings absurdes. */
+const MAX_ESTIMATE_HOURS = 1000;
+
+// Validation des entrées publiques (créées ou modifiées via l'API, l'éditeur ou l'IA) : toute
+// donnée mal formée (statut, priorité, date, récurrence, estimation) est rejetée ici avec un
+// message explicite, avant d'atteindre le stockage — plutôt que de laisser planner.json devenir
+// invalide et rendre le projet inouvrable au prochain chargement (voir PlannerService.load).
+const TaskPatchSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  status: TaskStatusSchema.optional(),
+  priority: PrioritySchema.optional(),
+  milestoneId: z.string().nullable().optional(),
+  startDate: DateSchema.nullable().optional(),
+  dueDate: DateSchema.nullable().optional(),
+  estimateHours: z
+    .number()
+    .nonnegative("L'estimation ne peut pas être négative.")
+    .max(MAX_ESTIMATE_HOURS, `L'estimation ne peut pas dépasser ${MAX_ESTIMATE_HOURS} heures.`)
+    .nullable()
+    .optional(),
+  dependsOn: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  assignee: z.enum(['user', 'ai']).optional(),
+  links: z.array(TaskLinkSchema).optional(),
+  recurrence: RecurrenceSchema.nullable().optional(),
+});
+
+const MilestonePatchSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  dueDate: DateSchema.nullable().optional(),
+  status: z.enum(['planned', 'active', 'done']).optional(),
+});
+
+const PlanTaskSchema = TaskPatchSchema.omit({ milestoneId: true, dependsOn: true }).extend({
+  dependsOnTitles: z.array(z.string()).optional(),
+});
+
+const PlanInputSchema = z.object({
+  milestones: z.array(
+    z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      dueDate: DateSchema.optional(),
+      tasks: z.array(PlanTaskSchema).optional(),
+    }),
+  ),
+});
+
+/** Valide `value` avec `schema` ; lève une erreur explicite en français sinon. */
+function validateInput(schema: z.ZodType, value: unknown, what: string): void {
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    const detail = result.error.issues
+      .map((issue) => (issue.path.length ? `${issue.path.join('.')} : ${issue.message}` : issue.message))
+      .join(' ; ');
+    throw new Error(`${what} invalide : ${detail}`);
+  }
+}
+
 /**
  * Planificateur long terme d'un projet : jalons, tâches avec dépendances, journal, récurrence,
  * mémoire du projet et requêtes (prochaines actions, retards, revue). Toutes les modifications
@@ -141,10 +208,19 @@ export class Planner {
     return task;
   }
 
-  /** Trouve une tâche par id ou par titre (insensible à la casse). */
+  /**
+   * Trouve une tâche par id ou par titre (insensible à la casse). Quand plusieurs tâches
+   * partagent le même titre (occurrences successives d'une tâche récurrente : l'original terminé
+   * et sa nouvelle occurrence), on préfère une tâche encore ouverte plutôt que l'original déjà
+   * terminé, sinon `/fait` et `/encours` par titre restent bloqués sur l'occurrence close.
+   */
   findTask(ref: string): Task | undefined {
+    const byId = this.getTask(ref);
+    if (byId) return byId;
     const lower = ref.trim().toLowerCase();
-    return this.getTask(ref) ?? this.state.tasks.find((t) => t.title.toLowerCase() === lower);
+    const matches = this.state.tasks.filter((t) => t.title.toLowerCase() === lower);
+    if (matches.length <= 1) return matches[0];
+    return matches.find((t) => t.status !== 'done' && t.status !== 'cancelled') ?? matches[0];
   }
 
   listTasks(filter: TaskFilter = {}): Task[] {
@@ -160,6 +236,7 @@ export class Planner {
   }
 
   createTask(input: TaskInput, by: Actor = 'user'): Task {
+    validateInput(TaskPatchSchema, input, 'Tâche');
     const title = input.title.trim();
     if (!title) throw new Error('Le titre de la tâche est obligatoire.');
     const now = this.now().toISOString();
@@ -194,12 +271,24 @@ export class Planner {
   }
 
   updateTask(id: string, patch: TaskPatch, by: Actor = 'user', note?: string): Task {
+    validateInput(TaskPatchSchema, patch, 'Tâche');
     const task = this.requireTask(id);
     const now = this.now().toISOString();
-    const changes: string[] = [];
+
+    // Tout ce qui peut lever (titre vide, jalon inconnu, dépendance invalide ou cyclique) est
+    // vérifié AVANT la moindre mutation : sinon un patch partiellement invalide (ex. une nouvelle
+    // priorité valide suivie d'une dépendance cyclique) laisserait la tâche à moitié modifiée,
+    // sans entrée de journal ni évènement de changement, alors que l'appelant voit une erreur.
+    let title: string | undefined;
     if (patch.title !== undefined) {
-      const title = patch.title.trim();
+      title = patch.title.trim();
       if (!title) throw new Error('Le titre de la tâche est obligatoire.');
+    }
+    if (patch.milestoneId) this.requireMilestone(patch.milestoneId);
+    const dependsOn = patch.dependsOn !== undefined ? this.checkDependencies(task.id, patch.dependsOn) : undefined;
+
+    const changes: string[] = [];
+    if (title !== undefined) {
       if (title !== task.title) changes.push(`titre → « ${title} »`);
       task.title = title;
     }
@@ -208,17 +297,14 @@ export class Planner {
       changes.push(`priorité → ${patch.priority}`);
       task.priority = patch.priority;
     }
-    if (patch.milestoneId !== undefined) {
-      if (patch.milestoneId) this.requireMilestone(patch.milestoneId);
-      setOptional(task, 'milestoneId', patch.milestoneId);
-    }
+    if (patch.milestoneId !== undefined) setOptional(task, 'milestoneId', patch.milestoneId);
     if (patch.startDate !== undefined) setOptional(task, 'startDate', patch.startDate);
     if (patch.dueDate !== undefined) {
       if ((patch.dueDate ?? undefined) !== task.dueDate) changes.push(`échéance → ${patch.dueDate ?? 'aucune'}`);
       setOptional(task, 'dueDate', patch.dueDate);
     }
     if (patch.estimateHours !== undefined) setOptional(task, 'estimateHours', patch.estimateHours);
-    if (patch.dependsOn !== undefined) task.dependsOn = this.checkDependencies(task.id, patch.dependsOn);
+    if (dependsOn !== undefined) task.dependsOn = dependsOn;
     if (patch.tags !== undefined) task.tags = patch.tags;
     if (patch.assignee !== undefined) task.assignee = patch.assignee;
     if (patch.links !== undefined) task.links = patch.links;
@@ -267,6 +353,10 @@ export class Planner {
     };
     delete next.completedAt;
     this.state.tasks.push(next);
+    // L'original ne doit générer l'occurrence suivante qu'une seule fois : sans ceci, rouvrir puis
+    // reterminer la tâche (par exemple un glissement Kanban « fait » → « à faire » → « fait » par
+    // erreur) créerait une nouvelle occurrence à chaque fois.
+    delete task.recurrence;
     return next;
   }
 
@@ -350,6 +440,7 @@ export class Planner {
   }
 
   createMilestone(input: MilestoneInput): Milestone {
+    validateInput(MilestonePatchSchema, input, 'Jalon');
     const title = input.title.trim();
     if (!title) throw new Error('Le titre du jalon est obligatoire.');
     const now = this.now().toISOString();
@@ -369,6 +460,7 @@ export class Planner {
   }
 
   updateMilestone(id: string, patch: Partial<MilestoneInput>): Milestone {
+    validateInput(MilestonePatchSchema, patch, 'Jalon');
     const m = this.requireMilestone(id);
     if (patch.title !== undefined) {
       if (!patch.title.trim()) throw new Error('Le titre du jalon est obligatoire.');
@@ -533,6 +625,7 @@ export class Planner {
    * (tâches du plan ou tâches existantes). Tout est validé avant la moindre écriture.
    */
   applyPlan(plan: PlanInput, by: Actor = 'ai'): { milestones: Milestone[]; tasks: Task[] } {
+    validateInput(PlanInputSchema, plan, 'Plan');
     const titles = new Set<string>();
     for (const m of plan.milestones) {
       for (const t of m.tasks) titles.add(t.title.trim().toLowerCase());

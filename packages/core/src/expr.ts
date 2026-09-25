@@ -755,39 +755,71 @@ function binaryOp(op: string, a: Value, b: Value): Value {
   throw new Error(`Opérateur inconnu ${op}`);
 }
 
-function assignTo(target: Node, value: Value, scope: Scope, options: EvalOptions): void {
-  if (target.kind === 'name') {
-    scope.set(target.name, value);
-    return;
-  }
+/**
+ * Cible d'affectation résolue : l'objet et la clé (propriété ou index) ont déjà été évalués une
+ * seule fois. Sert à éviter qu'une affectation composée (`stats[choice([...])] += 1`) évalue
+ * deux fois une sous-expression à effet de bord (index aléatoire, appel, `pop()`…), ce qui
+ * peut lire une clé et en écrire une autre.
+ */
+type ResolvedTarget =
+  | { kind: 'name'; name: string }
+  | { kind: 'member'; object: Value; prop: string }
+  | { kind: 'index'; object: Value; index: Value };
+
+function resolveTarget(target: Node, scope: Scope, options: EvalOptions): ResolvedTarget {
+  if (target.kind === 'name') return { kind: 'name', name: target.name };
   if (target.kind === 'member') {
-    const obj = evaluate(target.object, scope, options);
-    assertSafeKey(target.prop);
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-      throw new Error(`Impossible d'affecter « ${target.prop} » sur ${typeName(obj)}`);
-    }
-    obj[target.prop] = value;
-    return;
+    return { kind: 'member', object: evaluate(target.object, scope, options), prop: target.prop };
   }
   if (target.kind === 'index') {
-    const obj = evaluate(target.object, scope, options);
-    const idx = evaluate(target.index, scope, options);
-    if (Array.isArray(obj)) {
-      let i = num(idx, 'index');
-      if (i < 0) i += obj.length;
-      if (i < 0 || i >= obj.length) throw new Error(`Index ${idx} hors limites`);
-      obj[i] = value;
-      return;
-    }
-    if (obj && typeof obj === 'object') {
-      const key = toDisplayString(idx);
-      assertSafeKey(key);
-      obj[key] = value;
-      return;
-    }
-    throw new Error(`Indexation impossible sur ${typeName(obj)}`);
+    return {
+      kind: 'index',
+      object: evaluate(target.object, scope, options),
+      index: evaluate(target.index, scope, options),
+    };
   }
   throw new Error('Cible d\'affectation invalide');
+}
+
+function readTarget(t: ResolvedTarget, scope: Scope): Value {
+  if (t.kind === 'name') {
+    if (!scope.has(t.name)) throw new Error(`Variable inconnue « ${t.name} »`);
+    return scope.get(t.name) ?? null;
+  }
+  if (t.kind === 'member') return readProperty(t.object, t.prop);
+  return readIndex(t.object, t.index);
+}
+
+function writeTarget(t: ResolvedTarget, value: Value, scope: Scope): void {
+  if (t.kind === 'name') {
+    scope.set(t.name, value);
+    return;
+  }
+  if (t.kind === 'member') {
+    assertSafeKey(t.prop);
+    const obj = t.object;
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      throw new Error(`Impossible d'affecter « ${t.prop} » sur ${typeName(obj)}`);
+    }
+    obj[t.prop] = value;
+    return;
+  }
+  const obj = t.object;
+  const idx = t.index;
+  if (Array.isArray(obj)) {
+    let i = num(idx, 'index');
+    if (i < 0) i += obj.length;
+    if (i < 0 || i >= obj.length) throw new Error(`Index ${idx} hors limites`);
+    obj[i] = value;
+    return;
+  }
+  if (obj && typeof obj === 'object') {
+    const key = toDisplayString(idx);
+    assertSafeKey(key);
+    obj[key] = value;
+    return;
+  }
+  throw new Error(`Indexation impossible sur ${typeName(obj)}`);
 }
 
 /** Exécute une instruction (`x = 1`, `x += 2`, `inv.append("clé")`). Retourne la valeur produite. */
@@ -795,11 +827,13 @@ export function execute(source: string, scope: Scope, options: EvalOptions = {})
   const stmt = parseStatement(source);
   if (stmt.kind === 'expr') return evaluate(stmt.expr, scope, options);
   let value = evaluate(stmt.value, scope, options);
+  // Résout l'objet/l'index de la cible une seule fois, avant lecture puis écriture : sinon
+  // `stats[choice([...])] += 1` pourrait lire une clé et en écrire une autre.
+  const resolved = resolveTarget(stmt.target, scope, options);
   if (stmt.op !== '=') {
-    const current = evaluate(stmt.target, scope, options);
-    value = binaryOp(stmt.op.slice(0, -1), current, value);
+    value = binaryOp(stmt.op.slice(0, -1), readTarget(resolved, scope), value);
   }
-  assignTo(stmt.target, value, scope, options);
+  writeTarget(resolved, value, scope);
   return value;
 }
 

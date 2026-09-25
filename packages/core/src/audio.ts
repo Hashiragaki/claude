@@ -20,6 +20,11 @@ export class AudioManager {
   private voice: AudioBufferSourceNode | null = null;
   private readonly sounds = new Set<AudioBufferSourceNode>();
   private muted = false;
+  private disposed = false;
+  /** Jeton de génération : incrémenté par playBgm/stopBgm pour ignorer un chargement périmé. */
+  private bgmToken = 0;
+  /** Jeton de génération équivalent pour playVoice/stopVoice. */
+  private voiceToken = 0;
 
   constructor(private readonly fetchImpl: typeof fetch = (...args) => fetch(...args)) {}
 
@@ -32,6 +37,9 @@ export class AudioManager {
   }
 
   private context(): AudioContext | null {
+    // Le manager a été disposé (ex. Engine.destroy()) : ne jamais recréer de contexte, sinon
+    // un déverrouillage audio tardif (écouteur non détaché) ferait fuir un AudioContext orphelin.
+    if (this.disposed) return null;
     if (this.ctx) return this.ctx;
     if (!this.available) return null;
     this.ctx = new AudioContext();
@@ -104,7 +112,12 @@ export class AudioManager {
     if (this.bgm?.url === url) return;
     const fade = (options.fadeMs ?? 600) / 1000;
     this.stopBgm(options.fadeMs ?? 600);
+    // Capturé après stopBgm() (qui incrémente déjà le jeton) : si un autre playBgm/stopBgm
+    // survient pendant l'attente ci-dessous, le jeton courant aura changé et ce chargement,
+    // devenu périmé, ne doit pas démarrer ni écraser la piste plus récente.
+    const token = this.bgmToken;
     const buffer = await this.load(url);
+    if (token !== this.bgmToken) return;
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.loop = options.loop ?? true;
@@ -117,6 +130,7 @@ export class AudioManager {
   }
 
   stopBgm(fadeMs = 600): void {
+    this.bgmToken++;
     const ctx = this.ctx;
     const current = this.bgm;
     if (!ctx || !current) return;
@@ -160,7 +174,9 @@ export class AudioManager {
     const ctx = this.context();
     if (!ctx) return;
     this.stopVoice();
+    const token = this.voiceToken;
     const buffer = await this.load(url);
+    if (token !== this.voiceToken) return;
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     const gain = ctx.createGain();
@@ -171,6 +187,7 @@ export class AudioManager {
   }
 
   stopVoice(): void {
+    this.voiceToken++;
     try {
       this.voice?.stop();
     } catch {
@@ -186,6 +203,7 @@ export class AudioManager {
   }
 
   async dispose(): Promise<void> {
+    this.disposed = true;
     this.stopAll();
     this.buffers.clear();
     if (this.ctx) await this.ctx.close().catch(() => undefined);

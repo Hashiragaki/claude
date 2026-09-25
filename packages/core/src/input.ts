@@ -257,3 +257,14 @@ function isEditableTarget(target: EventTarget | null): boolean {
   const tag = target.tagName;
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
 }
+
+/**
+ * Vrai si `related` est `container` lui-même ou un de ses descendants. Utilise `contains` par
+ * détection de fonctionnalité (plutôt que `instanceof Node`, indisponible hors navigateur) pour
+ * rester testable avec de faux éléments en environnement Node.
+ */
+function relatedTargetInside(container: Window | HTMLElement, related: EventTarget | null): boolean {
+  if (!related) return false;
+  const withContains = container as unknown as { contains?: (other: EventTarget) => boolean };
+  return typeof withContains.contains === 'function' && withContains.contains(related);
+}

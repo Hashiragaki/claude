@@ -34,13 +34,29 @@ export interface Schedule {
   end: string;
 }
 
+/** Heures de travail par jour utilisées quand `hoursPerDay` est absent, non fini ou ≤ 0. */
+const DEFAULT_HOURS_PER_DAY = 4;
+
+/**
+ * Nombre maximal de jours qu'une tâche peut occuper dans le planning. Borne de sécurité : sans
+ * elle, un `hoursPerDay` minuscule ou une estimation énorme ferait avancer `addWorkDays` jour par
+ * jour un nombre de fois arbitrairement grand (ou l'appellerait avec `Infinity`, qui ne se
+ * termine jamais), bloquant tout le serveur (boucle synchrone dans l'event loop Node).
+ */
+const MAX_TASK_DAYS = 3650;
+
 /**
  * Planning prévisionnel (diagramme de Gantt) : ordonnancement par liste.
  * L'utilisateur réalise une tâche à la fois (capacité `hoursPerDay`) ; les tâches confiées à
  * l'IA peuvent se dérouler en parallèle. Une tâche commence après ses dépendances.
  */
 export function scheduleTasks(tasks: Task[], options: ScheduleOptions): Schedule {
-  const hoursPerDay = options.hoursPerDay ?? 4;
+  // Un `hoursPerDay` non fini (NaN, Infinity) ou ≤ 0 rendrait `days` infini ou négatif plus bas ;
+  // on retombe alors sur la valeur par défaut documentée plutôt que de boucler indéfiniment.
+  const hoursPerDay =
+    Number.isFinite(options.hoursPerDay) && (options.hoursPerDay as number) > 0
+      ? (options.hoursPerDay as number)
+      : DEFAULT_HOURS_PER_DAY;
   const defaultHours = options.defaultHours ?? 2;
   const addDuration = (from: string, days: number) =>
     options.skipWeekends ? addWorkDays(from, days - 1) : addDays(from, days - 1);
@@ -86,7 +102,7 @@ export function scheduleTasks(tasks: Task[], options: ScheduleOptions): Schedule
     const depsEnd = maxDate(...task.dependsOn.map((d) => endById.get(d)));
     const afterDeps = depsEnd ? nextDay(depsEnd) : undefined;
     const hours = task.estimateHours ?? defaultHours;
-    const days = Math.max(1, Math.ceil(hours / hoursPerDay));
+    const days = Math.max(1, Math.min(MAX_TASK_DAYS, Math.ceil(hours / hoursPerDay)));
     let start: string;
     if (task.assignee === 'ai') {
       start = maxDate(options.start, afterDeps, task.startDate) as string;

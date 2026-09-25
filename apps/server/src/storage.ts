@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import {
@@ -22,9 +23,16 @@ export class Mutex {
 /** Écriture atomique : fichier temporaire puis renommage. */
 export async function writeFileAtomic(file: string, data: string | Uint8Array): Promise<void> {
   await fs.mkdir(path.dirname(file), { recursive: true });
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tmp, data);
-  await fs.rename(tmp, file);
+  // Composant aléatoire : deux écritures concurrentes sur le même fichier (même pid, même
+  // milliseconde) ne doivent jamais partager le même fichier temporaire.
+  const tmp = `${file}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await fs.writeFile(tmp, data);
+    await fs.rename(tmp, file);
+  } catch (error) {
+    await fs.rm(tmp, { force: true });
+    throw error;
+  }
 }
 
 export class NotFoundError extends Error {
@@ -33,6 +41,10 @@ export class NotFoundError extends Error {
 
 export class ForbiddenError extends Error {
   readonly statusCode = 403;
+}
+
+export class ConflictError extends Error {
+  readonly statusCode = 409;
 }
 
 /** Fichiers internes d'un projet, gérés par le serveur (non modifiables par l'API fichiers). */
@@ -128,10 +140,20 @@ export class ProjectStore {
     return parseManifest(JSON.parse(raw));
   }
 
+  /** Crée le manifeste d'un nouveau projet. Échoue sans rien écraser si l'id est déjà pris. */
   async createManifest(manifest: ProjectManifest): Promise<void> {
     const dir = this.projectDir(manifest.id);
     await fs.mkdir(dir, { recursive: true });
-    await writeFileAtomic(path.join(dir, 'project.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+    try {
+      // `wx` échoue atomiquement (EEXIST) si le fichier existe déjà : pas de lecture-puis-écriture
+      // qui laisserait une fenêtre de course entre deux créations concurrentes du même id.
+      await fs.writeFile(path.join(dir, 'project.json'), `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        throw new ConflictError(`Un projet existe déjà avec l'identifiant : ${manifest.id}`);
+      }
+      throw error;
+    }
   }
 
   /** Modifie le manifeste sous verrou (lecture → mutation → écriture). */
@@ -168,12 +190,16 @@ export class ProjectStore {
   async writeFile(id: string, relative: string, data: string | Uint8Array, internal = false): Promise<void> {
     const normalized = normalizeProjectPath(relative);
     if (!internal && isInternal(normalized)) throw new ForbiddenError(`Fichier protégé : ${relative}`);
+    // Le projet doit exister : sinon une écriture tardive (job en cours au moment d'une
+    // suppression, id erroné…) recréerait un dossier orphelin sans project.json.
+    if (!(await this.exists(id))) throw new NotFoundError(`Projet introuvable : ${id}`);
     await writeFileAtomic(this.resolve(id, normalized), data);
   }
 
   async deleteFile(id: string, relative: string, internal = false): Promise<void> {
     const normalized = normalizeProjectPath(relative);
     if (!internal && isInternal(normalized)) throw new ForbiddenError(`Fichier protégé : ${relative}`);
+    if (!(await this.exists(id))) throw new NotFoundError(`Projet introuvable : ${id}`);
     await fs.rm(this.resolve(id, normalized), { force: true });
   }
 
@@ -187,7 +213,7 @@ export class ProjectStore {
         const rel = path.relative(dir, full).split(path.sep).join('/');
         if (entry.isDirectory()) {
           if (!INTERNAL_DIRS.some((d) => `${rel}/`.startsWith(d))) await walk(full);
-        } else if (!entry.name.endsWith('.tmp')) {
+        } else if (!entry.name.endsWith('.tmp') && !isInternal(rel)) {
           out.push({ path: rel, size: (await fs.stat(full)).size });
         }
       }
