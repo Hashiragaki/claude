@@ -17,6 +17,8 @@ export interface ServerConfig {
   playerDist: string;
   ai: {
     enabled: boolean;
+    /** `api` : API Messages (clé) ; `claude-code` : commande `claude` connectée à un abonnement. */
+    backend: 'api' | 'claude-code';
     model?: string;
     effort?: Effort;
     refusalFallback: boolean;
@@ -35,7 +37,9 @@ const EFFORTS: Effort[] = ['low', 'medium', 'high', 'xhigh', 'max'];
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const aiSetting = (env.FORGE_AI ?? 'auto').toLowerCase();
-  const hasCredentials = Boolean(env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN);
+  const backend = (env.FORGE_AI_BACKEND ?? 'api').toLowerCase() === 'claude-code' ? 'claude-code' : 'api';
+  // Claude Code gère lui-même sa connexion (abonnement) : pas de clé requise.
+  const hasCredentials = backend === 'claude-code' || Boolean(env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN);
   const effort = env.FORGE_EFFORT as Effort | undefined;
   let prices = DEFAULT_PRICES;
   if (env.FORGE_PRICES) {
@@ -56,6 +60,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     playerDist: path.join(REPO_ROOT, 'apps/editor/dist-player'),
     ai: {
       enabled: aiSetting === 'on' || (aiSetting === 'auto' && hasCredentials),
+      backend,
       ...(env.FORGE_MODEL ? { model: env.FORGE_MODEL } : {}),
       ...(effort && EFFORTS.includes(effort) ? { effort } : {}),
       refusalFallback: (env.FORGE_REFUSAL_FALLBACK ?? 'on').toLowerCase() !== 'off',

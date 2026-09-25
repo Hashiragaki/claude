@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { ClaudeLlmClient, DEFAULT_MODEL, RoutedLlmClient, type LlmClient } from '@forge/ai';
+import { ClaudeCodeLlmClient, ClaudeLlmClient, DEFAULT_MODEL, RoutedLlmClient, type LlmClient } from '@forge/ai';
 import { AssetKindSchema, guessMime, nowIso, shortId, slugify, type AssetMeta, type ModeRegistry } from '@forge/core';
 import { STATUS_LABELS, TaskStatusSchema, scheduleTasks, type PlanInput, type TaskInput } from '@forge/planner';
 import fastifyStatic from '@fastify/static';
@@ -61,13 +61,15 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   const rawLlm =
     options.llm !== undefined
       ? options.llm
-      : config.ai.enabled
-        ? new ClaudeLlmClient({
-            model: config.ai.model,
-            effort: config.ai.effort,
-            refusalFallback: config.ai.refusalFallback,
-          })
-        : null;
+      : config.ai.enabled && config.ai.backend === 'claude-code'
+        ? new ClaudeCodeLlmClient({ model: config.ai.model, effort: config.ai.effort })
+        : config.ai.enabled
+          ? new ClaudeLlmClient({
+              model: config.ai.model,
+              effort: config.ai.effort,
+              refusalFallback: config.ai.refusalFallback,
+            })
+          : null;
   const llm: LlmClient | null = rawLlm
     ? new RoutedLlmClient(rawLlm, {
         routing: config.routing,

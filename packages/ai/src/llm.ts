@@ -205,6 +205,8 @@ export function isApiError(error: unknown): error is InstanceType<typeof Anthrop
 
 /** Message d'erreur lisible en français pour les erreurs d'API. */
 export function describeApiError(error: unknown): string {
+  // Backend Claude Code (voir claudeCode.ts) : le message est déjà rédigé.
+  if (error instanceof Error && error.name === 'ClaudeCodeError') return error.message;
   if (error instanceof Anthropic.AuthenticationError) return 'Clé API Claude invalide (ANTHROPIC_API_KEY).';
   if (error instanceof Anthropic.PermissionDeniedError) return "Accès refusé par l'API Claude.";
   if (error instanceof Anthropic.RateLimitError)

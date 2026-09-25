@@ -45,6 +45,8 @@ pnpm start                  # http://127.0.0.1:8787
 | `FORGE_EFFORT` | Effort du modèle : `low`, `medium`, `high`, `xhigh`, `max` | celui du modèle |
 | `FORGE_REFUSAL_FALLBACK` | Repli serveur vers un autre modèle si une demande est refusée | `on` |
 | `FORGE_AI` | `auto` (si clé présente), `on`, `off` | `auto` |
+| `FORGE_AI_BACKEND` | `api` (clé API) ou `claude-code` (commande `claude` connectée à un abonnement Claude, sans clé ; outils émulés en JSON, coûts affichés = équivalent API) | `api` |
+| `FORGE_CLAUDE_BIN` | Chemin de l'exécutable `claude` pour le backend `claude-code` | `~/.local/bin/claude` puis `claude` |
 | `FORGE_DATA_DIR` | Dossier des projets | `./workspace` |
 | `PORT` | Port du serveur | `8787` |
 | `FORGE_JOB_CONCURRENCY` | Générations simultanées | `2` |
