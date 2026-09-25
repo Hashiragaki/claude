@@ -1,0 +1,353 @@
+import type { AssetMeta, Diagnostic, ProjectManifest } from '@forge/core';
+import type { PlannerData, PlannerReview } from '@forge/planner';
+import { ToastQueue } from '@adobe/react-spectrum';
+import {
+  api,
+  type DisplayMessage,
+  type GenerateRequest,
+  type GeneratorInfo,
+  type Health,
+  type Job,
+  type ModeInfo,
+  type ProjectSummary,
+} from '../api';
+import { Store, useSelector } from './store';
+
+export interface LogEntry {
+  id: number;
+  at: string;
+  level: 'debug' | 'info' | 'warn' | 'error';
+  source: 'jeu' | 'éditeur' | 'génération' | 'validation';
+  message: string;
+}
+
+/** Document ouvert dans la zone centrale (onglet). */
+export interface OpenDocument {
+  id: string;
+  kind: 'script' | 'json' | 'map' | 'database' | 'scene';
+  path: string;
+  title: string;
+}
+
+export interface PlayRequest {
+  session: number;
+  startLabel?: string;
+  startMap?: string;
+  startX?: number;
+  startY?: number;
+  skipTitle?: boolean;
+}
+
+export interface AppState {
+  ready: boolean;
+  health: Health | null;
+  modes: ModeInfo[];
+  generators: GeneratorInfo[];
+  projects: ProjectSummary[];
+  project: ProjectManifest | null;
+  jobs: Job[];
+  planner: { data: PlannerData; review: PlannerReview } | null;
+  chat: { messages: DisplayMessage[]; running: boolean; thinking: boolean; ai: boolean };
+  logs: LogEntry[];
+  diagnostics: Diagnostic[];
+  selectedAssetId: string | null;
+  play: PlayRequest | null;
+  documents: OpenDocument[];
+  /** Incrémenté quand un fichier du projet change (rechargement des éditeurs). */
+  fileRevision: Record<string, number>;
+  locale: 'fr' | 'en';
+}
+
+export const store = new Store<AppState>({
+  ready: false,
+  health: null,
+  modes: [],
+  generators: [],
+  projects: [],
+  project: null,
+  jobs: [],
+  planner: null,
+  chat: { messages: [], running: false, thinking: false, ai: false },
+  logs: [],
+  diagnostics: [],
+  selectedAssetId: null,
+  play: null,
+  documents: [],
+  fileRevision: {},
+  locale: (localStorage.getItem('forge:locale') as 'fr' | 'en' | null) ?? 'fr',
+});
+
+export function useApp<T>(selector: (state: AppState) => T): T {
+  return useSelector(store, selector);
+}
+
+let logCounter = 0;
+
+export function log(level: LogEntry['level'], source: LogEntry['source'], message: string): void {
+  store.set((s) => ({
+    logs: [...s.logs.slice(-499), { id: ++logCounter, at: new Date().toISOString(), level, source, message }],
+  }));
+}
+
+export function toastError(error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  ToastQueue.negative(message, { timeout: 6000 });
+  log('error', 'éditeur', message);
+}
+
+export function toastOk(message: string): void {
+  ToastQueue.positive(message, { timeout: 3500 });
+}
+
+// ---------------------------------------------------------------------------
+// Chargement initial et projets
+// ---------------------------------------------------------------------------
+
+export async function loadInitial(): Promise<void> {
+  try {
+    const [health, modes, generators, projects] = await Promise.all([
+      api.health(),
+      api.modes(),
+      api.generators(),
+      api.listProjects(),
+    ]);
+    store.set({ health, modes, generators, projects, ready: true });
+    const last = localStorage.getItem('forge:lastProject');
+    if (last && projects.some((p) => p.id === last)) await openProject(last);
+  } catch (error) {
+    store.set({ ready: true });
+    toastError(new Error(`Serveur Forge injoignable : ${error instanceof Error ? error.message : String(error)}`));
+  }
+}
+
+export async function refreshProjects(): Promise<void> {
+  store.set({ projects: await api.listProjects() });
+}
+
+let events: EventSource | null = null;
+
+export async function openProject(id: string): Promise<void> {
+  closeProject();
+  const [project, planner, chat, jobs] = await Promise.all([
+    api.getProject(id),
+    api.planner(id),
+    api.chat(id),
+    api.jobs(id),
+  ]);
+  localStorage.setItem('forge:lastProject', id);
+  store.set({
+    project,
+    planner: { data: planner.data, review: planner.review },
+    chat: { messages: chat.messages, running: chat.running, thinking: false, ai: chat.ai },
+    jobs,
+    selectedAssetId: null,
+    documents: [],
+    play: null,
+    diagnostics: [],
+  });
+  connectEvents(id);
+  log('info', 'éditeur', `Projet « ${project.name} » ouvert.`);
+  void validateProject();
+}
+
+export function closeProject(): void {
+  events?.close();
+  events = null;
+  store.set({ project: null, planner: null, jobs: [], selectedAssetId: null, documents: [], play: null });
+}
+
+export async function createProject(input: { name: string; mode: string; template?: string }): Promise<void> {
+  const manifest = await api.createProject(input);
+  await refreshProjects();
+  await openProject(manifest.id);
+  toastOk(`Projet « ${manifest.name} » créé.`);
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  await api.deleteProject(id);
+  if (store.get().project?.id === id) closeProject();
+  await refreshProjects();
+}
+
+export async function refreshManifest(): Promise<void> {
+  const id = store.get().project?.id;
+  if (!id) return;
+  store.set({ project: await api.getProject(id) });
+}
+
+export async function updateProject(patch: Parameters<typeof api.updateProject>[1]): Promise<void> {
+  const id = requireProjectId();
+  store.set({ project: await api.updateProject(id, patch) });
+}
+
+export async function validateProject(): Promise<Diagnostic[]> {
+  const id = store.get().project?.id;
+  if (!id) return [];
+  const diagnostics = await api.validate(id);
+  store.set({ diagnostics });
+  for (const d of diagnostics.filter((x) => x.severity === 'error')) {
+    log('error', 'validation', `${d.file}${d.line ? `:${d.line}` : ''} — ${d.message}`);
+  }
+  return diagnostics;
+}
+
+export function requireProjectId(): string {
+  const id = store.get().project?.id;
+  if (!id) throw new Error('Aucun projet ouvert.');
+  return id;
+}
+
+// ---------------------------------------------------------------------------
+// Événements temps réel
+// ---------------------------------------------------------------------------
+
+let plannerTimer: ReturnType<typeof setTimeout> | null = null;
+
+function connectEvents(projectId: string): void {
+  events = new EventSource(api.eventsUrl(projectId));
+  events.addEventListener('job', (e) => {
+    const job = JSON.parse((e as MessageEvent).data) as Job;
+    store.set((s) => {
+      const jobs = s.jobs.filter((j) => j.id !== job.id);
+      return { jobs: [job, ...jobs].slice(0, 100) };
+    });
+    if (job.status === 'error') log('error', 'génération', `${job.label} : ${job.error ?? 'échec'}`);
+    if (job.status === 'done') log('info', 'génération', `${job.label} : terminé`);
+  });
+  events.addEventListener('asset', (e) => {
+    const { action, asset } = JSON.parse((e as MessageEvent).data) as { action: string; asset?: AssetMeta };
+    void refreshManifest();
+    if (action === 'created' && asset) store.set({ selectedAssetId: asset.id });
+  });
+  events.addEventListener('manifest', (e) => {
+    store.set({ project: JSON.parse((e as MessageEvent).data) as ProjectManifest });
+  });
+  events.addEventListener('planner', () => {
+    if (plannerTimer) clearTimeout(plannerTimer);
+    plannerTimer = setTimeout(() => void refreshPlanner(), 150);
+  });
+  events.addEventListener('file', (e) => {
+    const { path } = JSON.parse((e as MessageEvent).data) as { path: string };
+    store.set((s) => ({ fileRevision: { ...s.fileRevision, [path]: (s.fileRevision[path] ?? 0) + 1 } }));
+  });
+  events.addEventListener('chat', (e) => applyChatEvent(JSON.parse((e as MessageEvent).data)));
+}
+
+type ChatEvent =
+  | { kind: 'message'; message: DisplayMessage }
+  | { kind: 'delta'; id: string; delta: string }
+  | { kind: 'status'; running: boolean; thinking?: boolean }
+  | { kind: 'cleared' };
+
+function applyChatEvent(event: ChatEvent): void {
+  store.set((s) => {
+    const chat = { ...s.chat };
+    switch (event.kind) {
+      case 'message': {
+        const index = chat.messages.findIndex((m) => m.id === event.message.id);
+        chat.messages =
+          index >= 0 ? chat.messages.map((m, i) => (i === index ? event.message : m)) : [...chat.messages, event.message];
+        if (event.message.role === 'assistant') chat.thinking = false;
+        break;
+      }
+      case 'delta':
+        chat.thinking = false;
+        chat.messages = chat.messages.map((m) => (m.id === event.id ? { ...m, text: m.text + event.delta } : m));
+        break;
+      case 'status':
+        chat.running = event.running;
+        chat.thinking = event.running && Boolean(event.thinking);
+        break;
+      case 'cleared':
+        chat.messages = [];
+        break;
+    }
+    return { chat };
+  });
+}
+
+export async function refreshPlanner(): Promise<void> {
+  const id = store.get().project?.id;
+  if (!id) return;
+  const planner = await api.planner(id);
+  store.set({ planner: { data: planner.data, review: planner.review } });
+}
+
+// ---------------------------------------------------------------------------
+// Assets
+// ---------------------------------------------------------------------------
+
+export async function generateAsset(req: GenerateRequest): Promise<void> {
+  const id = requireProjectId();
+  const job = await api.generate(id, req);
+  store.set((s) => ({ jobs: [job, ...s.jobs.filter((j) => j.id !== job.id)] }));
+  log('info', 'génération', `Lancé : ${job.label}`);
+}
+
+export function selectAsset(assetId: string | null): void {
+  store.set({ selectedAssetId: assetId });
+}
+
+export function assetUrl(asset: AssetMeta, path = asset.file): string {
+  const id = store.get().project?.id ?? '';
+  return `${api.fileUrl(id, path)}?v=${encodeURIComponent(asset.createdAt)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Documents et lecture
+// ---------------------------------------------------------------------------
+
+export function openDocument(doc: Omit<OpenDocument, 'id'>): OpenDocument {
+  const existing = store.get().documents.find((d) => d.path === doc.path && d.kind === doc.kind);
+  if (existing) {
+    documentRequests.emit(existing);
+    return existing;
+  }
+  const created: OpenDocument = { ...doc, id: `doc:${doc.kind}:${doc.path}` };
+  store.set((s) => ({ documents: [...s.documents, created] }));
+  documentRequests.emit(created);
+  return created;
+}
+
+export function closeDocument(id: string): void {
+  store.set((s) => ({ documents: s.documents.filter((d) => d.id !== id) }));
+}
+
+let playCounter = 0;
+
+export function play(options: Omit<PlayRequest, 'session'> = {}): void {
+  store.set({ play: { ...options, session: ++playCounter } });
+  panelRequests.emit('game');
+}
+
+export function stopPlay(): void {
+  store.set({ play: null });
+}
+
+/** Petits canaux d'événements entre l'état et la disposition des panneaux. */
+function channel<T>() {
+  const listeners = new Set<(value: T) => void>();
+  return {
+    on(l: (value: T) => void) {
+      listeners.add(l);
+      return () => listeners.delete(l);
+    },
+    emit(value: T) {
+      for (const l of listeners) l(value);
+    },
+  };
+}
+
+export const panelRequests = channel<string>();
+export const documentRequests = channel<OpenDocument>();
+
+export function showPanel(id: string): void {
+  panelRequests.emit(id);
+}
+
+export function setLocale(locale: 'fr' | 'en'): void {
+  localStorage.setItem('forge:locale', locale);
+  store.set({ locale });
+}
+
+export const resetLayoutRequests = channel<void>();

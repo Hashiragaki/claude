@@ -68,6 +68,9 @@ importers:
       '@forge/render3d':
         specifier: workspace:*
         version: link:../../packages/render3d
+      '@lezer/highlight':
+        specifier: ^1.2.4
+        version: 1.2.4
       '@spectrum-icons/workflow':
         specifier: ^4.3.2
         version: 4.3.2(@adobe/react-spectrum@3.47.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
