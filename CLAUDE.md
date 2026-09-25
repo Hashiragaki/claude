@@ -40,3 +40,9 @@ hors-ligne), modes de jeu en plugins, planificateur long terme avec chat. Monore
 ## Travail en parallèle
 Plusieurs agents modifient le dépôt en même temps, chacun sur une liste de fichiers autorisés : ne modifier que
 ceux-là, ignorer les erreurs transitoires des autres fichiers, ne lancer que ses propres tests, ne pas commiter.
+
+## Workflows réutilisables (`.claude/workflows/`)
+- `forge-find` : revue en lecture seule, un chercheur sonnet par zone (`args.areas`).
+- `forge-fix` : un correcteur sonnet + un vérificateur sonnet par groupe de fichiers disjoints (`args.groups`).
+Modèles : sonnet pour implémenter, tester, chercher et vérifier ; haiku pour le mécanique ; le modèle principal
+seulement pour les contrats, l'intégration et en escalade après un échec vérifié.
