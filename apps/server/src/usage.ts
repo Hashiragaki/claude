@@ -63,10 +63,12 @@ export class UsageLedger {
     const projectId = event.meta.projectId;
     const scoped = Boolean(projectId) && (await this.store.exists(projectId!));
     if (scoped && projectId) {
-      await this.append(this.store.resolve(projectId, USAGE_FILE), event);
-      const entry = this.cache.get(projectId) ?? (await this.loadCache(projectId));
-      entry.spentUsd += event.costUsd;
+      // Cache chargé AVANT l'ajout au fichier : sinon l'événement serait compté deux fois (relu puis ajouté).
+      const loaded = this.cache.get(projectId) ?? (await this.loadCache(projectId));
+      const entry = this.cache.get(projectId) ?? loaded;
       this.cache.set(projectId, entry);
+      entry.spentUsd += event.costUsd;
+      await this.append(this.store.resolve(projectId, USAGE_FILE), event);
       this.hub.publish(projectId, {
         type: 'usage',
         data: { projectId, event, spentUsd: entry.spentUsd, budgetUsd: entry.budgetUsd },

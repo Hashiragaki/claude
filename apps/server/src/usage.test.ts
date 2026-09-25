@@ -138,4 +138,25 @@ describe('comptabilité des appels IA (UsageLedger)', () => {
     expect(chatRes.statusCode).toBe(402);
     expect(chatRes.json().error).toMatch(/budget/i);
   });
+
+  it("ne compte qu'une fois le premier appel d'un projet (cache froid)", async () => {
+    const { server } = await makeServer(null);
+    const project = await server.projects.create({ name: 'Budget', mode: 'vn', template: 'vn-blank' });
+    const { UsageLedger } = await import('./usage');
+    const { EventHub } = await import('./events');
+    const hub = new EventHub();
+    const published: number[] = [];
+    hub.onEvent((_id, e) => {
+      if (e.type === 'usage') published.push((e.data as { spentUsd: number }).spentUsd);
+    });
+    const ledger = new UsageLedger(server.store, hub, { defaultBudgetUsd: 0.0005 });
+    const usage = { inputTokens: 10, outputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0 };
+    const event = { meta: { role: 'generate' as const, projectId: project.id }, model: 'm', usage, at: '' };
+    await ledger.record({ ...event, costUsd: 0.0003 });
+    expect(published).toEqual([0.0003]);
+    expect(() => ledger.checkBudget({ role: 'chat', projectId: project.id })).not.toThrow();
+    await ledger.record({ ...event, costUsd: 0.0003 });
+    expect(published[1]).toBeCloseTo(0.0006);
+    expect(() => ledger.checkBudget({ role: 'chat', projectId: project.id })).toThrow();
+  });
 });
