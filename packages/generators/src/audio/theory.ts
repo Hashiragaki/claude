@@ -86,7 +86,12 @@ export function degreeToMidi(tonic: number, scale: readonly number[], degree: nu
 }
 
 /** Degré le plus proche de `degree` dont la note appartient à l'accord (préférence : immobile, puis bas). */
-export function nearestChordDegree(tonic: number, scale: readonly number[], chordPcs: number[], degree: number): number {
+export function nearestChordDegree(
+  tonic: number,
+  scale: readonly number[],
+  chordPcs: number[],
+  degree: number,
+): number {
   for (let delta = 0; delta <= 4; delta++) {
     for (const d of delta === 0 ? [degree] : [degree - delta, degree + delta]) {
       const pc = (((degreeToMidi(tonic, scale, d) - tonic) % 12) + 12) % 12;

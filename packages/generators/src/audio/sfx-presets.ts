@@ -201,7 +201,20 @@ export const CONCRETE_PRESETS = Object.keys(PRESETS) as ConcretePreset[];
 
 /** Mots-clés (FR / EN) de chaque famille, dans l'ordre de priorité en cas d'égalité. */
 const PRESET_KEYWORDS: Record<ConcretePreset, readonly string[]> = {
-  coin: ['piece', 'pieces', 'coin', 'coins', 'monnaie', 'argent', 'tresor', 'gemme', 'gem', 'rubis', 'ramasser', 'pickup'],
+  coin: [
+    'piece',
+    'pieces',
+    'coin',
+    'coins',
+    'monnaie',
+    'argent',
+    'tresor',
+    'gemme',
+    'gem',
+    'rubis',
+    'ramasser',
+    'pickup',
+  ],
   explosion: ['explos', 'boom', 'bombe', 'bomb', 'detonation', 'dynamite', 'grenade'],
   laser: ['laser', 'lasers', 'tir', 'tirs', 'tirer', 'shoot', 'blaster', 'pistolet', 'gun', 'projectile', 'pew'],
   magic: ['soin', 'soigner', 'magie', 'magique', 'magic', 'sort', 'spell', 'heal', 'guerison', 'enchant', 'sparkle'],

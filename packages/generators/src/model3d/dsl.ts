@@ -59,7 +59,10 @@ export const shapeSchema = z.discriminatedUnion('type', [
     radius: length,
     length: z.number().min(0).max(100).describe('Longueur de la partie droite (hauteur totale = length + 2 × radius)'),
   }),
-  z.object({ type: z.literal('plane'), size: z.array(length).length(2).describe('Largeur, hauteur (plan XY, face +Z)') }),
+  z.object({
+    type: z.literal('plane'),
+    size: z.array(length).length(2).describe('Largeur, hauteur (plan XY, face +Z)'),
+  }),
   z.object({
     type: z.literal('lathe'),
     points: z.array(point2).min(2).max(64).describe('Profil [rayon, y] tourné autour de l’axe Y'),
@@ -132,7 +135,10 @@ export function validateModel(model: ModelShape): Issue[] {
   const issues: Issue[] = [];
   const materialIds = Object.keys(model.materials);
   if (materialIds.length > MAX_MATERIALS) {
-    issues.push({ path: ['materials'], message: `Trop de matériaux (${materialIds.length}, maximum ${MAX_MATERIALS}).` });
+    issues.push({
+      path: ['materials'],
+      message: `Trop de matériaux (${materialIds.length}, maximum ${MAX_MATERIALS}).`,
+    });
   }
   const byId = new Map<string, number>();
   model.nodes.forEach((node, i) => {
@@ -159,7 +165,8 @@ function validateNode(node: NodeSpec, i: number, byId: Map<string, number>, mate
     } else if (!byId.has(node.parent)) {
       issues.push({
         path: at('parent'),
-        message: `Nœud « ${node.id} » : parent « ${node.parent} » introuvable (ids existants : ${list(byId.keys())}).`,
+        message:
+          `Nœud « ${node.id} » : parent « ${node.parent} » introuvable ` + `(ids existants : ${list(byId.keys())}).`,
       });
     }
   }
@@ -179,7 +186,10 @@ function validateNode(node: NodeSpec, i: number, byId: Map<string, number>, mate
     });
   }
   if (shape?.type === 'cylinder' && shape.radiusTop === 0 && shape.radiusBottom === 0) {
-    issues.push({ path: at('shape'), message: `Nœud « ${node.id} » : radiusTop et radiusBottom ne peuvent pas être nuls tous les deux.` });
+    issues.push({
+      path: at('shape'),
+      message: `Nœud « ${node.id} » : radiusTop et radiusBottom ne peuvent pas être nuls tous les deux.`,
+    });
   }
   return issues;
 }
@@ -201,7 +211,8 @@ function findCycles(nodes: NodeSpec[], byId: Map<string, number>): Issue[] {
       reported.add(key);
       issues.push({
         path: ['nodes', i, 'parent'],
-        message: `Cycle de parenté : ${[...chain, node.id].join(' → ')} (un nœud ne peut pas descendre de lui-même).`,
+        message:
+          `Cycle de parenté : ${[...chain, node.id].join(' → ')} ` + '(un nœud ne peut pas descendre de lui-même).',
       });
     }
   });
@@ -220,14 +231,21 @@ function validateAnimation(anim: AnimationSpec, a: number, model: ModelShape, by
     const label = `Animation « ${name} », piste ${track.node}.${track.property}`;
     const at = (...rest: (string | number)[]) => ['animations', a, 'tracks', t, ...rest];
     if (!byId.has(track.node)) {
-      issues.push({ path: at('node'), message: `${label} : nœud « ${track.node} » introuvable (ids existants : ${list(byId.keys())}).` });
+      issues.push({
+        path: at('node'),
+        message: `${label} : nœud « ${track.node} » introuvable (ids existants : ${list(byId.keys())}).`,
+      });
     }
     const key = `${track.node}.${track.property}`;
-    if (seen.has(key)) issues.push({ path: at(), message: `${label} : cette propriété est déjà animée par une autre piste.` });
+    if (seen.has(key))
+      issues.push({ path: at(), message: `${label} : cette propriété est déjà animée par une autre piste.` });
     seen.add(key);
     track.keys.forEach((k, i) => {
       if (k.t > anim.duration + 1e-6) {
-        issues.push({ path: at('keys', i, 't'), message: `${label} : la clé t=${k.t} dépasse la durée (${anim.duration} s).` });
+        issues.push({
+          path: at('keys', i, 't'),
+          message: `${label} : la clé t=${k.t} dépasse la durée (${anim.duration} s).`,
+        });
       }
       const prev = track.keys[i - 1];
       if (prev && k.t <= prev.t) {
@@ -249,7 +267,8 @@ export const model3dSpecSchema = z
     animations: z.array(animationSchema).max(MAX_ANIMATIONS).optional().describe('Animations par images clés'),
   })
   .superRefine((model, ctx) => {
-    for (const issue of validateModel(model)) ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message });
+    for (const issue of validateModel(model))
+      ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message });
   });
 
 export type Model3dSpec = z.infer<typeof model3dSpecSchema>;

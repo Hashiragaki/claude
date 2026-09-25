@@ -22,6 +22,7 @@ export {
 } from './dsl';
 export { buildModel, eulerDegToQuat, MAX_TRIANGLES, type BuiltModel } from './build';
 export { shapeMesh, type MeshData } from './geometry';
+export { modelBounds } from './bounds';
 export { GENERIC_ANIMATIONS, normalizeAnimationNames } from './anim';
 export {
   MODEL_TEMPLATES,

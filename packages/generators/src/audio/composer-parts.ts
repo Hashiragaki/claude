@@ -1,14 +1,7 @@
 import type { Rng } from '@forge/core';
 import type { DrumHit, TokenEvent } from './notes';
 import { pitchesToBody } from './notes';
-import {
-  chordPitchClasses,
-  degreeToMidi,
-  nearestChordDegree,
-  placeInRange,
-  voiceChord,
-  type Chord,
-} from './theory';
+import { chordPitchClasses, degreeToMidi, nearestChordDegree, placeInRange, voiceChord, type Chord } from './theory';
 
 /**
  * Écriture des parties d'un morceau procédural : mélodie (motifs répétés et variés), basse, couches
@@ -49,17 +42,37 @@ interface Cell {
 const ONE_BEAT: Record<Density, number[][]> = {
   sparse: [[4], [4], [-4], [3, 1]],
   medium: [[4], [2, 2], [3, 1], [-2, 2], [4]],
-  busy: [[2, 2], [1, 1, 2], [2, 1, 1], [1, 1, 1, 1], [3, 1], [2, 2]],
+  busy: [
+    [2, 2],
+    [1, 1, 2],
+    [2, 1, 1],
+    [1, 1, 1, 1],
+    [3, 1],
+    [2, 2],
+  ],
 };
 const TWO_BEATS: Record<Density, number[][]> = {
   sparse: [[8], [6, 2], [4, 4], [-4, 4], [8], [4, -4]],
   medium: [[4, 4], [6, 2], [2, 2, 4], [4, 2, 2], [3, 3, 2], [8]],
-  busy: [[2, 2, 2, 2], [3, 3, 2], [2, 2, 4], [1, 1, 2, 2, 2], [4, 2, 2], [2, 1, 1, 4]],
+  busy: [
+    [2, 2, 2, 2],
+    [3, 3, 2],
+    [2, 2, 4],
+    [1, 1, 2, 2, 2],
+    [4, 2, 2],
+    [2, 1, 1, 4],
+  ],
 };
 /** Mesures de cadence : notes plus longues, la dernière tenue. */
 const CADENCE: Record<number, number[][]> = {
   3: [[4, 8], [2, 2, 8], [12], [4, 4, 4]],
-  4: [[4, 4, 8], [2, 2, 4, 8], [8, 4, -4], [4, 12], [6, 2, 8]],
+  4: [
+    [4, 4, 8],
+    [2, 2, 4, 8],
+    [8, 4, -4],
+    [4, 12],
+    [6, 2, 8],
+  ],
 };
 
 function cellsFromDurations(durations: number[], start: number): Cell[] {
@@ -189,7 +202,8 @@ export function composeMelody(rng: Rng, plan: SongPlan, density: Density, center
       result = realize(plan, motif.cells, motif.moves, bar, startA + 2, range, false);
     } else if (role === 'end') {
       const firstBar = motifA.cells.filter((c) => c.step < plan.stepsPerBar);
-      const cells = unitBars === 2 ? [...firstBar, ...cadenceRhythm(rng, plan.beatsPerBar, plan.stepsPerBar)] : firstBar;
+      const cells =
+        unitBars === 2 ? [...firstBar, ...cadenceRhythm(rng, plan.beatsPerBar, plan.stepsPerBar)] : firstBar;
       const moves = cells.map((_, i) => (i < firstBar.length ? motifA.moves[i] : -Math.sign(motifA.moves[i] || 1)));
       result = realize(plan, cells, moves, bar, startA, range, true);
     } else {

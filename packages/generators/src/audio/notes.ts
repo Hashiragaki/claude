@@ -38,7 +38,8 @@ const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#',
 const DRUM_HELP =
   'utilisez K (grosse caisse), S (caisse claire), H (charleston fermé), O (charleston ouvert), ' +
   'C (cymbale), T (tom) ou R (silence), combinables avec + (ex. K+H:2)';
-const NOTE_HELP = 'attendu une note comme C4, F#3 ou Bb2, un accord C4+E4+G4, ou un silence R, avec une durée facultative :2';
+const NOTE_HELP =
+  'attendu une note comme C4, F#3 ou Bb2, un accord C4+E4+G4, ou un silence R, avec une durée facultative :2';
 
 /** Hauteur MIDI d'un nom de note (`C4` → 60, `F#3`, `Bb2`), ou `null` si invalide. */
 export function parseNoteName(name: string): number | null {
@@ -66,7 +67,9 @@ function splitDuration(token: string): { body: string; length: number } | { erro
   const [body, dur] = parts;
   if (!/^\d+$/.test(dur) || Number(dur) < 1 || Number(dur) > MAX_TOKEN_STEPS) {
     return {
-      error: `jeton « ${token} » invalide : la durée après « : » doit être un entier de 1 à ${MAX_TOKEN_STEPS} (en pas)`,
+      error:
+        `jeton « ${token} » invalide : la durée après « : » doit être un entier ` +
+        `de 1 à ${MAX_TOKEN_STEPS} (en pas)`,
     };
   }
   return { body, length: Number(dur) };
@@ -101,7 +104,10 @@ export function parsePitchedTrack(notes: string): ParsedTrack<PitchedEvent> {
       const midi = parseNoteName(part);
       if (midi === null) {
         if (/^[KSHOCT]$/.test(part)) {
-          return `jeton « ${token} » invalide : « ${part} » est un son de batterie, réservé aux pistes drums (${NOTE_HELP})`;
+          return (
+            `jeton « ${token} » invalide : « ${part} » est un son de batterie, ` +
+            `réservé aux pistes drums (${NOTE_HELP})`
+          );
         }
         return `jeton « ${token} » invalide : note « ${part} » inconnue (${NOTE_HELP})`;
       }

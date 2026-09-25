@@ -8,7 +8,10 @@ export const lamp: TemplateFn = ({ rng, color }) => {
   const b = new ModelBuilder();
   const postH = rng.float(1.9, 2.2);
   const light = color ?? jitter('#ffd27a', rng, 0.5);
-  b.material('iron', jitter(rng.pick(['#2f3640', '#233329', '#3b2f2f']), rng, 0.5), { metalness: 0.6, roughness: 0.45 });
+  b.material('iron', jitter(rng.pick(['#2f3640', '#233329', '#3b2f2f']), rng, 0.5), {
+    metalness: 0.6,
+    roughness: 0.45,
+  });
   b.material('light', '#fff6d8', { emissive: light, roughness: 0.3 });
   b.material('glass', '#fff8e1', { opacity: 0.35, roughness: 0.1 });
 
@@ -25,7 +28,13 @@ export const lamp: TemplateFn = ({ rng, color }) => {
     material: 'iron',
     position: [0, 0.25 + postH / 2, 0],
   });
-  b.add('ring', { parent: root, shape: { type: 'torus', radius: 0.07, tube: 0.02 }, material: 'iron', position: [0, 0.6, 0], rotation: [90, 0, 0] });
+  b.add('ring', {
+    parent: root,
+    shape: { type: 'torus', radius: 0.07, tube: 0.02 },
+    material: 'iron',
+    position: [0, 0.6, 0],
+    rotation: [90, 0, 0],
+  });
   const top = 0.25 + postH;
   b.group('head', root, [0, top, 0]);
 
@@ -38,11 +47,26 @@ export const lamp: TemplateFn = ({ rng, color }) => {
       position: [0, 0.03, 0],
       rotation: [0, 45, 0],
     });
-    b.add('bulb', { parent: 'head', shape: { type: 'sphere', radius: 0.08, widthSegments: 12, heightSegments: 8 }, material: 'light', position: [0, 0.23, 0] });
-    b.add('glass', { parent: 'head', shape: { type: 'box', size: [0.26, 0.34, 0.26] }, material: 'glass', position: [0, 0.23, 0] });
-    for (const [i, corner] of ([[1, 1], [1, -1], [-1, 1], [-1, -1]] as const).entries()) {
-      const p: Vec3 = [corner[0] * 0.135, 0.23, corner[1] * 0.135];
-      b.add(`frame_${i}`, { parent: 'head', shape: { type: 'box', size: [0.025, 0.36, 0.025] }, material: 'iron', position: p });
+    b.add('bulb', {
+      parent: 'head',
+      shape: { type: 'sphere', radius: 0.08, widthSegments: 12, heightSegments: 8 },
+      material: 'light',
+      position: [0, 0.23, 0],
+    });
+    b.add('glass', {
+      parent: 'head',
+      shape: { type: 'box', size: [0.26, 0.34, 0.26] },
+      material: 'glass',
+      position: [0, 0.23, 0],
+    });
+    for (let i = 0; i < 4; i++) {
+      const p: Vec3 = [(i < 2 ? 1 : -1) * 0.135, 0.23, (i % 2 ? -1 : 1) * 0.135];
+      b.add(`frame_${i}`, {
+        parent: 'head',
+        shape: { type: 'box', size: [0.025, 0.36, 0.025] },
+        material: 'iron',
+        position: p,
+      });
     }
     b.add('cap', {
       parent: 'head',
@@ -51,7 +75,12 @@ export const lamp: TemplateFn = ({ rng, color }) => {
       position: [0, 0.49, 0],
       rotation: [0, 45, 0],
     });
-    b.add('finial', { parent: 'head', shape: { type: 'sphere', radius: 0.03, widthSegments: 8, heightSegments: 6 }, material: 'iron', position: [0, 0.61, 0] });
+    b.add('finial', {
+      parent: 'head',
+      shape: { type: 'sphere', radius: 0.03, widthSegments: 8, heightSegments: 6 },
+      material: 'iron',
+      position: [0, 0.61, 0],
+    });
   } else {
     // Globe lumineux sur collerette.
     b.add('collar', {
@@ -60,7 +89,12 @@ export const lamp: TemplateFn = ({ rng, color }) => {
       material: 'iron',
       position: [0, 0.04, 0],
     });
-    b.add('bulb', { parent: 'head', shape: { type: 'sphere', radius: 0.19, widthSegments: 16, heightSegments: 12 }, material: 'light', position: [0, 0.25, 0] });
+    b.add('bulb', {
+      parent: 'head',
+      shape: { type: 'sphere', radius: 0.19, widthSegments: 16, heightSegments: 12 },
+      material: 'light',
+      position: [0, 0.25, 0],
+    });
     b.add('finial', {
       parent: 'head',
       shape: { type: 'cone', radius: 0.04, height: 0.08, radialSegments: 8 },

@@ -5,7 +5,8 @@ type InputSchema = Anthropic.Beta.BetaTool.InputSchema;
 
 /** Convertit un schéma zod (objet) en schéma d'entrée d'outil pour l'API. */
 export function toInputSchema(schema: z.ZodType): InputSchema {
-  const json = z.toJSONSchema(schema, { unrepresentable: 'any' }) as Record<string, unknown>;
+  // Schéma « entrée » : les champs avec valeur par défaut restent facultatifs pour le modèle.
+  const json = z.toJSONSchema(schema, { unrepresentable: 'any', io: 'input' }) as Record<string, unknown>;
   delete json.$schema;
   if (json.type !== 'object') {
     throw new Error('Le schéma d\'un outil doit décrire un objet JSON.');

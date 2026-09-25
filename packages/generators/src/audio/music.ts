@@ -6,8 +6,8 @@ import { round2 } from './dsp';
 import { MUSIC_MAX_SECONDS, musicParamsSchema, musicSpecSchema, type MusicParams, type MusicSpec } from './music-spec';
 import { MUSIC_SAMPLE_RATE, renderSong } from './song';
 
-const SYSTEM_PROMPT = `You compose short looping game music (chiptune / soft synth) for the Forge engine. You answer with a
-compact JSON "spec" that an offline synthesizer renders to a stereo WAV.
+const SYSTEM_PROMPT = `You compose short looping game music (chiptune / soft synth) for the Forge engine.
+You answer with a compact JSON "spec" that an offline synthesizer renders to a stereo WAV.
 
 Spec format:
 - bpm (40-240), stepsPerBeat (default 4: one step = a sixteenth note), beatsPerBar (default 4; 3 for a waltz),
@@ -71,7 +71,8 @@ function buildEditPrompt(spec: MusicSpec, instruction: string, params: MusicPara
 }
 
 function procedural(params: MusicParams, rng: Rng): MusicSpec {
-  return musicSpecSchema.parse(composeMusic(params, rng));
+  // Dérivation : des graines voisines (1, 2, 3…) donnent des morceaux bien distincts.
+  return musicSpecSchema.parse(composeMusic(params, rng.fork('music')));
 }
 
 async function render(spec: MusicSpec, params: MusicParams): Promise<GeneratorResult> {

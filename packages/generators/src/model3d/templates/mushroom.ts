@@ -61,7 +61,11 @@ function addMushroom(b: ModelBuilder, rng: Rng, id: string, parent: string, posi
     const phi = (Math.PI / 2) * (1 - i / 8);
     dome.push([rx * Math.sin(phi), 0.02 + ry * Math.cos(phi)]);
   }
-  b.add(`${id}_cap`, { parent: `${id}_cap_pivot`, shape: { type: 'lathe', points: dome, segments: 16 }, material: 'cap' });
+  b.add(`${id}_cap`, {
+    parent: `${id}_cap_pivot`,
+    shape: { type: 'lathe', points: dome, segments: 16 },
+    material: 'cap',
+  });
   b.add(`${id}_gills`, {
     parent: `${id}_cap_pivot`,
     shape: { type: 'cylinder', radiusTop: rx * 0.97, radiusBottom: 0.16, height: 0.06, radialSegments: 16 },
@@ -72,8 +76,16 @@ function addMushroom(b: ModelBuilder, rng: Rng, id: string, parent: string, posi
   for (let s = 0; s < spots; s++) {
     const phi = rng.float(0.25, 1.15);
     const theta = (s / spots) * Math.PI * 2 + rng.float(-0.3, 0.3);
-    const p: Vec3 = [rx * Math.sin(phi) * Math.cos(theta), 0.02 + ry * Math.cos(phi), rx * Math.sin(phi) * Math.sin(theta)];
-    const n = normalize([(Math.sin(phi) * Math.cos(theta)) / rx, Math.cos(phi) / ry, (Math.sin(phi) * Math.sin(theta)) / rx]);
+    const p: Vec3 = [
+      rx * Math.sin(phi) * Math.cos(theta),
+      0.02 + ry * Math.cos(phi),
+      rx * Math.sin(phi) * Math.sin(theta),
+    ];
+    const n = normalize([
+      (Math.sin(phi) * Math.cos(theta)) / rx,
+      Math.cos(phi) / ry,
+      (Math.sin(phi) * Math.sin(theta)) / rx,
+    ]);
     const radius = rng.float(0.05, 0.085);
     b.add(`${id}_spot_${s}`, {
       parent: `${id}_cap_pivot`,

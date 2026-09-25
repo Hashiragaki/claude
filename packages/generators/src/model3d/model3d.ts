@@ -41,8 +41,8 @@ export const model3dParamsSchema = z.object({
 });
 export type Model3dParams = z.infer<typeof model3dParamsSchema>;
 
-const SYSTEM_PROMPT = `You build charming low-poly 3D models for the Forge game engine. You answer with a JSON "spec" (a small
-DSL) that is converted to an animated binary glTF (GLB).
+const SYSTEM_PROMPT = `You build charming low-poly 3D models for the Forge game engine.
+You answer with a JSON "spec" (a small DSL) that is converted to an animated binary glTF (GLB).
 
 Spec: { name, materials, nodes, animations? }
 - materials: { "<id>": { color: "#rrggbb", metalness? (0-1, default 0), roughness? (0-1, default 0.8),
@@ -117,7 +117,9 @@ function buildEditPrompt(spec: Model3dSpec, instruction: string, params: Model3d
   );
 }
 
-function procedural(params: Model3dParams, rng: Rng): Model3dSpec {
+function procedural(params: Model3dParams, seed: Rng): Model3dSpec {
+  // Dérivation : des graines voisines (1, 2, 3…) donnent des variantes bien distinctes.
+  const rng = seed.fork('model3d');
   const template = resolveTemplate(params.template, params.prompt, rng);
   const model = MODEL_TEMPLATES[template]({ rng: rng.fork(template), color: params.color });
   for (const name of normalizeAnimationNames(params.animations)) {

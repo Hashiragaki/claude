@@ -139,7 +139,8 @@ export function buildModel(spec: Model3dSpec): BuiltModel {
   });
   if (triangles > MAX_TRIANGLES) {
     throw new Error(
-      `Modèle trop détaillé : ${triangles} triangles (maximum ${MAX_TRIANGLES}) ; réduisez les segments ou le nombre de nœuds.`,
+      `Modèle trop détaillé : ${triangles} triangles (maximum ${MAX_TRIANGLES}) ; ` +
+        'réduisez les segments ou le nombre de nœuds.',
     );
   }
 

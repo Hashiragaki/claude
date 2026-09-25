@@ -279,6 +279,10 @@ function renderPluck(ctx: VoiceContext): void {
   const noise = new NoiseSource(ctx.seed);
   const bright = new OnePole(Math.min(8000, ctx.frequency * 7), sr);
   for (let i = 0; i < lineLength; i++) line[i] = bright.process(noise.next());
+  // Excitation centrée : sans composante continue, la corde ne laisse pas de décalage qui traîne.
+  const mean = line.reduce((a, v) => a + v, 0) / lineLength;
+  for (let i = 0; i < lineLength; i++) line[i] -= mean;
+  const attack = Math.max(1, Math.round(0.001 * sr));
   // Temps de décroissance (−60 dB) plus court pour les notes aiguës, comme une vraie corde.
   const t60 = Math.min(2.5, 1.4 * Math.pow(220 / ctx.frequency, 0.5));
   const loopGain = Math.pow(0.001, 1 / (ctx.frequency * t60));
@@ -297,7 +301,7 @@ function renderPluck(ctx: VoiceContext): void {
     apOut = ap;
     line[r] = ap * loopGain;
     r = (r + 1) % lineLength;
-    const damp = i < ctx.gate ? 1 : Math.pow(1 - (i - ctx.gate) / release, 2);
+    const damp = (i < ctx.gate ? 1 : Math.pow(1 - (i - ctx.gate) / release, 2)) * Math.min(1, i / attack);
     if (!write(ctx, i, x * damp * 0.9 * ctx.velocity)) break;
   }
 }
@@ -459,7 +463,8 @@ export function renderDrum(hit: DrumHit, ctx: VoiceContext): void {
       for (let i = 0; i < Math.ceil(0.45 * sr); i++) {
         const t = i / sr;
         phase += (95 + 45 * Math.exp(-t / 0.08)) / sr;
-        const s = Math.sin(2 * Math.PI * phase) * Math.exp(-t / 0.17) + lp.process(noise.next()) * 0.15 * Math.exp(-t / 0.03);
+        const s =
+          Math.sin(2 * Math.PI * phase) * Math.exp(-t / 0.17) + lp.process(noise.next()) * 0.15 * Math.exp(-t / 0.03);
         if (!write(ctx, i, s * 0.8 * v)) break;
       }
       return;

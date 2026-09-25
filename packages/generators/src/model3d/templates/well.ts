@@ -8,10 +8,16 @@ export const well: TemplateFn = ({ rng, color }) => {
   const b = new ModelBuilder();
   const r = rng.float(0.7, 0.82);
   const wallH = rng.float(0.65, 0.8);
-  b.material('stone', jitter(rng.pick(['#9a958c', '#8c8f96', '#a39583']), rng, 0.6), { flatShading: true, roughness: 0.95 });
+  b.material('stone', jitter(rng.pick(['#9a958c', '#8c8f96', '#a39583']), rng, 0.6), {
+    flatShading: true,
+    roughness: 0.95,
+  });
   b.material('water', '#3a6ea5', { roughness: 0.15, opacity: 0.9 });
   b.material('wood', jitter('#7a5230', rng), { roughness: 0.9 });
-  b.material('roof', color ?? jitter(rng.pick(['#a8452f', '#6b4a2f', '#4a6fa5']), rng), { flatShading: true, roughness: 0.85 });
+  b.material('roof', color ?? jitter(rng.pick(['#a8452f', '#6b4a2f', '#4a6fa5']), rng), {
+    flatShading: true,
+    roughness: 0.85,
+  });
   b.material('rope', '#c8b38a', { roughness: 1 });
   b.material('metal', '#5b5f66', { metalness: 0.7, roughness: 0.4 });
 
@@ -57,7 +63,12 @@ export const well: TemplateFn = ({ rng, color }) => {
     position: [0, axleY, 0],
     rotation: [0, 0, 90],
   });
-  b.add('crank', { parent: root, shape: { type: 'box', size: [0.04, 0.22, 0.04] }, material: 'metal', position: [postX + 0.14, axleY - 0.09, 0] });
+  b.add('crank', {
+    parent: root,
+    shape: { type: 'box', size: [0.04, 0.22, 0.04] },
+    material: 'metal',
+    position: [postX + 0.14, axleY - 0.09, 0],
+  });
 
   // Toit : deux pans inclinés de part et d'autre du faîte (axe X).
   const ridgeY = postH + 0.05;

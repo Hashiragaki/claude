@@ -13,7 +13,12 @@ export const crate: TemplateFn = ({ rng, color }) => {
 
   const root = b.group('root');
   const inner = s - beam * 0.6;
-  b.add('body', { parent: root, shape: { type: 'box', size: [inner, inner, inner] }, material: 'panel', position: [0, s / 2, 0] });
+  b.add('body', {
+    parent: root,
+    shape: { type: 'box', size: [inner, inner, inner] },
+    material: 'panel',
+    position: [0, s / 2, 0],
+  });
 
   const edge = s / 2 - beam / 2;
   const add = (id: string, size: Vec3, position: Vec3, rotation?: Vec3) =>

@@ -26,11 +26,29 @@ export const house: TemplateFn = ({ rng, color }) => {
   b.material('glass', lit ? '#ffe6a8' : '#9fd3f0', lit ? { emissive: '#ffb347', roughness: 0.3 } : { roughness: 0.2 });
 
   const root = b.group('root');
-  b.add('foundation', { parent: root, shape: { type: 'box', size: [w + 0.12, base, d + 0.12] }, material: 'stone', position: [0, base / 2, 0] });
-  b.add('walls', { parent: root, shape: { type: 'box', size: [w, h, d] }, material: 'walls', position: [0, base + h / 2, 0] });
+  b.add('foundation', {
+    parent: root,
+    shape: { type: 'box', size: [w + 0.12, base, d + 0.12] },
+    material: 'stone',
+    position: [0, base / 2, 0],
+  });
+  b.add('walls', {
+    parent: root,
+    shape: { type: 'box', size: [w, h, d] },
+    material: 'walls',
+    position: [0, base + h / 2, 0],
+  });
   b.add('gable', {
     parent: root,
-    shape: { type: 'extrude', points: [[-w / 2, 0], [w / 2, 0], [0, roofH * 0.96]], depth: d },
+    shape: {
+      type: 'extrude',
+      points: [
+        [-w / 2, 0],
+        [w / 2, 0],
+        [0, roofH * 0.96],
+      ],
+      depth: d,
+    },
     material: 'walls',
     position: [0, top, 0],
   });
@@ -53,28 +71,59 @@ export const house: TemplateFn = ({ rng, color }) => {
   }
   b.add('ridge', {
     parent: root,
-    shape: { type: 'cylinder', radiusTop: 0.07, radiusBottom: 0.07, height: d + 2 * overhang + 0.04, radialSegments: 8 },
+    shape: {
+      type: 'cylinder',
+      radiusTop: 0.07,
+      radiusBottom: 0.07,
+      height: d + 2 * overhang + 0.04,
+      radialSegments: 8,
+    },
     material: 'trim',
     position: [0, top + roofH + thickness * 0.6, 0],
     rotation: [90, 0, 0],
   });
   const chimneyX = w * 0.25;
   const chimneyTop = top + roofH * 0.5 + 0.7;
-  b.add('chimney', { parent: root, shape: { type: 'box', size: [0.32, 0.9, 0.32] }, material: 'brick', position: [chimneyX, chimneyTop - 0.45, -d * 0.2] });
-  b.add('chimney_cap', { parent: root, shape: { type: 'box', size: [0.4, 0.08, 0.4] }, material: 'stone', position: [chimneyX, chimneyTop + 0.04, -d * 0.2] });
+  b.add('chimney', {
+    parent: root,
+    shape: { type: 'box', size: [0.32, 0.9, 0.32] },
+    material: 'brick',
+    position: [chimneyX, chimneyTop - 0.45, -d * 0.2],
+  });
+  b.add('chimney_cap', {
+    parent: root,
+    shape: { type: 'box', size: [0.4, 0.08, 0.4] },
+    material: 'stone',
+    position: [chimneyX, chimneyTop + 0.04, -d * 0.2],
+  });
 
   // Façade : porte, marche, fenêtres.
   const doorX = rng.bool(0.5) ? 0 : -w * 0.22;
   const front = d / 2;
-  b.add('door_frame', { parent: root, shape: { type: 'box', size: [0.67, 1.08, 0.04] }, material: 'trim', position: [doorX, base + 0.54, front + 0.015] });
-  b.add('door', { parent: root, shape: { type: 'box', size: [0.55, 1.0, 0.06] }, material: 'door', position: [doorX, base + 0.5, front + 0.03] });
+  b.add('door_frame', {
+    parent: root,
+    shape: { type: 'box', size: [0.67, 1.08, 0.04] },
+    material: 'trim',
+    position: [doorX, base + 0.54, front + 0.015],
+  });
+  b.add('door', {
+    parent: root,
+    shape: { type: 'box', size: [0.55, 1.0, 0.06] },
+    material: 'door',
+    position: [doorX, base + 0.5, front + 0.03],
+  });
   b.add('door_knob', {
     parent: root,
     shape: { type: 'sphere', radius: 0.035, widthSegments: 8, heightSegments: 6 },
     material: 'gold',
     position: [doorX + 0.18, base + 0.5, front + 0.08],
   });
-  b.add('step', { parent: root, shape: { type: 'box', size: [0.8, 0.12, 0.35] }, material: 'stone', position: [doorX, 0.06, front + 0.2] });
+  b.add('step', {
+    parent: root,
+    shape: { type: 'box', size: [0.8, 0.12, 0.35] },
+    material: 'stone',
+    position: [doorX, 0.06, front + 0.2],
+  });
   const windowY = base + h * 0.58;
   const frontWindows = doorX === 0 ? [-w * 0.3, w * 0.3] : [w * 0.22];
   frontWindows.forEach((x, i) => addWindow(b, `window_front_${i}`, root, [x, windowY, front + 0.025], 0));

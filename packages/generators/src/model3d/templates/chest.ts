@@ -18,8 +18,18 @@ export const chest: TemplateFn = ({ rng, color }) => {
 
   const root = b.group('root');
   b.add('base', { parent: root, shape: { type: 'box', size: [w, h, d] }, material: 'wood', position: [0, h / 2, 0] });
-  b.add('base_trim', { parent: root, shape: { type: 'box', size: [w + 0.02, 0.05, d + 0.02] }, material: 'metal', position: [0, 0.025, 0] });
-  b.add('inside', { parent: root, shape: { type: 'box', size: [w - 0.08, 0.012, d - 0.08] }, material: 'inside', position: [0, h + 0.001, 0] });
+  b.add('base_trim', {
+    parent: root,
+    shape: { type: 'box', size: [w + 0.02, 0.05, d + 0.02] },
+    material: 'metal',
+    position: [0, 0.025, 0],
+  });
+  b.add('inside', {
+    parent: root,
+    shape: { type: 'box', size: [w - 0.08, 0.012, d - 0.08] },
+    material: 'inside',
+    position: [0, h + 0.001, 0],
+  });
   b.add('treasure', {
     parent: root,
     shape: { type: 'sphere', radius: w * 0.3, widthSegments: 12, heightSegments: 8 },
@@ -32,7 +42,7 @@ export const chest: TemplateFn = ({ rng, color }) => {
       parent: root,
       shape: { type: 'box', size: [0.06, h + 0.01, d + 0.02] },
       material: 'metal',
-      position: [x * w, h / 2, 0],
+      position: [x * w, (h + 0.01) / 2, 0],
     });
   }
 
@@ -43,7 +53,12 @@ export const chest: TemplateFn = ({ rng, color }) => {
       return [-(d / 2) - (d / 2) * scale * Math.cos(theta), lidH * scale * Math.sin(theta)];
     });
   b.group('lid_hinge', root, [0, h, -d / 2]);
-  b.add('lid', { parent: 'lid_hinge', shape: { type: 'extrude', points: arc(1), depth: w }, material: 'wood', rotation: [0, 90, 0] });
+  b.add('lid', {
+    parent: 'lid_hinge',
+    shape: { type: 'extrude', points: arc(1), depth: w },
+    material: 'wood',
+    rotation: [0, 90, 0],
+  });
   for (const x of [-0.3, 0.3]) {
     b.add(`lid_band_${x < 0 ? 'l' : 'r'}`, {
       parent: 'lid_hinge',
@@ -54,7 +69,12 @@ export const chest: TemplateFn = ({ rng, color }) => {
     });
   }
   const lock: Vec3 = [0, -0.02, d + 0.025];
-  b.add('lock', { parent: 'lid_hinge', shape: { type: 'box', size: [0.12, 0.14, 0.05] }, material: 'metal', position: lock });
+  b.add('lock', {
+    parent: 'lid_hinge',
+    shape: { type: 'box', size: [0.12, 0.14, 0.05] },
+    material: 'metal',
+    position: lock,
+  });
   b.add('keyhole', {
     parent: 'lid_hinge',
     shape: { type: 'cylinder', radiusTop: 0.015, radiusBottom: 0.015, height: 0.02, radialSegments: 8 },

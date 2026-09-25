@@ -11,7 +11,14 @@ import {
   type SongPlan,
 } from './composer-parts';
 import { matchKeywords } from './keywords';
-import { MUSIC_MAX_SECONDS, type Instrument, type Mood, type MusicParams, type MusicSpec, type MusicTrack } from './music-spec';
+import {
+  MUSIC_MAX_SECONDS,
+  type Instrument,
+  type Mood,
+  type MusicParams,
+  type MusicSpec,
+  type MusicTrack,
+} from './music-spec';
 import { formatTokens, type TokenEvent } from './notes';
 import type { PitchedInstrument } from './synth';
 import { adaptScale, KEY_NAMES, parseRoman, SCALE_LABELS, SCALES, type ScaleName } from './theory';
@@ -57,7 +64,13 @@ export const MOOD_PROFILES: Record<Mood, MoodProfile> = {
           ['IV', 'I', 'V', 'vi'],
         ],
       },
-      { scale: 'lydian', progressions: [['Imaj7', 'II', 'Imaj7', 'II'], ['I', 'II', 'vii', 'II']] },
+      {
+        scale: 'lydian',
+        progressions: [
+          ['Imaj7', 'II', 'Imaj7', 'II'],
+          ['I', 'II', 'vii', 'II'],
+        ],
+      },
     ],
     lead: ['sine', 'triangle', 'pluck'],
     leadCenter: 74,
@@ -104,7 +117,13 @@ export const MOOD_PROFILES: Record<Mood, MoodProfile> = {
           ['i', 'iv', 'V', 'i'],
         ],
       },
-      { scale: 'phrygian', progressions: [['i', 'bII', 'i', 'bII'], ['i', 'bII', 'bVII', 'i']] },
+      {
+        scale: 'phrygian',
+        progressions: [
+          ['i', 'bII', 'i', 'bII'],
+          ['i', 'bII', 'bVII', 'i'],
+        ],
+      },
     ],
     lead: ['sawtooth', 'square'],
     leadCenter: 67,
@@ -151,12 +170,21 @@ export const MOOD_PROFILES: Record<Mood, MoodProfile> = {
           ['i', 'bVII', 'bVI', 'bVII'],
         ],
       },
-      { scale: 'harmonicMinor', progressions: [['i', 'bVI', 'iv', 'V'], ['i', 'iv', 'bVI', 'V']] },
+      {
+        scale: 'harmonicMinor',
+        progressions: [
+          ['i', 'bVI', 'iv', 'V'],
+          ['i', 'iv', 'bVI', 'V'],
+        ],
+      },
     ],
     lead: ['sawtooth', 'square'],
     leadCenter: 72,
     density: ['medium'],
-    layers: [['pad', 'arp'], ['pad', 'fastArp']],
+    layers: [
+      ['pad', 'arp'],
+      ['pad', 'fastArp'],
+    ],
     layerInstrument: ['pulse25'],
     bass: ['bass'],
     bassStyles: ['eighths'],
@@ -166,8 +194,21 @@ export const MOOD_PROFILES: Record<Mood, MoodProfile> = {
     bpm: [70, 92],
     roots: MINOR_ROOTS,
     harmony: [
-      { scale: 'dorian', progressions: [['i', 'IV', 'i', 'IV'], ['i', 'bVII', 'IV', 'i'], ['i', 'ii', 'bVII', 'i']] },
-      { scale: 'harmonicMinor', progressions: [['i', 'bVI', 'V', 'V'], ['i', 'iv', 'V', 'bVI']] },
+      {
+        scale: 'dorian',
+        progressions: [
+          ['i', 'IV', 'i', 'IV'],
+          ['i', 'bVII', 'IV', 'i'],
+          ['i', 'ii', 'bVII', 'i'],
+        ],
+      },
+      {
+        scale: 'harmonicMinor',
+        progressions: [
+          ['i', 'bVI', 'V', 'V'],
+          ['i', 'iv', 'V', 'bVI'],
+        ],
+      },
     ],
     lead: ['sine', 'pluck', 'triangle'],
     leadCenter: 72,
@@ -215,7 +256,13 @@ export const MOOD_PROFILES: Record<Mood, MoodProfile> = {
           ['I', 'vi', 'IV', 'V'],
         ],
       },
-      { scale: 'mixolydian', progressions: [['I', 'bVII', 'IV', 'I'], ['I', 'bVII', 'I', 'V']] },
+      {
+        scale: 'mixolydian',
+        progressions: [
+          ['I', 'bVII', 'IV', 'I'],
+          ['I', 'bVII', 'I', 'V'],
+        ],
+      },
     ],
     lead: ['pulse25', 'square', 'pluck'],
     leadCenter: 74,
@@ -275,7 +322,12 @@ function track(
   plan: SongPlan,
 ): MusicTrack {
   const compact = compressLoop(events, plan.stepsPerBar, plan.bars);
-  const out: MusicTrack = { name, instrument, volume, notes: formatTokens(compact.events, compact.bars * plan.stepsPerBar) };
+  const out: MusicTrack = {
+    name,
+    instrument,
+    volume,
+    notes: formatTokens(compact.events, compact.bars * plan.stepsPerBar),
+  };
   if (pan) out.pan = pan;
   return out;
 }
@@ -317,11 +369,13 @@ export function composeMusic(params: MusicParams, rng: Rng): MusicSpec {
   const layerInstrument = rng.pick(profile.layerInstrument);
   for (const style of layers) {
     const events = composeHarmony(rng.fork(style), plan, style);
-    if (style === 'pad') tracks.push(track('nappe', 'pad', 0.42, 0, events, plan));
-    else {
-      const volume = layerInstrument === 'pluck' ? 0.45 : style === 'fastArp' ? 0.26 : 0.3;
-      tracks.push(track(style === 'stabs' || style === 'waltz' ? 'accords' : 'arpège', layerInstrument, volume, -0.35, events, plan));
+    if (style === 'pad') {
+      tracks.push(track('nappe', 'pad', 0.42, 0, events, plan));
+      continue;
     }
+    const name = style === 'stabs' || style === 'waltz' ? 'accords' : 'arpège';
+    const volume = layerInstrument === 'pluck' ? 0.45 : style === 'fastArp' ? 0.26 : 0.3;
+    tracks.push(track(name, layerInstrument, volume, -0.35, events, plan));
   }
 
   const bassStyle = beatsPerBar === 3 ? 'waltz' : rng.pick(profile.bassStyles);

@@ -15,7 +15,12 @@ export const sword: TemplateFn = ({ rng, color }) => {
   b.material('gem', gem, { emissive: gem, roughness: 0.15 });
 
   const root = b.group('root');
-  b.add('pommel', { parent: root, shape: { type: 'sphere', radius: 0.045, widthSegments: 12, heightSegments: 8 }, material: 'guard', position: [0, 0.045, 0] });
+  b.add('pommel', {
+    parent: root,
+    shape: { type: 'sphere', radius: 0.045, widthSegments: 12, heightSegments: 8 },
+    material: 'guard',
+    position: [0, 0.045, 0],
+  });
   b.add('grip', {
     parent: root,
     shape: { type: 'cylinder', radiusTop: 0.026, radiusBottom: 0.03, height: 0.2, radialSegments: 10 },
@@ -33,7 +38,12 @@ export const sword: TemplateFn = ({ rng, color }) => {
   }
   const guardY = 0.315;
   const guardW = rng.float(0.26, 0.34);
-  b.add('crossguard', { parent: root, shape: { type: 'box', size: [guardW, 0.05, 0.07] }, material: 'guard', position: [0, guardY, 0] });
+  b.add('crossguard', {
+    parent: root,
+    shape: { type: 'box', size: [guardW, 0.05, 0.07] },
+    material: 'guard',
+    position: [0, guardY, 0],
+  });
   for (const side of [-1, 1]) {
     b.add(`guard_end_${side < 0 ? 'l' : 'r'}`, {
       parent: root,
@@ -42,7 +52,12 @@ export const sword: TemplateFn = ({ rng, color }) => {
       position: [(side * guardW) / 2, guardY, 0],
     });
   }
-  b.add('gem', { parent: root, shape: { type: 'icosahedron', radius: 0.03 }, material: 'gem', position: [0, guardY, 0.04] });
+  b.add('gem', {
+    parent: root,
+    shape: { type: 'icosahedron', radius: 0.03 },
+    material: 'gem',
+    position: [0, guardY, 0.04],
+  });
   const half = bladeW / 2;
   b.add('blade', {
     parent: root,

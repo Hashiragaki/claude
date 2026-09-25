@@ -12,7 +12,10 @@ export const tower: TemplateFn = ({ rng, color }) => {
   const stone = jitter(rng.pick(['#9a958c', '#8c8f96', '#a39583']), rng, 0.6);
   b.material('stone', stone, { flatShading: true, roughness: 0.95 });
   b.material('stone_dark', shade(stone, -0.1), { flatShading: true, roughness: 0.95 });
-  b.material('roof', color ?? jitter(rng.pick(['#b0413e', '#3d5a80', '#5b4a8a']), rng), { flatShading: true, roughness: 0.8 });
+  b.material('roof', color ?? jitter(rng.pick(['#b0413e', '#3d5a80', '#5b4a8a']), rng), {
+    flatShading: true,
+    roughness: 0.8,
+  });
   b.material('wood', jitter('#6b4a2f', rng));
   b.material('dark', '#1f1c1a', { roughness: 1 });
   b.material('flag', color ?? jitter(rng.pick(['#d64545', '#e2b33c', '#3f7fbf']), rng), { roughness: 0.9 });
@@ -77,7 +80,12 @@ export const tower: TemplateFn = ({ rng, color }) => {
 
   // Porte cintrée (disque derrière le haut de la porte) et fenêtres étroites.
   const doorZ = faceAt(0.9);
-  b.add('door', { parent: root, shape: { type: 'box', size: [0.6, 0.95, 0.12] }, material: 'wood', position: [0, 0.4 + 0.475, doorZ] });
+  b.add('door', {
+    parent: root,
+    shape: { type: 'box', size: [0.6, 0.95, 0.12] },
+    material: 'wood',
+    position: [0, 0.4 + 0.475, doorZ],
+  });
   b.add('door_arch', {
     parent: root,
     shape: { type: 'cylinder', radiusTop: 0.3, radiusBottom: 0.3, height: 0.12, radialSegments: 12 },
@@ -108,7 +116,12 @@ export const tower: TemplateFn = ({ rng, color }) => {
     position: [0, flagBase + 0.55, 0],
   });
   b.group('flag_pivot', root, [0, flagBase + 0.9, 0]);
-  b.add('flag', { parent: 'flag_pivot', shape: { type: 'box', size: [0.55, 0.32, 0.02] }, material: 'flag', position: [0.29, 0, 0] });
+  b.add('flag', {
+    parent: 'flag_pivot',
+    shape: { type: 'box', size: [0.55, 0.32, 0.02] },
+    material: 'flag',
+    position: [0.29, 0, 0],
+  });
 
   return {
     name: roofed ? 'Tour de mage' : 'Donjon',

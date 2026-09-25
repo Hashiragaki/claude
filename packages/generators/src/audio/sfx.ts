@@ -68,7 +68,9 @@ function buildEditPrompt(spec: SfxSpec, instruction: string, params: SfxParams):
   );
 }
 
-function procedural(params: SfxParams, rng: Rng): SfxSpec {
+function procedural(params: SfxParams, seed: Rng): SfxSpec {
+  // Dérivation : des graines voisines (1, 2, 3…) donnent des tirages bien distincts.
+  const rng = seed.fork('sfx');
   const preset = resolvePreset(params.preset, params.prompt, rng);
   const raw = presetParams(preset, params.prompt, rng.fork(preset));
   const rounded = Object.fromEntries(

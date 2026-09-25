@@ -34,7 +34,10 @@ export const MODEL_TEMPLATES = {
 export type ModelTemplate = keyof typeof MODEL_TEMPLATES;
 export const MODEL_TEMPLATE_NAMES = Object.keys(MODEL_TEMPLATES) as ModelTemplate[];
 
-/** Mots-clés (FR / EN) de chaque modèle ; en cas d'égalité, l'ordre de déclaration l'emporte. */
+/**
+ * Mots-clés (FR / EN) de chaque modèle ; en cas d'égalité, l'ordre de déclaration l'emporte : les objets
+ * précis passent avant les mots qui décrivent souvent une matière (« pierre », « bois »).
+ */
 const TEMPLATE_KEYWORDS: Record<ModelTemplate, readonly string[]> = {
   chest: ['coffre', 'chest', 'tresor', 'treasure'],
   character: [
@@ -61,15 +64,15 @@ const TEMPLATE_KEYWORDS: Record<ModelTemplate, readonly string[]> = {
     'player',
   ],
   mushroom: ['champignon', 'champignons', 'mushroom', 'amanite', 'toadstool'],
-  tree: ['arbre', 'arbres', 'tree', 'sapin', 'pin', 'pine', 'chene', 'oak', 'bouleau'],
-  rock: ['rocher', 'rochers', 'rock', 'pierre', 'stone', 'caillou', 'roche', 'boulder'],
-  house: ['maison', 'house', 'cabane', 'chaumiere', 'hut', 'cottage', 'batiment', 'building', 'home'],
-  crate: ['caisse', 'crate', 'boite', 'box', 'carton'],
+  well: ['puits', 'well'],
+  sword: ['epee', 'sword', 'lame', 'blade', 'glaive', 'dague', 'dagger'],
   lamp: ['lampe', 'lampadaire', 'lamp', 'lanterne', 'lantern', 'reverbere', 'streetlight'],
   tower: ['tour', 'tower', 'donjon', 'keep', 'chateau', 'castle', 'phare'],
   fence: ['barriere', 'fence', 'cloture', 'palissade', 'enclos'],
-  sword: ['epee', 'sword', 'lame', 'blade', 'glaive', 'dague', 'dagger'],
-  well: ['puits', 'well'],
+  house: ['maison', 'house', 'cabane', 'chaumiere', 'hut', 'cottage', 'batiment', 'building', 'home'],
+  crate: ['caisse', 'crate', 'boite', 'box', 'carton'],
+  tree: ['arbre', 'arbres', 'tree', 'sapin', 'pin', 'pine', 'chene', 'oak', 'bouleau'],
+  rock: ['rocher', 'rochers', 'rock', 'pierre', 'stone', 'caillou', 'roche', 'boulder'],
 };
 
 /** Modèle procédural déduit d'une description libre, ou `undefined`. */

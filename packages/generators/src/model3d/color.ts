@@ -13,7 +13,12 @@ export function parseHex(hex: string): Rgb {
 }
 
 export function toHex(rgb: Rgb): string {
-  return `#${rgb.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('')}`;
+  return `#${rgb.map(byteHex).join('')}`;
+}
+
+function byteHex(v: number): string {
+  const n = Math.round(Math.max(0, Math.min(1, v)) * 255);
+  return n.toString(16).padStart(2, '0');
 }
 
 /** sRGB → linéaire (espace attendu par glTF pour baseColorFactor et emissiveFactor). */

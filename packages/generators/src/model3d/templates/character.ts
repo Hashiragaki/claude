@@ -28,11 +28,26 @@ export const character: TemplateFn = ({ rng, color }) => {
 
   const root = b.group('root');
   b.group('hips', root, [0, legH, 0]);
-  b.add('torso', { parent: 'hips', shape: { type: 'box', size: [torsoW, torsoH, torsoD] }, material: 'shirt', position: [0, torsoH / 2, 0] });
-  b.add('belt', { parent: 'hips', shape: { type: 'box', size: [torsoW + 0.01, 0.06, torsoD + 0.01] }, material: 'belt', position: [0, 0.04, 0] });
+  b.add('torso', {
+    parent: 'hips',
+    shape: { type: 'box', size: [torsoW, torsoH, torsoD] },
+    material: 'shirt',
+    position: [0, torsoH / 2, 0],
+  });
+  b.add('belt', {
+    parent: 'hips',
+    shape: { type: 'box', size: [torsoW + 0.01, 0.06, torsoD + 0.01] },
+    material: 'belt',
+    position: [0, 0.04, 0],
+  });
   b.group('chest', 'hips', [0, torsoH, 0]);
   b.group('head', 'chest', [0, 0.01, 0]);
-  b.add('head_mesh', { parent: 'head', shape: { type: 'box', size: [head, head, head * 0.92] }, material: 'skin', position: [0, head / 2, 0] });
+  b.add('head_mesh', {
+    parent: 'head',
+    shape: { type: 'box', size: [head, head, head * 0.92] },
+    material: 'skin',
+    position: [0, head / 2, 0],
+  });
   b.add('hair_top', {
     parent: 'head',
     shape: { type: 'box', size: [head + 0.03, head * 0.28, head * 0.92 + 0.03] },
@@ -46,10 +61,23 @@ export const character: TemplateFn = ({ rng, color }) => {
     position: [0, head * 0.62, -head * 0.33],
   });
   const face = head * 0.46 + 0.005;
-  for (const [id, x] of [['eye_l', 1], ['eye_r', -1]] as const) {
-    b.add(id, { parent: 'head', shape: { type: 'box', size: [0.05, 0.075, 0.02] }, material: 'eyes', position: [x * head * 0.2, head * 0.5, face] });
+  for (const [id, x] of [
+    ['eye_l', 1],
+    ['eye_r', -1],
+  ] as const) {
+    b.add(id, {
+      parent: 'head',
+      shape: { type: 'box', size: [0.05, 0.075, 0.02] },
+      material: 'eyes',
+      position: [x * head * 0.2, head * 0.5, face],
+    });
   }
-  b.add('mouth', { parent: 'head', shape: { type: 'box', size: [0.08, 0.02, 0.012] }, material: 'eyes', position: [0, head * 0.27, face] });
+  b.add('mouth', {
+    parent: 'head',
+    shape: { type: 'box', size: [0.08, 0.02, 0.012] },
+    material: 'eyes',
+    position: [0, head * 0.27, face],
+  });
   if (rng.bool(0.3)) {
     b.material('hat', shade(shirt, -0.15));
     b.add('hat_brim', {
@@ -60,14 +88,23 @@ export const character: TemplateFn = ({ rng, color }) => {
     });
     b.add('hat_top', {
       parent: 'head',
-      shape: { type: 'cylinder', radiusTop: head * 0.42, radiusBottom: head * 0.48, height: head * 0.35, radialSegments: 16 },
+      shape: {
+        type: 'cylinder',
+        radiusTop: head * 0.42,
+        radiusBottom: head * 0.48,
+        height: head * 0.35,
+        radialSegments: 16,
+      },
       material: 'hat',
       position: [0, head + 0.03 + head * 0.175, 0],
     });
   }
 
   // Côté gauche du personnage = +X (il regarde vers +Z).
-  for (const [side, x] of [['l', 1], ['r', -1]] as const) {
+  for (const [side, x] of [
+    ['l', 1],
+    ['r', -1],
+  ] as const) {
     b.group(`arm_${side}`, 'chest', [x * (torsoW / 2 + armW / 2 + 0.005), -0.05, 0]);
     b.add(`arm_${side}_mesh`, {
       parent: `arm_${side}`,

@@ -62,3 +62,26 @@ function toInt16(value: number): number {
 function writeAscii(bytes: Uint8Array, offset: number, text: string): void {
   for (let i = 0; i < text.length; i++) bytes[offset + i] = text.charCodeAt(i);
 }
+
+/** Relit un WAV PCM 16 bits produit par `encodeWav` (échantillons flottants par canal). */
+export function decodeWav(bytes: Uint8Array): { sampleRate: number; channels: Float32Array[] } {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const ascii = (offset: number) => String.fromCharCode(...bytes.subarray(offset, offset + 4));
+  if (bytes.byteLength < HEADER_SIZE || ascii(0) !== 'RIFF' || ascii(8) !== 'WAVE') {
+    throw new Error('decodeWav : en-tête RIFF/WAVE absent');
+  }
+  if (view.getUint16(20, true) !== 1 || view.getUint16(34, true) !== 16) {
+    throw new Error('decodeWav : seul le PCM 16 bits est pris en charge');
+  }
+  const numChannels = view.getUint16(22, true);
+  const sampleRate = view.getUint32(24, true);
+  const dataSize = view.getUint32(40, true);
+  const frames = dataSize / (2 * numChannels);
+  const channels = Array.from({ length: numChannels }, () => new Float32Array(frames));
+  for (let i = 0; i < frames; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      channels[c][i] = view.getInt16(HEADER_SIZE + (i * numChannels + c) * 2, true) / 0x8000;
+    }
+  }
+  return { sampleRate, channels };
+}

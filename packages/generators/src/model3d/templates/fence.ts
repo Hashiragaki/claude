@@ -6,7 +6,8 @@ import type { TemplateFn } from './types';
 export const fence: TemplateFn = ({ rng, color }) => {
   const b = new ModelBuilder();
   const picket = rng.bool(0.5);
-  const wood = color ?? (picket && rng.bool(0.5) ? '#f2efe6' : jitter(rng.pick(['#9c6b3c', '#8a6a4a', '#b08050']), rng));
+  const wood =
+    color ?? (picket && rng.bool(0.5) ? '#f2efe6' : jitter(rng.pick(['#9c6b3c', '#8a6a4a', '#b08050']), rng));
   b.material('wood', wood, { roughness: 0.9 });
   b.material('wood_dark', shade(wood, -0.08), { roughness: 0.9 });
   const root = b.group('root');
@@ -14,7 +15,12 @@ export const fence: TemplateFn = ({ rng, color }) => {
   const postH = picket ? 0.75 : rng.float(0.85, 1);
 
   for (const [i, x] of [-length / 2, 0, length / 2].entries()) {
-    b.add(`post_${i}`, { parent: root, shape: { type: 'box', size: [0.12, postH, 0.12] }, material: 'wood_dark', position: [x, postH / 2, 0] });
+    b.add(`post_${i}`, {
+      parent: root,
+      shape: { type: 'box', size: [0.12, postH, 0.12] },
+      material: 'wood_dark',
+      position: [x, postH / 2, 0],
+    });
     b.add(`post_cap_${i}`, {
       parent: root,
       shape: { type: 'cone', radius: 0.085, height: 0.12, radialSegments: 4 },
@@ -38,7 +44,12 @@ export const fence: TemplateFn = ({ rng, color }) => {
     for (let i = 0; i < count; i++) {
       const x = -0.88 + (1.76 * i) / (count - 1);
       const h = 0.78 + rng.float(-0.03, 0.03);
-      b.add(`picket_${i}`, { parent: root, shape: { type: 'box', size: [0.11, h, 0.03] }, material: 'wood', position: [x, h / 2, 0.02] });
+      b.add(`picket_${i}`, {
+        parent: root,
+        shape: { type: 'box', size: [0.11, h, 0.03] },
+        material: 'wood',
+        position: [x, h / 2, 0.02],
+      });
       b.add(`picket_tip_${i}`, {
         parent: root,
         shape: { type: 'cone', radius: 0.078, height: 0.1, radialSegments: 4 },
