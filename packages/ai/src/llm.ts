@@ -10,6 +10,23 @@ export type BetaTextBlockParam = Anthropic.Beta.BetaTextBlockParam;
 
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
+/**
+ * Rôle d'un appel au modèle : sert à choisir modèle et effort (`ModelRouter`) et à ventiler les coûts.
+ * `chat` et `autopilot` : boucles d'agent ; `plan` : planification ; `generate` : specs d'assets
+ * (y compris leur critique visuelle, dans la même conversation) ; `review` : critique isolée ;
+ * `summary` : résumés et digests.
+ */
+export type LlmRole = 'chat' | 'autopilot' | 'plan' | 'generate' | 'review' | 'summary';
+export const LLM_ROLES: readonly LlmRole[] = ['chat', 'autopilot', 'plan', 'generate', 'review', 'summary'];
+
+/** Contexte d'un appel, pour le routage et la comptabilité (jamais envoyé à l'API). */
+export interface LlmCallMeta {
+  role: LlmRole;
+  projectId?: string;
+  /** Précision libre : id du générateur, de la tâche… */
+  label?: string;
+}
+
 /** Requête envoyée au modèle (sous-ensemble utile de l'API Messages). */
 export interface LlmRequest {
   system?: string | BetaTextBlockParam[];
@@ -18,6 +35,62 @@ export interface LlmRequest {
   maxTokens?: number;
   /** Active la compaction côté serveur pour les longues conversations. */
   compaction?: boolean;
+  /** Modèle pour cette requête (sinon celui du client). */
+  model?: string;
+  /** Effort pour cette requête (sinon celui du client), ignoré si le modèle ne le gère pas. */
+  effort?: Effort;
+  meta?: LlmCallMeta;
+}
+
+/** Jetons consommés par un ou plusieurs appels. */
+export interface LlmUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+}
+
+export const ZERO_USAGE: Readonly<LlmUsage> = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+
+/** Jetons d'une réponse (les compteurs de cache absents valent 0). */
+export function usageOf(message: Pick<BetaMessage, 'usage'>): LlmUsage {
+  const u = message.usage as Partial<BetaMessage['usage']> | undefined;
+  return {
+    inputTokens: u?.input_tokens ?? 0,
+    outputTokens: u?.output_tokens ?? 0,
+    cacheReadTokens: u?.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: u?.cache_creation_input_tokens ?? 0,
+  };
+}
+
+export function addUsage(a: LlmUsage, b: LlmUsage): LlmUsage {
+  return {
+    inputTokens: a.inputTokens + b.inputTokens,
+    outputTokens: a.outputTokens + b.outputTokens,
+    cacheReadTokens: a.cacheReadTokens + b.cacheReadTokens,
+    cacheWriteTokens: a.cacheWriteTokens + b.cacheWriteTokens,
+  };
+}
+
+/** Fonctions de l'API prises en charge par un modèle (liste prudente : inconnu = non). */
+export interface ModelCapabilities {
+  /** `thinking: { type: 'adaptive' }` et `output_config.effort`. */
+  adaptiveThinking: boolean;
+  /** Compaction côté serveur (`compact_20260112`). */
+  compaction: boolean;
+  /** Repli serveur en cas de refus (`fallbacks: 'default'`). */
+  refusalFallback: boolean;
+}
+
+const ADAPTIVE_MODELS = /^claude-(opus-(4-[678]|5)|sonnet-(4-6|5)|fable-5|mythos-5)/;
+
+export function modelCapabilities(model: string): ModelCapabilities {
+  const adaptive = ADAPTIVE_MODELS.test(model);
+  return {
+    adaptiveThinking: adaptive,
+    compaction: adaptive,
+    refusalFallback: FALLBACK_MODELS.includes(model),
+  };
 }
 
 export interface LlmStreamHandlers {
@@ -66,25 +139,30 @@ export class ClaudeLlmClient implements LlmClient {
     });
     this.model = config.model ?? DEFAULT_MODEL;
     this.effort = config.effort;
-    this.refusalFallback = (config.refusalFallback ?? true) && FALLBACK_MODELS.includes(this.model);
+    this.refusalFallback = config.refusalFallback ?? true;
   }
 
   async send(request: LlmRequest, handlers: LlmStreamHandlers = {}, signal?: AbortSignal): Promise<BetaMessage> {
+    const model = request.model ?? this.model;
+    const caps = modelCapabilities(model);
+    const effort = caps.adaptiveThinking ? (request.effort ?? this.effort) : undefined;
+    const fallback = this.refusalFallback && caps.refusalFallback;
+    const compaction = Boolean(request.compaction) && caps.compaction;
     const betas: string[] = [];
-    if (this.refusalFallback) betas.push(FALLBACK_BETA);
-    if (request.compaction) betas.push(COMPACTION_BETA);
+    if (fallback) betas.push(FALLBACK_BETA);
+    if (compaction) betas.push(COMPACTION_BETA);
     const stream = this.client.beta.messages.stream(
       {
-        model: this.model,
+        model,
         max_tokens: request.maxTokens ?? 32000,
-        thinking: { type: 'adaptive' },
-        ...(this.effort ? { output_config: { effort: this.effort } } : {}),
+        ...(caps.adaptiveThinking ? { thinking: { type: 'adaptive' as const } } : {}),
+        ...(effort ? { output_config: { effort } } : {}),
         ...(request.system ? { system: request.system } : {}),
         messages: request.messages,
         ...(request.tools?.length ? { tools: request.tools } : {}),
         cache_control: { type: 'ephemeral' },
-        ...(this.refusalFallback ? { fallbacks: 'default' as const } : {}),
-        ...(request.compaction ? { context_management: { edits: [{ type: 'compact_20260112' as const }] } } : {}),
+        ...(fallback ? { fallbacks: 'default' as const } : {}),
+        ...(compaction ? { context_management: { edits: [{ type: 'compact_20260112' as const }] } } : {}),
         ...(betas.length ? { betas } : {}),
       },
       { signal },
