@@ -1,6 +1,7 @@
 import { useApp } from '../state/app';
 import { DatabaseEditor } from './DatabaseEditor';
 import { JsonEditor } from './JsonEditor';
+import { LevelEditor } from './LevelEditor';
 import { MapEditor } from './MapEditor';
 import { SceneEditor } from './SceneEditor';
 import { ScriptEditor } from './ScriptEditor';
@@ -14,6 +15,8 @@ export function DocumentPanel({ docId }: { docId: string }) {
       return <ScriptEditor path={doc.path} />;
     case 'map':
       return <MapEditor initialPath={doc.path} />;
+    case 'level':
+      return <LevelEditor initialPath={doc.path} />;
     case 'database':
       return <DatabaseEditor path={doc.path} />;
     case 'scene':

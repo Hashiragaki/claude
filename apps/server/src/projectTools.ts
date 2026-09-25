@@ -6,7 +6,7 @@ import type { ProjectService } from './projects';
 import { isInternal, type ProjectStore } from './storage';
 
 /** Dossiers du projet que l'IA peut lire et écrire. */
-const WRITABLE_DIRS = ['scripts/', 'data/', 'maps/', 'notes/', 'scenes/'];
+const WRITABLE_DIRS = ['scripts/', 'data/', 'maps/', 'levels/', 'notes/', 'scenes/'];
 
 export interface ProjectToolDeps {
   store: ProjectStore;
@@ -97,7 +97,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
     defineTool({
       name: 'write_file',
       description:
-        'Crée ou remplace un fichier texte du projet (scripts/, data/, maps/, notes/, scenes/). Renvoie les ' +
+        'Crée ou remplace un fichier texte du projet (scripts/, data/, maps/, levels/, notes/, scenes/). Renvoie les ' +
         'diagnostics de validation du projet après écriture : corrige les erreurs signalées.',
       schema: z.object({ path: z.string(), content: z.string() }),
       run: async ({ path, content }) => {

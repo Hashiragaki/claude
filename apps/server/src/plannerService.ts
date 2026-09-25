@@ -37,6 +37,17 @@ const STARTER_PLANS: Record<string, { milestone: string; tasks: { title: string;
       { title: 'Ajouter les animations et tester la navigation', hours: 2 },
     ],
   },
+  platformer: {
+    milestone: 'Prototype jouable',
+    tasks: [
+      { title: "Définir l'ambiance, le personnage et la mécanique clé", hours: 2 },
+      { title: 'Concevoir le premier niveau (terrain, pièges, arrivée)', hours: 3 },
+      { title: 'Placer les pièces, ennemis, ressorts et points de contrôle', hours: 2 },
+      { title: 'Générer le tileset, le personnage et les ennemis manquants', hours: 1, ai: true },
+      { title: 'Composer la musique et les effets sonores', hours: 1, ai: true },
+      { title: 'Faire tester le prototype à une personne', hours: 1 },
+    ],
+  },
 };
 
 /** Planificateurs des projets : chargés à la demande, sauvegardés à chaque modification. */

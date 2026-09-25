@@ -20,7 +20,12 @@ import { useT } from '../i18n';
 import { NewProjectDialog } from '../panels/Home';
 import { closeProject, play, resetLayoutRequests, setLocale, stopPlay, useApp } from '../state/app';
 
-const MODE_LABELS: Record<string, string> = { vn: 'Visual Novel', rpg: 'RPG', sandbox3d: '3D' };
+const MODE_LABELS: Record<string, string> = {
+  vn: 'Visual Novel',
+  rpg: 'RPG',
+  sandbox3d: '3D',
+  platformer: 'Plateformer',
+};
 
 export function TopBar() {
   const t = useT();

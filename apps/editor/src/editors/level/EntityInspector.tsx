@@ -1,7 +1,5 @@
 import { ActionButton, Flex, Item, NumberField, Picker, TextField, ToggleButton } from '@adobe/react-spectrum';
-// Import via chemin relatif : @forge/mode-platformer n'est pas encore une dépendance de
-// l'éditeur (le branchement sera fait par un autre agent).
-import type { EnemyKind, Facing, PlatformerEntity } from '../../../../../packages/mode-platformer/src/schema';
+import type { EnemyKind, Facing, PlatformerEntity } from '@forge/mode-platformer';
 import Delete from '@spectrum-icons/workflow/Delete';
 import { useApp } from '../../state/app';
 

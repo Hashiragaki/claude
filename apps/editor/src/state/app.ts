@@ -26,7 +26,7 @@ export interface LogEntry {
 /** Document ouvert dans la zone centrale (onglet). */
 export interface OpenDocument {
   id: string;
-  kind: 'script' | 'json' | 'map' | 'database' | 'scene';
+  kind: 'script' | 'json' | 'map' | 'database' | 'scene' | 'level';
   path: string;
   title: string;
 }
@@ -37,6 +37,7 @@ export interface PlayRequest {
   startMap?: string;
   startX?: number;
   startY?: number;
+  startLevel?: string;
   skipTitle?: boolean;
 }
 

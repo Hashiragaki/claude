@@ -1,4 +1,5 @@
 import { Engine, HttpProjectFiles, LocalSaveStorage, ModeRegistry, loadProjectBundle } from '@forge/core';
+import { platformerMode } from '@forge/mode-platformer';
 import { rpgMode } from '@forge/mode-rpg';
 import { sandbox3dMode } from '@forge/mode-sandbox3d';
 import { vnMode } from '@forge/mode-vn';
@@ -13,7 +14,7 @@ async function main(): Promise<void> {
   document.title = bundle.manifest.name;
   const engine = new Engine({
     bundle,
-    modes: new ModeRegistry([vnMode, rpgMode, sandbox3dMode]),
+    modes: new ModeRegistry([vnMode, rpgMode, sandbox3dMode, platformerMode]),
     mount,
     saveStorage: new LocalSaveStorage(),
     locale: navigator.language.startsWith('fr') ? 'fr' : bundle.manifest.locale,

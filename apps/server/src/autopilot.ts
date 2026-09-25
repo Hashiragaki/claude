@@ -19,9 +19,13 @@ import { z } from 'zod';
 import type { AgentLock } from './agentLock';
 import type { ChatService } from './chat';
 import type { EventHub } from './events';
+import { createModeRegistry } from './modes';
 import type { PlannerService } from './plannerService';
 import { createProjectTools, projectSummary, type ProjectToolDeps } from './projectTools';
 import { Mutex, type ProjectStore } from './storage';
+
+/** Registre des modes, utilisé uniquement pour retrouver le guide IA (`aiGuide`) d'un projet. */
+const MODES = createModeRegistry();
 
 /** Journal (en ajout seul) de la conversation du pilote automatique pour une tâche donnée. */
 const taskLogPath = (taskId: string) => `chat/autopilot/${taskId}.jsonl`;
@@ -224,12 +228,17 @@ export class AutopilotService {
       .filter(Boolean)
       .join('\n');
 
+    const aiGuide = MODES.get(manifest.mode).aiGuide;
     const userMessage: BetaMessageParam = {
       role: 'user',
       content: [
         {
           type: 'text',
-          text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }),
+          text: buildContextBlock({
+            project: projectSummary(manifest),
+            planner: plannerDigest(planner),
+            extra: aiGuide ? `## Guide du mode\n${aiGuide}` : undefined,
+          }),
         },
         { type: 'text', text: instruction },
       ],

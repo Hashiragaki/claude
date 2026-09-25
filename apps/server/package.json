@@ -17,6 +17,7 @@
     "@forge/planner": "workspace:*",
     "@forge/mode-vn": "workspace:*",
     "@forge/mode-rpg": "workspace:*",
+    "@forge/mode-platformer": "workspace:*",
     "@forge/mode-sandbox3d": "workspace:*",
     "@fastify/static": "^10.1.4",
     "@resvg/resvg-js": "^2.6.2",

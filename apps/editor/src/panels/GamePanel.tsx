@@ -49,6 +49,7 @@ export function GamePanel() {
           startMap: request.startMap,
           startX: request.startX,
           startY: request.startY,
+          startLevel: request.startLevel,
           skipTitle: request.skipTitle,
           debug: true,
         },

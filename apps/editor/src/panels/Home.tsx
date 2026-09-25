@@ -25,6 +25,7 @@ const MODE_ART: Record<string, { gradient: string; label: string }> = {
   vn: { gradient: 'linear-gradient(135deg, #c2458b 0%, #6a3db8 100%)', label: 'Visual Novel' },
   rpg: { gradient: 'linear-gradient(135deg, #2f9e5e 0%, #1f6e9e 100%)', label: 'RPG' },
   sandbox3d: { gradient: 'linear-gradient(135deg, #e0782f 0%, #b8403d 100%)', label: '3D' },
+  platformer: { gradient: 'linear-gradient(135deg, #3d8bc8 0%, #f2b632 100%)', label: 'Plateformer' },
 };
 
 export function modeBadge(mode: string) {

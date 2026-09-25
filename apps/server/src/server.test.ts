@@ -49,7 +49,7 @@ describe('serveur Forge (hors-ligne)', () => {
     const health = (await server.app.inject('/api/health')).json();
     expect(health).toMatchObject({ ok: true, ai: { enabled: false } });
     const modes = (await server.app.inject('/api/modes')).json() as { id: string; templates: unknown[] }[];
-    expect(modes.map((m) => m.id).sort()).toEqual(['rpg', 'sandbox3d', 'vn']);
+    expect(modes.map((m) => m.id).sort()).toEqual(['platformer', 'rpg', 'sandbox3d', 'vn']);
     expect(modes.every((m) => m.templates.length >= 2)).toBe(true);
     const generators = (await server.app.inject('/api/generators')).json() as {
       id: string;
@@ -190,6 +190,7 @@ describe('serveur Forge (hors-ligne)', () => {
     for (const [mode, template] of [
       ['rpg', 'rpg-demo'],
       ['sandbox3d', 'sandbox3d-demo'],
+      ['platformer', 'platformer-demo'],
     ] as const) {
       const created = (
         await server.app.inject({
@@ -265,6 +266,20 @@ describe('serveur Forge (assistant IA simulé)', () => {
     const history = await server.chat.history(project.id);
     const tool = history.find((m) => m.role === 'tool');
     expect(tool?.tool?.result).toMatch(/nulle_part/);
+  });
+
+  it('joint le guide IA du mode plateformer au contexte du chat', async () => {
+    const project = await server.projects.create({
+      name: 'Projet plateformer',
+      mode: 'platformer',
+      template: 'platformer-empty',
+    });
+    llm.enqueue({ content: [textBlock('Bien reçu.')] });
+    await server.chat.send(project.id, 'Décris le format des niveaux');
+
+    const request = llm.requests.at(-1)!;
+    const userMessage = request.messages.at(-1)!;
+    expect(JSON.stringify(userMessage.content)).toContain('Mode plateformer');
   });
 
   it('répare un historique interrompu sans le réécrire', () => {

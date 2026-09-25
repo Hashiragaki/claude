@@ -1,12 +1,4 @@
-// Import via chemin relatif : @forge/mode-platformer n'est pas encore une dépendance de
-// l'éditeur (le branchement sera fait par un autre agent). À remplacer par
-// `from '@forge/mode-platformer'` une fois la dépendance ajoutée.
-import type {
-  LevelLayerName,
-  PlatformerEntity,
-  PlatformerEntityType,
-  PlatformerLevel,
-} from '../../../../../packages/mode-platformer/src/schema';
+import type { LevelLayerName, PlatformerEntity, PlatformerEntityType, PlatformerLevel } from '@forge/mode-platformer';
 import { fillRect, floodFill } from '../map/mapOps';
 
 export type LevelLayerKey = LevelLayerName; // 'terrain' | 'decor'

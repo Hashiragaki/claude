@@ -694,6 +694,9 @@ body,
 .fg-mode-sandbox3d {
   background: linear-gradient(135deg, #e0782f, #b8403d);
 }
+.fg-mode-platformer {
+  background: linear-gradient(135deg, #3d8bc8, #f2b632);
+}
 
 /* ---------------------------------------------------------------- Dockview (accordé au thème) */
 .fg-dock-theme {

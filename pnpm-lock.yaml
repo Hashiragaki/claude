@@ -53,6 +53,9 @@ importers:
       '@forge/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@forge/mode-platformer':
+        specifier: workspace:*
+        version: link:../../packages/mode-platformer
       '@forge/mode-rpg':
         specifier: workspace:*
         version: link:../../packages/mode-rpg
@@ -126,6 +129,9 @@ importers:
       '@forge/generators':
         specifier: workspace:*
         version: link:../../packages/generators
+      '@forge/mode-platformer':
+        specifier: workspace:*
+        version: link:../../packages/mode-platformer
       '@forge/mode-rpg':
         specifier: workspace:*
         version: link:../../packages/mode-rpg

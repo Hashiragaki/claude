@@ -17,9 +17,13 @@ import {
 } from '@forge/planner';
 import type { AgentLock } from './agentLock';
 import type { EventHub } from './events';
+import { createModeRegistry } from './modes';
 import type { PlannerService } from './plannerService';
 import { createProjectTools, describeAsset, projectSummary, type ProjectToolDeps } from './projectTools';
 import { Mutex, type ProjectStore } from './storage';
+
+/** Registre des modes, utilisé uniquement pour retrouver le guide IA (`aiGuide`) d'un projet. */
+const MODES = createModeRegistry();
 
 export interface DisplayMessage {
   id: string;
@@ -190,12 +194,17 @@ export class ChatService {
     const manifest = await this.deps.store.readManifest(projectId);
     const history = repairHistory(await this.apiHistory(projectId));
     for (const fix of history.appended) await this.appendApi(projectId, fix);
+    const aiGuide = MODES.get(manifest.mode).aiGuide;
     const userMessage: BetaMessageParam = {
       role: 'user',
       content: [
         {
           type: 'text',
-          text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }),
+          text: buildContextBlock({
+            project: projectSummary(manifest),
+            planner: plannerDigest(planner),
+            extra: aiGuide ? `## Guide du mode\n${aiGuide}` : undefined,
+          }),
         },
         { type: 'text', text },
       ],

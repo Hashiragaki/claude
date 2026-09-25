@@ -1,5 +1,6 @@
 import { ActionButton, Tooltip, TooltipTrigger } from '@adobe/react-spectrum';
 import Chat from '@spectrum-icons/workflow/Chat';
+import ClassicGridView from '@spectrum-icons/workflow/ClassicGridView';
 import Code from '@spectrum-icons/workflow/Code';
 import Data from '@spectrum-icons/workflow/Data';
 import FileCode from '@spectrum-icons/workflow/FileCode';
@@ -52,6 +53,14 @@ export function ToolRail() {
         onPress: () => openDocument({ kind: 'database', path: 'data/database.json', title: 'Base de données' }),
       },
     );
+  }
+  if (project.mode === 'platformer') {
+    modeItems.push({
+      key: 'level',
+      label: 'Niveaux',
+      icon: <ClassicGridView />,
+      onPress: () => openDocument({ kind: 'level', path: 'levels/', title: 'Niveaux' }),
+    });
   }
   if (project.mode === 'sandbox3d') {
     modeItems.push({

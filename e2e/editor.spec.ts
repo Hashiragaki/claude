@@ -96,6 +96,31 @@ test('RPG : création, carte et jeu', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('Plateformer : création, niveau et jeu', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await createProject(page, 'Plateformer démo', 'Plateformer test');
+  await page.locator('.fg-rail').getByRole('button', { name: 'Niveaux' }).click();
+  await expect(page.locator('.fg-map-canvas-wrap canvas')).toBeVisible();
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${SHOTS}/10-editeur-niveau.png` });
+
+  await page.locator('.dv-tab', { hasText: 'Jeu' }).click();
+  await page.getByRole('button', { name: 'Lancer le jeu' }).click();
+  const canvas = page.locator('.fg-game-mount canvas');
+  await expect(canvas).toBeVisible();
+  await page.waitForTimeout(1500);
+  await canvas.click();
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1200);
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(800);
+  await page.keyboard.up('ArrowRight');
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${SHOTS}/platformer.png` });
+  expect(errors).toEqual([]);
+});
+
 test('3D : création et jeu', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));

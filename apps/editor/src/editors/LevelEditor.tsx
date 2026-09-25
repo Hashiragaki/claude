@@ -18,9 +18,6 @@ import {
   TooltipTrigger,
 } from '@adobe/react-spectrum';
 import { PLATFORM_TILE_ROLES, PLATFORM_TILESET_COLUMNS, TILE_SIZE, type AssetMeta, type TileRole } from '@forge/core';
-// Import via chemin relatif : @forge/mode-platformer n'est pas encore une dépendance de
-// l'éditeur (le branchement dans les menus sera fait par un autre agent). À remplacer par
-// `from '@forge/mode-platformer'` une fois la dépendance ajoutée.
 import {
   levelPath,
   PlatformerLevelSchema,
@@ -29,7 +26,7 @@ import {
   type PlatformerEntityType,
   type PlatformerLevel,
   type PlatformerSystem,
-} from '../../../../packages/mode-platformer/src/schema';
+} from '@forge/mode-platformer';
 import Add from '@spectrum-icons/workflow/Add';
 import ArrowUp from '@spectrum-icons/workflow/ArrowUp';
 import Bug from '@spectrum-icons/workflow/Bug';
@@ -662,13 +659,7 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
         <Button
           variant="accent"
           isDisabled={!level}
-          onPress={() =>
-            void save().then(() =>
-              // `startLevel` n'est pas encore déclaré sur `PlayRequest` (apps/editor/src/state/app.ts) :
-              // transmis quand même, à corriger côté branchement (cf. rapport de l'agent).
-              play({ startLevel: level!.id, skipTitle: true } as unknown as Parameters<typeof play>[0]),
-            )
-          }
+          onPress={() => void save().then(() => play({ startLevel: level!.id, skipTitle: true }))}
         >
           <Play />
           <Text>Jouer ce niveau</Text>

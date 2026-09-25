@@ -33,6 +33,8 @@ export function FilesPanel() {
       openDocument({ kind: 'map', path, title: `Carte ${name.replace('.json', '')}` });
     else if (project.mode === 'rpg' && path === 'data/database.json')
       openDocument({ kind: 'database', path, title: 'Base de données' });
+    else if (project.mode === 'platformer' && path.startsWith('levels/') && path.endsWith('.json'))
+      openDocument({ kind: 'level', path, title: `Niveau ${name.replace('.json', '')}` });
     else if (project.mode === 'sandbox3d' && path === project.entry)
       openDocument({ kind: 'scene', path, title: 'Scène 3D' });
     else if (/\.(json|txt|md|vn)$/.test(path)) openDocument({ kind: 'json', path, title: name });
