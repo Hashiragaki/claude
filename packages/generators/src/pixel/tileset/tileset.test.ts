@@ -28,6 +28,8 @@ interface AxisSeam {
   baseline: number;
   /** Écart RGB absolu moyen entre les deux bords opposés (le raccord). */
   wrap: number;
+  /** Plus fort écart moyen entre deux colonnes/lignes internes voisines (joints d'un motif en blocs). */
+  maxInternal: number;
 }
 
 /** Écart RGB absolu moyen (sur R, G, B) entre deux pixels. */
@@ -43,31 +45,32 @@ function pixelDiff(a: Rgba, b: Rgba): number {
  */
 function seamScore(rgba: PixelSource, x0: number, y0: number, size = 16): { horizontal: AxisSeam; vertical: AxisSeam } {
   const at = (x: number, y: number) => rgba.get(x0 + x, y0 + y);
-
-  let baselineH = 0;
-  let wrapH = 0;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size - 1; x++) baselineH += pixelDiff(at(x, y), at(x + 1, y));
-    wrapH += pixelDiff(at(size - 1, y), at(0, y));
-  }
-  baselineH /= size * (size - 1);
-  wrapH /= size;
-
-  let baselineV = 0;
-  let wrapV = 0;
-  for (let x = 0; x < size; x++) {
-    for (let y = 0; y < size - 1; y++) baselineV += pixelDiff(at(x, y), at(x, y + 1));
-    wrapV += pixelDiff(at(x, size - 1), at(x, 0));
-  }
-  baselineV /= size * (size - 1);
-  wrapV /= size;
-
-  return { horizontal: { baseline: baselineH, wrap: wrapH }, vertical: { baseline: baselineV, wrap: wrapV } };
+  /** Écart moyen entre la « ligne » i et la « ligne » j d'un axe (colonnes si horizontal). */
+  const lineDiff = (horizontal: boolean, i: number, j: number) => {
+    let sum = 0;
+    for (let k = 0; k < size; k++) sum += horizontal ? pixelDiff(at(i, k), at(j, k)) : pixelDiff(at(k, i), at(k, j));
+    return sum / size;
+  };
+  const axis = (horizontal: boolean): AxisSeam => {
+    let total = 0;
+    let maxInternal = 0;
+    for (let i = 0; i < size - 1; i++) {
+      const d = lineDiff(horizontal, i, i + 1);
+      total += d;
+      maxInternal = Math.max(maxInternal, d);
+    }
+    return { baseline: total / (size - 1), wrap: lineDiff(horizontal, size - 1, 0), maxInternal };
+  };
+  return { horizontal: axis(true), vertical: axis(false) };
 }
 
-/** Une tuile est « raccordable » si le raccord ne dépasse pas (largement) l'écart interne moyen. */
+/**
+ * Une tuile est « raccordable » si le raccord ne dépasse pas (largement) l'écart interne moyen, ou s'il
+ * ressemble à un joint déjà présent à l'intérieur de la tuile (dalles, planches, pavés : le joint du bord
+ * répète la période du motif, il est donc invisible en pavage).
+ */
 function isSeamless({ horizontal, vertical }: ReturnType<typeof seamScore>): boolean {
-  const ok = (axis: AxisSeam) => axis.wrap <= Math.max(2 * axis.baseline, axis.baseline + 12);
+  const ok = (a: AxisSeam) => a.wrap <= Math.max(2 * a.baseline, a.baseline + 12, 1.15 * a.maxInternal + 2);
   return ok(horizontal) && ok(vertical);
 }
 
@@ -182,8 +185,8 @@ describe('tileset — rendu', () => {
     uniform.rect(0, 0, 16, 16, '#4a7a4a');
     const score = seamScore(uniform, 0, 0);
     expect(score).toEqual({
-      horizontal: { baseline: 0, wrap: 0 },
-      vertical: { baseline: 0, wrap: 0 },
+      horizontal: { baseline: 0, wrap: 0, maxInternal: 0 },
+      vertical: { baseline: 0, wrap: 0, maxInternal: 0 },
     });
     expect(isSeamless(score)).toBe(true);
   });

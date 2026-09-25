@@ -62,7 +62,13 @@ export type GradientStop = [offset: number, color: string, opacity?: number];
 
 function stops(list: GradientStop[]): string {
   return list
-    .map(([o, c, a]) => el('stop', { offset: num(o, 3), 'stop-color': c, 'stop-opacity': a === undefined ? undefined : a }))
+    .map(([o, c, a]) =>
+      el('stop', {
+        offset: num(o, 3),
+        'stop-color': c,
+        'stop-opacity': a === undefined ? undefined : a,
+      })
+    )
     .join('');
 }
 
@@ -82,12 +88,34 @@ export function radialGradient(
   list: GradientStop[],
   opts: { cx?: number; cy?: number; r?: number; fx?: number; fy?: number } = {},
 ): string {
-  return el('radialGradient', { id, cx: opts.cx ?? 0.5, cy: opts.cy ?? 0.5, r: opts.r ?? 0.5, fx: opts.fx, fy: opts.fy }, stops(list));
+  return el(
+    'radialGradient',
+    {
+      id,
+      cx: opts.cx ?? 0.5,
+      cy: opts.cy ?? 0.5,
+      r: opts.r ?? 0.5,
+      fx: opts.fx,
+      fy: opts.fy,
+    },
+    stops(list)
+  );
 }
 
 /** Dégradé en coordonnées absolues (userSpaceOnUse), pratique pour les grands décors. */
-export function linearGradientAbs(id: string, list: GradientStop[], x1: number, y1: number, x2: number, y2: number): string {
-  return el('linearGradient', { id, gradientUnits: 'userSpaceOnUse', x1, y1, x2, y2 }, stops(list));
+export function linearGradientAbs(
+  id: string,
+  list: GradientStop[],
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): string {
+  return el(
+    'linearGradient',
+    { id, gradientUnits: 'userSpaceOnUse', x1, y1, x2, y2 },
+    stops(list)
+  );
 }
 
 export function radialGradientAbs(id: string, list: GradientStop[], cx: number, cy: number, r: number): string {

@@ -7,10 +7,32 @@ import { beach, castle, forest, generic, park, space, street } from './outdoor';
 
 export { TIMES, type TimeOfDay } from './common';
 
-export const SCENES = ['cafe', 'street', 'park', 'bedroom', 'classroom', 'forest', 'beach', 'castle', 'space', 'generic'] as const;
+export const SCENES = [
+  'cafe',
+  'street',
+  'park',
+  'bedroom',
+  'classroom',
+  'forest',
+  'beach',
+  'castle',
+  'space',
+  'generic',
+] as const;
 export type SceneName = (typeof SCENES)[number];
 
-const DRAW: Record<SceneName, (s: Scene) => void> = { cafe, street, park, bedroom, classroom, forest, beach, castle, space, generic };
+const DRAW: Record<SceneName, (s: Scene) => void> = {
+  cafe,
+  street,
+  park,
+  bedroom,
+  classroom,
+  forest,
+  beach,
+  castle,
+  space,
+  generic,
+};
 
 const SCENE_WORDS: Record<Exclude<SceneName, 'generic'>, readonly string[]> = {
   cafe: ['cafe', 'coffee', 'salon de the', 'bar', 'restaurant', 'boulangerie', 'bakery', 'taverne', 'tavern'],
@@ -25,9 +47,40 @@ const SCENE_WORDS: Record<Exclude<SceneName, 'generic'>, readonly string[]> = {
 };
 
 const TIME_WORDS: Record<TimeOfDay, readonly string[]> = {
-  night: ['nuit', 'night', 'soir', 'soiree', 'evening', 'nocturne', 'minuit', 'midnight'],
-  sunset: ['coucher', 'couchant', 'crepuscule', 'sunset', 'dusk', 'aube', 'dawn', 'aurore', 'lever du soleil', 'sunrise'],
-  day: ['jour', 'day', 'matin', 'morning', 'midi', 'noon', 'apres midi', 'afternoon', 'ensoleille', 'sunny'],
+  night: [
+    'nuit',
+    'night',
+    'soir',
+    'soiree',
+    'evening',
+    'nocturne',
+    'minuit',
+    'midnight',
+  ],
+  sunset: [
+    'coucher',
+    'couchant',
+    'crepuscule',
+    'sunset',
+    'dusk',
+    'aube',
+    'dawn',
+    'aurore',
+    'lever du soleil',
+    'sunrise',
+  ],
+  day: [
+    'jour',
+    'day',
+    'matin',
+    'morning',
+    'midi',
+    'noon',
+    'apres midi',
+    'afternoon',
+    'ensoleille',
+    'sunny',
+  ],
 };
 
 export function sceneFromText(text: string): SceneName | undefined {

@@ -75,17 +75,43 @@ export function stars(s: Scene, maxY: number, count: number): void {
     const r = s.rng.float(0.8, 2.2);
     parts.push(`M${Math.round(x)} ${Math.round(y)}h0.1`);
     if (i % 17 === 0) {
-      s.b.e('path', { d: d('M', x - 8, y, 'L', x + 8, y, 'M', x, y - 8, 'L', x, y + 8), stroke: '#ffffff', 'stroke-width': 1.5, opacity: 0.8 });
+      s.b.e('path', {
+        d: d('M', x - 8, y, 'L', x + 8, y, 'M', x, y - 8, 'L', x, y + 8),
+        stroke: '#ffffff',
+        'stroke-width': 1.5,
+        opacity: 0.8,
+      });
     }
-    if (r > 1.9) s.b.e('circle', { cx: x, cy: y, r: r * 2.5, fill: '#ffffff', opacity: 0.12 });
+    if (r > 1.9)
+      s.b.e('circle', {
+        cx: x,
+        cy: y,
+        r: r * 2.5,
+        fill: '#ffffff',
+        opacity: 0.12,
+      });
   }
-  s.b.e('path', { d: parts.join(''), stroke: '#ffffff', 'stroke-width': 3, 'stroke-linecap': 'round', opacity: 0.9 });
+  s.b.e('path', {
+    d: parts.join(''),
+    stroke: '#ffffff',
+    'stroke-width': 3,
+    'stroke-linecap': 'round',
+    opacity: 0.9,
+  });
 }
 
 /** Nuage cotonneux (grappe d'ellipses avec une base ombrée). */
 export function cloud(s: Scene, x: number, y: number, scale: number): void {
-  const base = s.time === 'day' ? '#ffffff' : s.time === 'sunset' ? '#ffd0b8' : '#3a4878';
-  const shadow = s.time === 'day' ? '#d6e6f4' : s.time === 'sunset' ? '#c07898' : '#26335c';
+  const base = s.time === 'day'
+    ? '#ffffff'
+    : s.time === 'sunset'
+      ? '#ffd0b8'
+      : '#3a4878';
+  const shadow = s.time === 'day'
+    ? '#d6e6f4'
+    : s.time === 'sunset'
+      ? '#c07898'
+      : '#26335c';
   const blobs: [number, number, number][] = [
     [-60, 10, 42],
     [-20, -12, 55],
@@ -93,9 +119,27 @@ export function cloud(s: Scene, x: number, y: number, scale: number): void {
     [75, 5, 44],
     [10, 18, 48],
   ];
-  const g = blobs.map(([dx, dy, r]) => el('circle', { cx: dx * scale, cy: dy * scale, r: r * scale, fill: base })).join('');
-  const under = el('ellipse', { cx: 10 * scale, cy: 34 * scale, rx: 110 * scale, ry: 22 * scale, fill: shadow });
-  s.b.e('g', { transform: `translate(${Math.round(x)} ${Math.round(y)})`, opacity: s.time === 'night' ? 0.7 : 0.95 }, [under, g]);
+  const g = blobs
+    .map(([dx, dy, r]) =>
+      el('circle', {
+        cx: dx * scale,
+        cy: dy * scale,
+        r: r * scale,
+        fill: base,
+      }),
+    )
+    .join('');
+  const under = el('ellipse', {
+    cx: 10 * scale,
+    cy: 34 * scale,
+    rx: 110 * scale,
+    ry: 22 * scale,
+    fill: shadow,
+  });
+  s.b.e('g', {
+    transform: `translate(${Math.round(x)} ${Math.round(y)})`,
+    opacity: s.time === 'night' ? 0.7 : 0.95,
+  }, [under, g]);
 }
 
 export function clouds(s: Scene, count: number, maxY = 300): void {
@@ -121,12 +165,26 @@ export function ambience(s: Scene): void {
 }
 
 /** Arbre feuillu : tronc et grappes de feuillage ombrées. */
-export function tree(s: Scene, x: number, groundY: number, h: number, leaf = '#4a9a4a'): void {
+export function tree(
+  s: Scene,
+  x: number,
+  groundY: number,
+  h: number,
+  leaf = '#4a9a4a',
+): void {
   const trunk = s.L('#7a5236');
   const lf = s.L(leaf);
   const w = h * 0.09;
   s.b.e('path', {
-    d: d('M', x - w, groundY, 'C', x - w * 0.6, groundY - h * 0.3, x - w * 0.5, groundY - h * 0.5, x - w * 0.3, groundY - h * 0.6, 'L', x + w * 0.3, groundY - h * 0.6, 'C', x + w * 0.5, groundY - h * 0.5, x + w * 0.6, groundY - h * 0.3, x + w, groundY, 'Z'),
+    d: d(
+      'M', x - w, groundY,
+      'C', x - w * 0.6, groundY - h * 0.3, x - w * 0.5, groundY - h * 0.5,
+      x - w * 0.3, groundY - h * 0.6,
+      'L', x + w * 0.3, groundY - h * 0.6,
+      'C', x + w * 0.5, groundY - h * 0.5, x + w * 0.6, groundY - h * 0.3,
+      x + w, groundY,
+      'Z',
+    ),
     fill: trunk,
     ...s.b.line(1),
   });
@@ -143,9 +201,21 @@ export function tree(s: Scene, x: number, groundY: number, h: number, leaf = '#4
   const dark = shade(lf, -0.3);
   const light = shade(lf, 0.2);
   for (const [dx, dy, k] of clumps) {
-    s.b.e('circle', { cx: x + dx * r, cy: cy + dy * r, r: r * k, fill: dy > 0 ? dark : lf, ...s.b.line(0.8) });
+    s.b.e('circle', {
+      cx: x + dx * r,
+      cy: cy + dy * r,
+      r: r * k,
+      fill: dy > 0 ? dark : lf,
+      ...s.b.line(0.8),
+    });
   }
   for (const [dx, dy, k] of clumps.slice(2, 5)) {
-    s.b.e('circle', { cx: x + dx * r - r * 0.2, cy: cy + dy * r - r * 0.25, r: r * k * 0.55, fill: light, opacity: 0.7 });
+    s.b.e('circle', {
+      cx: x + dx * r - r * 0.2,
+      cy: cy + dy * r - r * 0.25,
+      r: r * k * 0.55,
+      fill: light,
+      opacity: 0.7,
+    });
   }
 }

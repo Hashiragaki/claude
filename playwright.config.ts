@@ -13,7 +13,8 @@ export default defineConfig({
   timeout: 180_000,
   expect: { timeout: 30_000 },
   workers: 1,
-  reporter: [['list']],
+  forbidOnly: !!process.env.CI,
+  reporter: process.env.CI ? [['github'], ['list']] : [['list']],
   outputDir: 'test-results/e2e',
   use: {
     baseURL: 'http://127.0.0.1:5173',

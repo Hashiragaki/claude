@@ -22,7 +22,10 @@ export function sanitizeSvg(input: string, size: { width?: number; height?: numb
   svg = end > start ? svg.slice(start, end + 6) : `${svg.slice(start)}</svg>`;
 
   // Éléments dangereux (avec contenu) puis leurs formes auto-fermantes ou orphelines.
-  const blocked = ['script', 'foreignObject', 'iframe', 'object', 'embed', 'audio', 'video', 'canvas', 'handler', 'listener'];
+  const blocked = [
+    'script', 'foreignObject', 'iframe', 'object', 'embed', 'audio', 'video', 'canvas',
+    'handler', 'listener',
+  ];
   for (const tag of blocked) {
     svg = svg.replace(new RegExp(`<${tag}\\b[\\s\\S]*?<\\/${tag}\\s*>`, 'gi'), '');
     svg = svg.replace(new RegExp(`<\\/?${tag}\\b[^>]*>`, 'gi'), '');
@@ -44,9 +47,11 @@ export function sanitizeSvg(input: string, size: { width?: number; height?: numb
     return /^data:image\/(png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(href) ? whole : '';
   });
 
-  svg = svg.replace(/<([a-zA-Z][\w:.-]*)(\s[^<>]*?)?(\/?)>/g, (_m, tag: string, attrs: string | undefined, selfClose: string) => {
-    return `<${tag}${cleanAttributes(tag, attrs ?? '')}${selfClose}>`;
-  });
+  svg = svg.replace(/<([a-zA-Z][\w:.-]*)(\s[^<>]*?)?(\/?)>/g,
+    (_m, tag: string, attrs: string | undefined, selfClose: string) => {
+      return `<${tag}${cleanAttributes(tag, attrs ?? '')}${selfClose}>`;
+    }
+  );
 
   return enforceRoot(svg, size);
 }

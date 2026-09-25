@@ -36,12 +36,27 @@ function body(ctx: Ctx, cx = 0.38, cy = 0.3): string {
 }
 
 /** Grands yeux brillants. */
-function eyes(ctx: Ctx, x1: number, x2: number, y: number, r: number, iris = '#2a1a2a', angry = false): string {
+function eyes(
+  ctx: Ctx,
+  x1: number,
+  x2: number,
+  y: number,
+  r: number,
+  iris = '#2a1a2a',
+  angry = false,
+): string {
   const one = (x: number, dir: number) =>
     el('ellipse', { cx: x, cy: y, rx: r * 0.8, ry: r, fill: iris }) +
     el('circle', { cx: x - r * 0.3, cy: y - r * 0.4, r: r * 0.32, fill: '#ffffff' }) +
     el('circle', { cx: x + r * 0.25, cy: y + r * 0.35, r: r * 0.14, fill: '#ffffff', opacity: 0.9 }) +
-    (angry ? el('path', { d: d('M', x - r * 1.1 * dir, y - r * 1.5, 'L', x + r * 0.9 * dir, y - r * 0.8), stroke: '#2a1a2a', 'stroke-width': 5, 'stroke-linecap': 'round' }) : '');
+    (angry
+      ? el('path', {
+          d: d('M', x - r * 1.1 * dir, y - r * 1.5, 'L', x + r * 0.9 * dir, y - r * 0.8),
+          stroke: '#2a1a2a',
+          'stroke-width': 5,
+          'stroke-linecap': 'round',
+        })
+      : '');
   return one(x1, -1) + one(x2, 1);
 }
 
@@ -57,18 +72,36 @@ function groundShadow(rx = 82): string {
 }
 
 function slime(ctx: Ctx): string {
-  const shape = 'M28 206C28 146 70 96 110 84C119 80 123 68 128 54C133 68 137 80 146 84C186 96 228 146 228 206C228 234 28 234 28 206Z';
+  const shape =
+    'M28 206C28 146 70 96 110 84C119 80 123 68 128 54C133 68 137 80 146 84C186 96 228 146 228 206C228 234 28 234 28 206Z';
   return [
     groundShadow(92),
     el('path', { d: shape, fill: body(ctx, 0.35, 0.3), ...ctx.line }),
-    el('path', { d: 'M52 200C60 214 196 214 204 200C200 222 56 222 52 200Z', fill: ctx.dark, opacity: 0.35 }),
+    el('path', {
+      d: 'M52 200C60 214 196 214 204 200C200 222 56 222 52 200Z',
+      fill: ctx.dark,
+      opacity: 0.35,
+    }),
     el('circle', { cx: 170, cy: 186, r: 10, fill: ctx.light, opacity: 0.5 }),
     el('circle', { cx: 186, cy: 164, r: 6, fill: ctx.light, opacity: 0.45 }),
-    el('path', { d: 'M62 136C70 116 86 102 104 94', fill: 'none', stroke: '#ffffff', 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.75 }),
+    el('path', {
+      d: 'M62 136C70 116 86 102 104 94',
+      fill: 'none',
+      stroke: '#ffffff',
+      'stroke-width': 11,
+      'stroke-linecap': 'round',
+      opacity: 0.75,
+    }),
     el('circle', { cx: 56, cy: 156, r: 6, fill: '#ffffff', opacity: 0.75 }),
     eyes(ctx, 100, 156, 152, 15),
     blush(82, 174, 178),
-    el('path', { d: 'M118 180Q128 190 138 180', fill: 'none', stroke: '#2a1a2a', 'stroke-width': 4, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M118 180Q128 190 138 180',
+      fill: 'none',
+      stroke: '#2a1a2a',
+      'stroke-width': 4,
+      'stroke-linecap': 'round',
+    }),
   ].join('');
 }
 
@@ -76,13 +109,25 @@ function bat(ctx: Ctx): string {
   const wing = (dir: number) => {
     const x = (v: number) => 128 + dir * v;
     return el('path', {
-      d: d('M', x(30), 110, 'C', x(60), 70, x(100), 50, x(118), 56, 'C', x(112), 80, x(116), 100, x(124), 120, 'C', x(108), 116, x(98), 124, x(96), 138, 'C', x(84), 128, x(70), 130, x(64), 146, 'C', x(54), 134, x(42), 134, x(34), 142, 'Z'),
+      d: d(
+        'M', x(30), 110, 'C', x(60), 70, x(100), 50, x(118), 56, 'C', x(112), 80, x(116), 100,
+        x(124), 120, 'C', x(108), 116, x(98), 124, x(96), 138, 'C', x(84), 128, x(70), 130,
+        x(64), 146, 'C', x(54), 134, x(42), 134, x(34), 142, 'Z'
+      ),
       fill: shade(ctx.c, -0.15),
       ...ctx.line,
     });
   };
   const membrane = (dir: number) =>
-    el('path', { d: d('M', 128 + dir * 40, 116, 'L', 128 + dir * 110, 64, 'M', 128 + dir * 44, 124, 'L', 128 + dir * 96, 136, 'M', 128 + dir * 42, 132, 'L', 128 + dir * 64, 144), stroke: ctx.dark, 'stroke-width': 3, opacity: 0.6 });
+    el('path', {
+      d: d(
+        'M', 128 + dir * 40, 116, 'L', 128 + dir * 110, 64, 'M', 128 + dir * 44, 124, 'L',
+        128 + dir * 96, 136, 'M', 128 + dir * 42, 132, 'L', 128 + dir * 64, 144
+      ),
+      stroke: ctx.dark,
+      'stroke-width': 3,
+      opacity: 0.6,
+    });
   return [
     groundShadow(50),
     wing(-1),
@@ -107,7 +152,12 @@ function bat(ctx: Ctx): string {
 function golem(ctx: Ctx): string {
   const moss = '#5aa04a';
   const glow = '#5ae4ff';
-  const rock = (path: string, k = 0) => el('path', { d: path, fill: k ? shade(ctx.c, k) : body(ctx, 0.3, 0.25), ...ctx.line });
+  const rock = (path: string, k = 0) =>
+    el('path', {
+      d: path,
+      fill: k ? shade(ctx.c, k) : body(ctx, 0.3, 0.25),
+      ...ctx.line,
+    });
   return [
     groundShadow(100),
     rock('M92 190L84 226L120 226L122 196Z', -0.15),
@@ -118,14 +168,26 @@ function golem(ctx: Ctx): string {
     rock('M92 44C104 32 152 32 164 44L170 90C150 104 106 104 86 90Z'),
     el('path', { d: 'M92 46C110 36 146 36 162 46L160 56C140 48 116 48 94 56Z', fill: moss }),
     el('path', { d: 'M62 98C88 86 168 86 194 98L192 110C166 100 90 100 64 110Z', fill: moss }),
-    el('path', { d: 'M110 120L124 142L116 160M160 150L148 168M78 130L90 150', fill: 'none', stroke: ctx.dark, 'stroke-width': 3.5, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M110 120L124 142L116 160M160 150L148 168M78 130L90 150',
+      fill: 'none',
+      stroke: ctx.dark,
+      'stroke-width': 3.5,
+      'stroke-linecap': 'round',
+    }),
     el('circle', { cx: 128, cy: 140, r: 16, fill: ctx.b.glow(glow, 0.8) }),
     el('path', { d: 'M128 128L136 140L128 152L120 140Z', fill: glow }),
     el('circle', { cx: 110, cy: 70, r: 14, fill: ctx.b.glow(glow, 0.9) }),
     el('circle', { cx: 146, cy: 70, r: 14, fill: ctx.b.glow(glow, 0.9) }),
     el('ellipse', { cx: 110, cy: 70, rx: 7, ry: 5, fill: '#e8fcff' }),
     el('ellipse', { cx: 146, cy: 70, rx: 7, ry: 5, fill: '#e8fcff' }),
-    el('path', { d: 'M40 116L52 122M212 118L200 124', stroke: ctx.light, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.8 }),
+    el('path', {
+      d: 'M40 116L52 122M212 118L200 124',
+      stroke: ctx.light,
+      'stroke-width': 4,
+      'stroke-linecap': 'round',
+      opacity: 0.8,
+    }),
   ].join('');
 }
 
@@ -136,8 +198,16 @@ function wolf(ctx: Ctx): string {
     el('path', { d: 'M178 204C222 200 244 166 230 118C224 146 206 166 176 170Z', fill: ctx.c, ...ctx.line }),
     el('path', { d: 'M230 118C236 134 234 150 226 164C218 150 216 136 220 124Z', fill: fur }),
     el('path', { d: 'M70 214C58 170 70 132 128 124C186 132 198 170 186 214Z', fill: body(ctx, 0.4, 0.3), ...ctx.line }),
-    el('path', { d: 'M102 150L112 164L120 152L128 168L136 152L144 164L154 150C160 176 158 200 156 214L100 214C98 200 96 176 102 150Z', fill: fur }),
-    el('path', { d: 'M84 214L86 196M104 216L104 198M152 216L152 198M172 214L170 196', stroke: ctx.dark, 'stroke-width': 4, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M102 150L112 164L120 152L128 168L136 152L144 164L154 150C160 176 158 200 156 214L100 214C98 200 96 176 102 150Z',
+      fill: fur,
+    }),
+    el('path', {
+      d: 'M84 214L86 196M104 216L104 198M152 216L152 198M172 214L170 196',
+      stroke: ctx.dark,
+      'stroke-width': 4,
+      'stroke-linecap': 'round',
+    }),
     el('path', { d: 'M78 70L70 10L118 52Z', fill: ctx.c, ...ctx.line }),
     el('path', { d: 'M178 70L186 10L138 52Z', fill: ctx.c, ...ctx.line }),
     el('path', { d: 'M82 62L78 26L104 52Z', fill: '#e8a0b0' }),
@@ -147,10 +217,20 @@ function wolf(ctx: Ctx): string {
       fill: body(ctx, 0.4, 0.3),
       ...ctx.line,
     }),
-    el('path', { d: 'M104 122C104 106 116 100 128 100C140 100 152 106 152 122L150 142C144 156 112 156 106 142Z', fill: fur, ...ctx.line }),
+    el('path', {
+      d: 'M104 122C104 106 116 100 128 100C140 100 152 106 152 122L150 142C144 156 112 156 106 142Z',
+      fill: fur,
+      ...ctx.line,
+    }),
     el('path', { d: 'M116 108Q128 100 140 108Q138 120 128 120Q118 120 116 108Z', fill: '#2a1a2a' }),
     el('ellipse', { cx: 124, cy: 106, rx: 4, ry: 2.5, fill: '#ffffff', opacity: 0.7 }),
-    el('path', { d: 'M128 120V130M114 132Q128 142 142 132', fill: 'none', stroke: '#2a1a2a', 'stroke-width': 3.5, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M128 120V130M114 132Q128 142 142 132',
+      fill: 'none',
+      stroke: '#2a1a2a',
+      'stroke-width': 3.5,
+      'stroke-linecap': 'round',
+    }),
     eyes(ctx, 96, 160, 88, 11, '#c8902a'),
     el('path', { d: 'M82 76L110 82M174 76L146 82', stroke: ctx.dark, 'stroke-width': 5, 'stroke-linecap': 'round' }),
   ].join('');
@@ -184,21 +264,50 @@ function ghost(ctx: Ctx): string {
 function plant(ctx: Ctx): string {
   const leaf = (dir: number, k: number) =>
     el('path', {
-      d: d('M', 128, 216, 'C', 128 + dir * 30, 190 - k * 20, 128 + dir * 70, 170 - k * 30, 128 + dir * (104 - k * 24), 150 - k * 34, 'C', 128 + dir * 96, 190 - k * 20, 128 + dir * 60, 214, 128, 218, 'Z'),
+      d: d(
+        'M', 128, 216, 'C', 128 + dir * 30, 190 - k * 20, 128 + dir * 70, 170 - k * 30,
+        128 + dir * (104 - k * 24), 150 - k * 34, 'C', 128 + dir * 96, 190 - k * 20,
+        128 + dir * 60, 214, 128, 218, 'Z'
+      ),
       fill: k ? shade(ctx.c, -0.2) : ctx.c,
       ...ctx.line,
-    }) + el('path', { d: d('M', 128 + dir * 10, 212, 'Q', 128 + dir * 60, 190 - k * 20, 128 + dir * (98 - k * 24), 154 - k * 34), fill: 'none', stroke: shade(ctx.c, 0.25), 'stroke-width': 3, opacity: 0.7 });
+    }) +
+    el('path', {
+      d: d(
+        'M', 128 + dir * 10, 212, 'Q', 128 + dir * 60, 190 - k * 20,
+        128 + dir * (98 - k * 24), 154 - k * 34
+      ),
+      fill: 'none',
+      stroke: shade(ctx.c, 0.25),
+      'stroke-width': 3,
+      opacity: 0.7,
+    });
   const mouth = '#c8304a';
   return [
     groundShadow(80),
     leaf(-1, 1),
     leaf(1, 1),
-    el('path', { d: 'M122 214C112 180 104 150 122 120L136 120C124 150 132 180 138 214Z', fill: shade(ctx.c, -0.1), ...ctx.line }),
+    el('path', {
+      d: 'M122 214C112 180 104 150 122 120L136 120C124 150 132 180 138 214Z',
+      fill: shade(ctx.c, -0.1),
+      ...ctx.line,
+    }),
     leaf(-1, 0),
     leaf(1, 0),
-    el('path', { d: 'M52 96C52 52 88 26 128 26C168 26 204 52 204 96C204 134 170 148 128 148C86 148 52 134 52 96Z', fill: body(ctx, 0.4, 0.25), ...ctx.line }),
-    el('path', { d: 'M68 96C80 88 176 88 188 96C184 128 160 140 128 140C96 140 72 128 68 96Z', fill: mouth, ...ctx.line }),
-    el('path', { d: 'M72 96L80 108L88 96L96 108L104 96L112 108L120 96L128 108L136 96L144 108L152 96L160 108L168 96L176 108L184 96Z', fill: '#ffffff' }),
+    el('path', {
+      d: 'M52 96C52 52 88 26 128 26C168 26 204 52 204 96C204 134 170 148 128 148C86 148 52 134 52 96Z',
+      fill: body(ctx, 0.4, 0.25),
+      ...ctx.line,
+    }),
+    el('path', {
+      d: 'M68 96C80 88 176 88 188 96C184 128 160 140 128 140C96 140 72 128 68 96Z',
+      fill: mouth,
+      ...ctx.line,
+    }),
+    el('path', {
+      d: 'M72 96L80 108L88 96L96 108L104 96L112 108L120 96L128 108L136 96L144 108L152 96L160 108L168 96L176 108L184 96Z',
+      fill: '#ffffff',
+    }),
     el('ellipse', { cx: 128, cy: 126, rx: 24, ry: 9, fill: '#f08aa0' }),
     el('circle', { cx: 86, cy: 58, r: 7, fill: mix(ctx.c, '#ffff80', 0.5), opacity: 0.8 }),
     el('circle', { cx: 170, cy: 54, r: 9, fill: mix(ctx.c, '#ffff80', 0.5), opacity: 0.8 }),

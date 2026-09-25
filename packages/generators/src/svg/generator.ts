@@ -69,7 +69,11 @@ export const imageSvgSpecSchema = z
       });
     }
     if (/<(script|foreignObject)\b/i.test(spec.svg)) {
-      ctx.addIssue({ code: 'custom', path: ['svg'], message: 'Les éléments <script> et <foreignObject> sont interdits.' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['svg'],
+        message: 'Les éléments <script> et <foreignObject> sont interdits.',
+      });
     }
   });
 
@@ -99,19 +103,47 @@ export function proceduralSvg(params: ImageSvgParams, rng: Rng): string {
   const style = params.style;
   const background = (scene: SceneName) =>
     drawBackground(
-      { scene, time: params.timeOfDay ?? timeFromText(text) ?? 'day', style, width, height, accent: params.palette?.[0] },
+      {
+        scene,
+        time: params.timeOfDay ?? timeFromText(text) ?? 'day',
+        style,
+        width,
+        height,
+        accent: params.palette?.[0],
+      },
       rng,
     );
   switch (params.subject) {
     case 'portrait':
       return drawPortrait({ ...params, style, width, height }, rng);
     case 'background':
-      return background(params.scene ?? sceneFromText(text) ?? rng.pick(['park', 'street', 'forest', 'beach', 'generic', 'castle'] as const));
+      return background(
+        params.scene ??
+          sceneFromText(text) ??
+          rng.pick(['park', 'street', 'forest', 'beach', 'generic', 'castle'] as const)
+      );
     case 'battler':
-      return drawBattler({ creature: params.creature ?? matchKeyword(text, CREATURE_WORDS) ?? rng.pick(CREATURES), color, style, width, height }, rng);
+      return drawBattler(
+        {
+          creature:
+            params.creature ?? matchKeyword(text, CREATURE_WORDS) ?? rng.pick(CREATURES),
+          color,
+          style,
+          width,
+          height,
+        },
+        rng
+      );
     case 'object':
     case 'icon':
-      return drawObject({ object: matchKeyword(text, OBJECT_WORDS) ?? rng.pick(OBJECTS), color, style, width, height, icon: params.subject === 'icon' });
+      return drawObject({
+        object: matchKeyword(text, OBJECT_WORDS) ?? rng.pick(OBJECTS),
+        color,
+        style,
+        width,
+        height,
+        icon: params.subject === 'icon',
+      });
     case 'illustration': {
       const scene = params.scene ?? sceneFromText(text);
       if (scene) return background(scene);
@@ -178,12 +210,20 @@ export const imageSvgGenerator: GeneratorDefinition<ImageSvgParams, ImageSvgSpec
   systemPrompt: SYSTEM_PROMPT,
   buildPrompt(params) {
     const [width, height] = resolveSvgSize(params);
-    return requestMessage(`a ${params.subject} image (SVG, ${width}x${height}, style "${params.style}")`, params.prompt, params, [
-      `The spec must use width ${width} and height ${height}.`,
-      params.subject === 'portrait' || params.subject === 'battler' || params.subject === 'object' || params.subject === 'icon'
-        ? 'The background must stay transparent.'
-        : 'Paint the whole canvas.',
-    ]);
+    return requestMessage(
+      `a ${params.subject} image (SVG, ${width}x${height}, style "${params.style}")`,
+      params.prompt,
+      params,
+      [
+        `The spec must use width ${width} and height ${height}.`,
+        params.subject === 'portrait' ||
+          params.subject === 'battler' ||
+          params.subject === 'object' ||
+          params.subject === 'icon'
+          ? 'The background must stay transparent.'
+          : 'Paint the whole canvas.',
+      ]
+    );
   },
   buildEditPrompt(spec, instruction, params) {
     return editMessage(spec, instruction, params, [`Keep width ${spec.width} and height ${spec.height}.`]);
