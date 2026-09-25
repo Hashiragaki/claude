@@ -42,6 +42,9 @@ export class Engine {
   runtime: GameRuntime | null = null;
   playTime = 0;
   private detachInput: (() => void) | null = null;
+  /** Détache les écouteurs de déverrouillage audio et de focus posés par `start()`. */
+  private detachExtra: (() => void) | null = null;
+  private destroyed = false;
   private readonly autoLoop: boolean;
 
   constructor(private readonly options: EngineOptions) {
@@ -79,19 +82,31 @@ export class Engine {
 
   async start(): Promise<void> {
     const mode = this.options.modes.get(this.options.bundle.manifest.mode);
-    this.runtime = await mode.createRuntime(this.context);
+    const runtime = await mode.createRuntime(this.context);
+    // `destroy()` a pu survenir pendant l'attente ci-dessus (ex. Relancer/Arrêter cliqué
+    // pendant le chargement) : ce runtime n'a jamais été exposé, on le détruit sans l'attacher.
+    if (this.destroyed) {
+      runtime.destroy();
+      return;
+    }
+    this.runtime = runtime;
     if (typeof window !== 'undefined' && this.options.mount) {
       const mount = this.options.mount;
       if (!mount.hasAttribute('tabindex')) mount.tabIndex = 0;
       const keyTarget = this.options.keyboard === 'window' ? window : mount;
       this.detachInput = this.input.attach(keyTarget, mount);
+      const controller = new AbortController();
       const unlock = () => void this.audio.unlock();
-      mount.addEventListener('pointerdown', unlock, { once: true });
-      keyTarget.addEventListener('keydown', unlock, { once: true });
+      mount.addEventListener('pointerdown', unlock, { once: true, signal: controller.signal });
+      keyTarget.addEventListener('keydown', unlock, { once: true, signal: controller.signal });
       // Un clic dans le jeu lui donne le focus clavier.
-      mount.addEventListener('pointerdown', () => mount.focus({ preventScroll: true }));
+      mount.addEventListener('pointerdown', () => mount.focus({ preventScroll: true }), { signal: controller.signal });
+      this.detachExtra = () => controller.abort();
     }
     await this.runtime.start();
+    // `destroy()` a pu survenir pendant `runtime.start()` : il a déjà détruit `this.runtime`,
+    // il ne reste plus qu'à ne pas démarrer la boucle sur un moteur détruit.
+    if (this.destroyed) return;
     if (this.autoLoop) this.loop.start();
     this.log('info', `Jeu « ${this.options.bundle.manifest.name} » démarré (mode ${mode.name}).`);
   }
@@ -154,9 +169,12 @@ export class Engine {
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.loop.stop();
     this.detachInput?.();
     this.detachInput = null;
+    this.detachExtra?.();
+    this.detachExtra = null;
     this.runtime?.destroy();
     this.runtime = null;
     void this.audio.dispose();

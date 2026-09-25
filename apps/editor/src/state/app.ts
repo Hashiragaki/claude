@@ -11,6 +11,7 @@ import {
   type ModeInfo,
   type ProjectSummary,
 } from '../api';
+import { autopilotStore, getAutopilot, type AutopilotStatus } from '../autopilot';
 import { Store, useSelector } from './store';
 
 export interface LogEntry {
@@ -148,11 +149,15 @@ export async function openProject(id: string): Promise<void> {
   connectEvents(id);
   log('info', 'éditeur', `Projet « ${project.name} » ouvert.`);
   void validateProject();
+  getAutopilot(id)
+    .then((status) => autopilotStore.set({ status }))
+    .catch(toastError);
 }
 
 export function closeProject(): void {
   events?.close();
   events = null;
+  autopilotStore.set({ status: null });
   store.set({ project: null, planner: null, jobs: [], selectedAssetId: null, documents: [], play: null });
 }
 
@@ -231,6 +236,9 @@ function connectEvents(projectId: string): void {
     store.set((s) => ({ fileRevision: { ...s.fileRevision, [path]: (s.fileRevision[path] ?? 0) + 1 } }));
   });
   events.addEventListener('chat', (e) => applyChatEvent(JSON.parse((e as MessageEvent).data)));
+  events.addEventListener('autopilot', (e) => {
+    autopilotStore.set({ status: JSON.parse((e as MessageEvent).data) as AutopilotStatus });
+  });
 }
 
 type ChatEvent =

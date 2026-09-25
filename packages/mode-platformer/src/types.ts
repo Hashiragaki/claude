@@ -25,7 +25,7 @@ export interface Rect {
   h: number;
 }
 
-export type PlayerAnim = 'idle' | 'run' | 'jump' | 'fall' | 'hurt' | 'dead';
+export type PlayerAnim = 'idle' | 'run' | 'jump' | 'fall' | 'dead';
 
 export interface PlayerView extends Rect {
   vx: number;
@@ -33,7 +33,7 @@ export interface PlayerView extends Rect {
   facing: Facing;
   onGround: boolean;
   anim: PlayerAnim;
-  /** Invulnérable (clignotement à l'écran). */
+  /** Invulnérable juste après une réapparition (clignotement à l'écran). */
   invincible: boolean;
 }
 
@@ -47,13 +47,15 @@ export interface EntityView extends Rect {
   triggered?: boolean;
 }
 
-/** Événements produits par un pas de simulation (sons, HUD, transitions). */
+/**
+ * Événements produits par un pas de simulation (sons, HUD, transitions). Le joueur n'a pas de points
+ * de vie : toucher un ennemi (sans l'écraser), un danger, tomber ou dépasser le temps = `death`.
+ */
 export type WorldEvent =
   | { type: 'jump' }
   | { type: 'coin'; id: string }
   | { type: 'stomp'; id: string }
   | { type: 'spring'; id: string }
-  | { type: 'hurt' }
   | { type: 'death'; cause: 'enemy' | 'hazard' | 'fall' | 'time' }
   | { type: 'checkpoint'; id: string }
   | { type: 'goal' }

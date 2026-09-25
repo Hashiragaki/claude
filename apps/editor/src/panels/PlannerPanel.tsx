@@ -17,8 +17,11 @@ import type { Milestone, Schedule, Task, TaskStatus } from '@forge/planner';
 import Add from '@spectrum-icons/workflow/Add';
 import Delete from '@spectrum-icons/workflow/Delete';
 import LockClosed from '@spectrum-icons/workflow/LockClosed';
+import Play from '@spectrum-icons/workflow/Play';
+import Stop from '@spectrum-icons/workflow/Stop';
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import { startAutopilot, stopAutopilot, useAutopilot } from '../autopilot';
 import { requireProjectId, toastError, useApp } from '../state/app';
 import { PRIORITY_LABELS, STATUS_LABELS, TaskDialog } from './TaskDialog';
 
@@ -46,7 +49,10 @@ export function PlannerPanel() {
         <span style={{ fontSize: 12, color: 'var(--fg-text-2)' }}>
           Prochaine action : <strong style={{ color: 'var(--fg-text)' }}>{review.next[0]?.title ?? '—'}</strong>
         </span>
+        <div className="fg-spacer" />
+        <AutopilotControls />
       </div>
+      <AutopilotBanner />
       <Tabs aria-label="Vues du planning" height="100%" UNSAFE_style={{ minHeight: 0, flex: 1 }}>
         <TabList marginX="size-150">
           <Item key="kanban">Tableau</Item>
@@ -73,8 +79,61 @@ export function PlannerPanel() {
   );
 }
 
+/** Bouton et réglage du pilote automatique (barre du haut du panneau Planning). */
+function AutopilotControls() {
+  const projectId = useApp((s) => s.project?.id ?? null);
+  const aiEnabled = useApp((s) => s.health?.ai.enabled ?? false);
+  const autopilot = useAutopilot();
+  const [maxTasks, setMaxTasks] = useState(5);
+  const running = autopilot?.running ?? false;
+
+  const toggle = () => {
+    if (!projectId) return;
+    if (running) {
+      void stopAutopilot(projectId).catch(toastError);
+    } else {
+      void startAutopilot(projectId, maxTasks).catch(toastError);
+    }
+  };
+
+  return (
+    <>
+      <Button variant={running ? 'negative' : 'accent'} isDisabled={!aiEnabled || !projectId} onPress={toggle}>
+        {running ? <Stop /> : <Play />}
+        <Text>Pilote automatique</Text>
+      </Button>
+      <NumberField
+        label="Tâches max"
+        labelPosition="side"
+        isQuiet
+        value={maxTasks}
+        onChange={(v) => Number.isFinite(v) && setMaxTasks(Math.min(20, Math.max(1, Math.round(v))))}
+        minValue={1}
+        maxValue={20}
+        width="size-1600"
+        isDisabled={running}
+      />
+    </>
+  );
+}
+
+/** Bandeau d'état du pilote automatique (course en cours ou résultat de la dernière exécution). */
+function AutopilotBanner() {
+  const autopilot = useAutopilot();
+  if (!autopilot || (!autopilot.running && !autopilot.finishedAt)) return null;
+  const counts = `${autopilot.completed.length} terminée(s), ${autopilot.blocked.length} bloquée(s)`;
+  const isError = !autopilot.running && Boolean(autopilot.lastError);
+  const text = autopilot.running
+    ? `🤖 En cours : ${autopilot.currentTaskTitle ?? '…'} — ${counts}`
+    : autopilot.lastError
+      ? `🤖 Pilote automatique : ${autopilot.lastError}`
+      : `🤖 Pilote automatique terminé — ${counts}`;
+  return <div className={`fg-autopilot-banner${isError ? ' error' : ''}`}>{text}</div>;
+}
+
 function Kanban() {
   const planner = useApp((s) => s.planner);
+  const autopilot = useAutopilot();
   const [milestone, setMilestone] = useState<string>('all');
   const [editing, setEditing] = useState<{ task?: Task; status?: TaskStatus } | null>(null);
   const [dropColumn, setDropColumn] = useState<TaskStatus | null>(null);
@@ -134,7 +193,9 @@ function Kanban() {
                 return (
                   <div
                     key={task.id}
-                    className={`fg-card fg-prio-${task.priority}`}
+                    className={`fg-card fg-prio-${task.priority}${
+                      autopilot?.currentTaskId === task.id ? ' fg-card-autopilot' : ''
+                    }`}
                     draggable
                     onDragStart={(e) => e.dataTransfer.setData('text/forge-task', task.id)}
                     onClick={() => setEditing({ task })}

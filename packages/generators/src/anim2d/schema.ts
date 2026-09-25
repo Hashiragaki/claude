@@ -3,18 +3,54 @@ import { z } from 'zod';
 export const ANIM_SUBJECTS = ['creature', 'effect', 'character', 'object'] as const;
 
 export const anim2dParamsSchema = z.object({
-  prompt: z.string().default('').describe("Description de l'animation"),
-  subject: z.enum(ANIM_SUBJECTS).default('effect').describe('Sujet'),
-  width: z.number().int().min(16).max(256).default(96).describe('Largeur d’une frame (px)'),
-  height: z.number().int().min(16).max(256).default(96).describe('Hauteur d’une frame (px)'),
-  frames: z.number().int().min(2).max(16).default(8).describe('Nombre de frames par animation'),
-  fps: z.number().int().min(1).max(60).default(10).describe('Images par seconde'),
+  prompt: z
+    .string()
+    .default(‘’)
+    .describe("Description de l’animation"),
+  subject: z
+    .enum(ANIM_SUBJECTS)
+    .default(‘effect’)
+    .describe(‘Sujet’),
+  width: z
+    .number()
+    .int()
+    .min(16)
+    .max(256)
+    .default(96)
+    .describe(‘Largeur d\’une frame (px)’),
+  height: z
+    .number()
+    .int()
+    .min(16)
+    .max(256)
+    .default(96)
+    .describe(‘Hauteur d\’une frame (px)’),
+  frames: z
+    .number()
+    .int()
+    .min(2)
+    .max(16)
+    .default(8)
+    .describe(‘Nombre de frames par animation’),
+  fps: z
+    .number()
+    .int()
+    .min(1)
+    .max(60)
+    .default(10)
+    .describe(‘Images par seconde’),
   animations: z
-    .array(z.string().regex(/^[a-z][a-z0-9_]*$/, 'Nom d’animation : minuscules, chiffres et « _ » (ex. « idle », « walk »).'))
+    .array(
+      z.string().regex(
+        /^[a-z][a-z0-9_]*$/,
+        ‘Nom d\’animation : minuscules, chiffres et « _ » ‘ +
+          ‘(ex. « idle », « walk »).’,
+      ),
+    )
     .min(1)
     .max(8)
-    .default(['idle'])
-    .describe('Animations à produire (ex. idle, walk, attack)'),
+    .default([‘idle’])
+    .describe(‘Animations à produire (ex. idle, walk, attack)’),
 });
 
 export type Anim2dParams = z.output<typeof anim2dParamsSchema>;
@@ -31,9 +67,22 @@ export const keySchema = z.object({
 });
 
 export const partSchema = z.object({
-  id: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/, 'Id de pièce : lettres, chiffres, « _ » ou « - », commençant par une lettre.'),
-  svg: z.string().min(1).max(20_000).describe('SVG fragment (shapes only, no <svg> root) drawn in frame coordinates, rest pose'),
-  pivot: vec2.describe('Rotation/scale center [x, y] in frame coordinates'),
+  id: z.string().regex(
+    /^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/,
+    'Id de pièce : lettres, chiffres, « _ » ou « - », ' +
+      'commençant par une lettre.',
+  ),
+  svg: z
+    .string()
+    .min(1)
+    .max(20_000)
+    .describe(
+      'SVG fragment (shapes only, no <svg> root) drawn in ' +
+        'frame coordinates, rest pose',
+    ),
+  pivot: vec2.describe(
+    'Rotation/scale center [x, y] in frame coordinates',
+  ),
 });
 
 export const animationSchema = z.object({

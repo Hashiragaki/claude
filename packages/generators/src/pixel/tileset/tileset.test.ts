@@ -1,14 +1,75 @@
 import { Rng, TILE, TILE_ROLES, type TilesetInfo } from '@forge/core';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import type { Rgba } from '../../shared/color';
 import { alphaAt, decodePng, resvgContext } from '../../shared/test-utils';
+import { PixelCanvas } from '../canvas';
 import { tilesetGenerator as gen, type TilesetSpec } from './generator';
 import { THEME_PALETTES, TILESET_THEMES } from './palettes';
 import { drawTile } from './render';
 
-const OPAQUE = ['ground', 'ground_alt', 'ground_detail', 'path', 'path_alt', 'water', 'deep_water', 'wall', 'wall_window', 'door', 'roof', 'stairs', 'void'];
-const DECOR = ['fence', 'tree_top', 'tree_trunk', 'bush', 'rock', 'flowers', 'log', 'sign', 'crate', 'table', 'chair', 'bed', 'shelf', 'barrel', 'torch', 'rug'];
+const OPAQUE = [
+  'ground', 'ground_alt', 'ground_detail', 'path', 'path_alt', 'water', 'deep_water',
+  'wall', 'wall_window', 'door', 'roof', 'stairs', 'void',
+];
+const DECOR = [
+  'fence', 'tree_top', 'tree_trunk', 'bush', 'rock', 'flowers', 'log', 'sign',
+  'crate', 'table', 'chair', 'bed', 'shelf', 'barrel', 'torch', 'rug',
+];
 const SEAMLESS = ['ground', 'ground_alt', 'ground_detail', 'path', 'path_alt', 'water', 'deep_water'];
+
+/** Source de pixels lisible par coordonnées (tuile dessinée ou toile synthétique de test). */
+interface PixelSource {
+  get(x: number, y: number): Rgba;
+}
+
+interface AxisSeam {
+  /** Écart RGB absolu moyen entre colonnes/lignes internes voisines. */
+  baseline: number;
+  /** Écart RGB absolu moyen entre les deux bords opposés (le raccord). */
+  wrap: number;
+}
+
+/** Écart RGB absolu moyen (sur R, G, B) entre deux pixels. */
+function pixelDiff(a: Rgba, b: Rgba): number {
+  return (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2])) / 3;
+}
+
+/**
+ * Score de raccord d'une tuile `size × size` (16 par défaut) lue dans `rgba` à partir de
+ * `(x0, y0)`. Compare l'écart au raccord (bords opposés) à l'écart moyen entre colonnes/lignes
+ * internes voisines, sans jamais comparer un bord au centre : robuste aux textures bruitées
+ * (mouchetures, motifs de fleurs près du bord…) qui provoquaient de faux positifs.
+ */
+function seamScore(rgba: PixelSource, x0: number, y0: number, size = 16): { horizontal: AxisSeam; vertical: AxisSeam } {
+  const at = (x: number, y: number) => rgba.get(x0 + x, y0 + y);
+
+  let baselineH = 0;
+  let wrapH = 0;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size - 1; x++) baselineH += pixelDiff(at(x, y), at(x + 1, y));
+    wrapH += pixelDiff(at(size - 1, y), at(0, y));
+  }
+  baselineH /= size * (size - 1);
+  wrapH /= size;
+
+  let baselineV = 0;
+  let wrapV = 0;
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size - 1; y++) baselineV += pixelDiff(at(x, y), at(x, y + 1));
+    wrapV += pixelDiff(at(x, size - 1), at(x, 0));
+  }
+  baselineV /= size * (size - 1);
+  wrapV /= size;
+
+  return { horizontal: { baseline: baselineH, wrap: wrapH }, vertical: { baseline: baselineV, wrap: wrapV } };
+}
+
+/** Une tuile est « raccordable » si le raccord ne dépasse pas (largement) l'écart interne moyen. */
+function isSeamless({ horizontal, vertical }: ReturnType<typeof seamScore>): boolean {
+  const ok = (axis: AxisSeam) => axis.wrap <= Math.max(2 * axis.baseline, axis.baseline + 12);
+  return ok(horizontal) && ok(vertical);
+}
 
 describe('tileset — paramètres et schémas', () => {
   it('applique les valeurs par défaut', () => {
@@ -18,8 +79,15 @@ describe('tileset — paramètres et schémas', () => {
   });
 
   it('valide les tuiles dessinées à la main', () => {
-    const tile = { palette: { '.': 'transparent', a: '#336699' }, rows: Array.from({ length: 16 }, () => 'a'.repeat(16)) };
-    const ok = gen.specSchema.safeParse({ theme: 'forest', palette: THEME_PALETTES.forest, customTiles: { rock: tile } });
+    const tile = {
+      palette: { '.': 'transparent', a: '#336699' },
+      rows: Array.from({ length: 16 }, () => 'a'.repeat(16)),
+    };
+    const ok = gen.specSchema.safeParse({
+      theme: 'forest',
+      palette: THEME_PALETTES.forest,
+      customTiles: { rock: tile },
+    });
     expect(ok.success).toBe(true);
     const bad = gen.specSchema.safeParse({
       theme: 'forest',
@@ -29,7 +97,10 @@ describe('tileset — paramètres et schémas', () => {
     expect(bad.success).toBe(false);
     const messages = bad.error?.issues.map((i) => i.message).join('\n') ?? '';
     expect(messages).toMatch(/exactement 16 lignes/);
-    const missing = gen.specSchema.safeParse({ theme: 'forest', palette: { ...THEME_PALETTES.forest, water: undefined } });
+    const missing = gen.specSchema.safeParse({
+      theme: 'forest',
+      palette: { ...THEME_PALETTES.forest, water: undefined },
+    });
     expect(missing.success).toBe(false);
   });
 });
@@ -74,29 +145,47 @@ describe('tileset — rendu', () => {
   });
 
   it('adapte le sol au thème', () => {
-    const grounds = TILESET_THEMES.map((theme) => Array.from(drawTile('ground', theme, THEME_PALETTES[theme]).data).join(','));
+    const grounds = TILESET_THEMES.map((theme) =>
+      Array.from(drawTile('ground', theme, THEME_PALETTES[theme]).data).join(','),
+    );
     expect(new Set(grounds).size).toBe(TILESET_THEMES.length);
   });
 
   it('produit des sols, chemins et eaux sans bord visible', () => {
-    // Un raccord propre : l'écart entre colonnes/lignes opposées ne dépasse pas l'écart moyen intérieur.
+    // Un raccord propre : l'écart au raccord ne dépasse pas (largement) l'écart interne moyen,
+    // sans comparer les bords au centre (ce qui donnait un faux positif sur forest/ground_detail,
+    // dont les fleurs près du bord n'ont rien à voir avec le raccord du pavage 3 × 3).
     for (const theme of TILESET_THEMES) {
       for (const role of SEAMLESS) {
         const t = drawTile(role, theme, THEME_PALETTES[theme]);
-        const diff = (x1: number, y1: number, x2: number, y2: number) => {
-          const a = t.get(x1, y1);
-          const b = t.get(x2, y2);
-          return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
-        };
-        let edge = 0;
-        let inner = 0;
-        for (let i = 0; i < 16; i++) {
-          edge += diff(15, i, 0, i) + diff(i, 15, i, 0);
-          inner += diff(7, i, 8, i) + diff(i, 7, i, 8);
-        }
-        expect(edge, `${theme}/${role}`).toBeLessThanOrEqual(inner * 1.6 + 400);
+        const score = seamScore(t, 0, 0);
+        expect.soft(isSeamless(score), `${theme}/${role} : ${JSON.stringify(score)}`).toBe(true);
       }
     }
+  });
+
+  it('détecte un dégradé horizontal comme non raccordable (contrôle négatif)', () => {
+    const gradient = new PixelCanvas(16, 16);
+    for (let x = 0; x < 16; x++) {
+      const v = Math.round((x / 15) * 255);
+      for (let y = 0; y < 16; y++) gradient.set(x, y, [v, v, v, 255]);
+    }
+    const score = seamScore(gradient, 0, 0);
+    // Marche d'escalier interne ≈ 17 (255 / 15) ; raccord = saut complet 255 → 0, bien au-delà.
+    expect(score.horizontal.baseline).toBeCloseTo(17, 0);
+    expect(score.horizontal.wrap).toBeCloseTo(255, 0);
+    expect(isSeamless(score)).toBe(false);
+  });
+
+  it('reconnaît une tuile uniforme comme raccordable (contrôle positif)', () => {
+    const uniform = new PixelCanvas(16, 16);
+    uniform.rect(0, 0, 16, 16, '#4a7a4a');
+    const score = seamScore(uniform, 0, 0);
+    expect(score).toEqual({
+      horizontal: { baseline: 0, wrap: 0 },
+      vertical: { baseline: 0, wrap: 0 },
+    });
+    expect(isSeamless(score)).toBe(true);
   });
 
   it('accepte une spec de style Claude avec une tuile personnalisée', async () => {

@@ -35,6 +35,8 @@ export interface GeneratorInfo {
   label: string;
   description: string;
   params: JsonSchema;
+  /** Vrai si ce générateur peut être soumis à une critique visuelle par l'IA après rendu. */
+  reviewable: boolean;
 }
 
 export interface ProjectSummary {
@@ -78,6 +80,8 @@ export interface GenerateRequest {
   seed?: number;
   parentId?: string;
   instruction?: string;
+  /** Active la critique visuelle par l'IA après le rendu (nécessite un générateur `reviewable`). */
+  review?: boolean;
 }
 
 export class ApiError extends Error {

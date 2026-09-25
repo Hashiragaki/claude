@@ -88,8 +88,10 @@ export class InputManager {
       if (!actions) return;
       if (isEditableTarget(ev.target)) return;
       ev.preventDefault();
-      if (ev.repeat) return;
+      // Toujours réenregistrer la touche : si `onBlur` l'a effacée pendant qu'elle était
+      // maintenue (voir plus bas), l'autorepeat (repeat=true) doit pouvoir la restaurer.
       this.downKeys.add(ev.code);
+      if (ev.repeat) return;
       for (const a of actions) {
         this.pendingPresses.add(a);
         this.events.emit('action', { action: a, pressed: true });
@@ -100,7 +102,13 @@ export class InputManager {
       this.downKeys.delete(ev.code);
       for (const a of this.keyToActions.get(ev.code) ?? []) this.events.emit('action', { action: a, pressed: false });
     };
-    const onBlur = () => this.downKeys.clear();
+    const onBlur = (e: Event) => {
+      // `focusout` remonte depuis les enfants : un focus qui reste à l'intérieur de `keyTarget`
+      // (ex. clic sur le canvas focusable du mount) ne doit pas être traité comme une perte de
+      // focus du jeu, sinon les touches maintenues sont effacées à chaque clic.
+      if (relatedTargetInside(keyTarget, (e as FocusEvent).relatedTarget)) return;
+      this.downKeys.clear();
+    };
     // `blur` ne remonte pas depuis les éléments enfants : on utilise `focusout` sur un élément.
     const blurEvent = typeof window !== 'undefined' && keyTarget === window ? 'blur' : 'focusout';
     keyTarget.addEventListener('keydown', onKeyDown);

@@ -10,6 +10,7 @@ import {
   Picker,
   Radio,
   RadioGroup,
+  Switch,
   TextArea,
   TextField,
   View,
@@ -40,9 +41,11 @@ export function GenerateDialog(props: { onClose(): void; initialGenerator?: stri
   const [name, setName] = useState('');
   const [alias, setAlias] = useState('');
   const [mode, setMode] = useState<'auto' | 'ai' | 'procedural'>(aiEnabled ? 'ai' : 'procedural');
+  const [review, setReview] = useState(true);
   const [busy, setBusy] = useState(false);
   const example = EXAMPLES[generatorId] ?? '';
   const schema = useMemo(() => generator?.params ?? { properties: {} }, [generator]);
+  const showReview = Boolean(generator?.reviewable) && aiEnabled && mode !== 'procedural';
 
   const submit = async () => {
     if (!generator) return;
@@ -55,6 +58,7 @@ export function GenerateDialog(props: { onClose(): void; initialGenerator?: stri
         mode,
         ...(name.trim() ? { name: name.trim() } : {}),
         ...(alias.trim() ? { alias: alias.trim() } : {}),
+        ...(showReview ? { review } : {}),
       });
       props.onClose();
     } catch (error) {
@@ -106,6 +110,16 @@ export function GenerateDialog(props: { onClose(): void; initialGenerator?: stri
                 IA non configurée : la génération procédurale utilise les paramètres ci-contre (la description sert
                 d'indice pour les mots-clés).
               </View>
+            )}
+            {showReview && (
+              <Flex direction="column" gap="size-50">
+                <Switch isSelected={review} onChange={setReview}>
+                  Critique visuelle par l'IA (plus lent, meilleur résultat)
+                </Switch>
+                <View UNSAFE_style={{ fontSize: 12, color: 'var(--fg-text-2)' }}>
+                  Claude examine le rendu et corrige la spec si besoin, avant de valider l'asset.
+                </View>
+              </Flex>
             )}
             <Flex gap="size-100">
               <TextField label="Nom" value={name} onChange={setName} flex placeholder="Automatique" />

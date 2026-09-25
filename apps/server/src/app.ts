@@ -5,6 +5,8 @@ import { STATUS_LABELS, TaskStatusSchema, scheduleTasks, type PlanInput, type Ta
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { ZodError, z } from 'zod';
+import { AgentLock } from './agentLock';
+import { AutopilotService } from './autopilot';
 import { ChatService } from './chat';
 import type { ServerConfig } from './config';
 import { EventHub } from './events';
@@ -33,6 +35,8 @@ export interface ForgeServer {
   projects: ProjectService;
   planners: PlannerService;
   chat: ChatService;
+  autopilot: AutopilotService;
+  lock: AgentLock;
 }
 
 const KIND_DIRS: Record<string, string> = {
@@ -63,6 +67,7 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   const generation = new GenerationService(store, llm);
   const planners = new PlannerService(store, hub);
   const projects = new ProjectService(store, modes, generation, planners, hub);
+  const lock = new AgentLock();
 
   /** Génération via la file de jobs, avec diffusion du nouvel asset. */
   const enqueueGeneration = (projectId: string, request: GenerateRequest) => {
@@ -74,17 +79,14 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     });
   };
 
-  const chat = new ChatService({
+  const toolDeps = (projectId: string) => ({
     store,
-    planners,
-    hub,
-    llm,
-    toolDeps: (projectId) => ({
-      store,
-      projects,
-      generate: (request) => enqueueGeneration(projectId, request).done,
-    }),
+    projects,
+    generate: (request: GenerateRequest) => enqueueGeneration(projectId, request).done,
   });
+
+  const chat = new ChatService({ store, planners, hub, llm, lock, toolDeps });
+  const autopilot = new AutopilotService({ store, planners, hub, chat, lock, llm, toolDeps });
 
   const app = Fastify({ logger: options.logger ?? false, bodyLimit: 32 * 1024 * 1024 });
   app.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, (_req, body, done) => done(null, body));
@@ -432,6 +434,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
 
   app.post<{ Params: IdParams }>('/api/projects/:id/chat', async (request, reply) => {
     const body = z.object({ message: z.string().min(1) }).parse(request.body);
+    if (lock.holder(request.params.id) === 'autopilot') {
+      throw Object.assign(new Error('Le pilote automatique travaille sur ce projet.'), { statusCode: 409 });
+    }
     if (chat.isRunning(request.params.id)) {
       throw Object.assign(new Error('Une réponse est déjà en cours.'), { statusCode: 409 });
     }
@@ -449,6 +454,20 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   });
 
   // ---------------------------------------------------------------------------
+  // Pilote automatique
+  // ---------------------------------------------------------------------------
+
+  app.get<{ Params: IdParams }>('/api/projects/:id/autopilot', async (request) => autopilot.status(request.params.id));
+
+  app.post<{ Params: IdParams }>('/api/projects/:id/autopilot/start', async (request) => {
+    const body = z.object({ maxTasks: z.number().int().min(1).max(20).optional() }).parse(request.body ?? {});
+    await store.readManifest(request.params.id);
+    return autopilot.start(request.params.id, body);
+  });
+
+  app.post<{ Params: IdParams }>('/api/projects/:id/autopilot/stop', async (request) => autopilot.stop(request.params.id));
+
+  // ---------------------------------------------------------------------------
   // Éditeur (production)
   // ---------------------------------------------------------------------------
 
@@ -460,5 +479,5 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     });
   }
 
-  return { app, store, hub, jobs, generation, projects, planners, chat };
+  return { app, store, hub, jobs, generation, projects, planners, chat, autopilot, lock };
 }

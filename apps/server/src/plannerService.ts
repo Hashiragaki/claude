@@ -61,18 +61,48 @@ export class PlannerService {
 
   private async load(projectId: string): Promise<Planner> {
     if (!(await this.store.exists(projectId))) throw new NotFoundError(`Projet introuvable : ${projectId}`);
-    let data: unknown;
+    let raw: string | undefined;
     try {
-      data = JSON.parse(await this.store.readText(projectId, 'planner.json'));
+      raw = await this.store.readText(projectId, 'planner.json');
     } catch {
-      data = undefined;
+      raw = undefined;
     }
-    const planner = new Planner(data);
+    const planner = await this.parsePlanner(projectId, raw);
     planner.onChange((reason) => {
       void this.save(projectId, planner);
       this.hub.publish(projectId, { type: 'planner', data: { reason } });
     });
     return planner;
+  }
+
+  /**
+   * Construit le planificateur à partir du contenu brut de `planner.json`. Si le fichier existe
+   * mais ne respecte plus le schéma (édition manuelle, corruption, ancien format…), le projet
+   * doit rester ouvrable : on met le fichier de côté (`planner.invalid.json`), on journalise un
+   * avertissement, et on repart d'un planning vide plutôt que de faire échouer le chargement.
+   */
+  private async parsePlanner(projectId: string, raw: string | undefined): Promise<Planner> {
+    if (raw === undefined) return new Planner(undefined);
+    let data: unknown;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return new Planner(undefined);
+    }
+    try {
+      return new Planner(data);
+    } catch (error) {
+      console.warn(
+        `[plannerService] planner.json invalide pour le projet ${projectId}, sauvegardé en ` +
+          `planner.invalid.json, planning repris à vide : ${error instanceof Error ? error.message : String(error)}`,
+      );
+      try {
+        await this.store.writeFile(projectId, 'planner.invalid.json', raw, true);
+      } catch {
+        // La sauvegarde est un best-effort : on n'empêche pas l'ouverture du projet pour ça.
+      }
+      return new Planner(undefined);
+    }
   }
 
   private save(projectId: string, planner: Planner): Promise<void> {

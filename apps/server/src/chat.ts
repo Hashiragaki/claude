@@ -15,6 +15,7 @@ import {
   handleOfflineCommand,
   plannerDigest,
 } from '@forge/planner';
+import type { AgentLock } from './agentLock';
 import type { EventHub } from './events';
 import type { PlannerService } from './plannerService';
 import { createProjectTools, describeAsset, projectSummary, type ProjectToolDeps } from './projectTools';
@@ -64,6 +65,7 @@ export interface ChatDeps {
   planners: PlannerService;
   hub: EventHub;
   llm: LlmClient | null;
+  lock: AgentLock;
   toolDeps(projectId: string): Omit<ProjectToolDeps, 'aiAvailable'>;
 }
 
@@ -72,14 +74,14 @@ export interface ChatDeps {
  * - `chat/api.jsonl` : messages API, en ajout seul (mémoire exacte de la conversation) ;
  * - `chat/display.jsonl` : messages affichés (mises à jour par id, la dernière gagne).
  * Sans clé API, le chat interprète les commandes hors-ligne (`/tache`, `/revue`…).
+ * L'exécution est protégée par `AgentLock` : le chat et le pilote automatique ne travaillent
+ * jamais en même temps sur un même projet.
  */
 export class ChatService {
-  private readonly running = new Map<string, AbortController>();
-
   constructor(private readonly deps: ChatDeps) {}
 
   isRunning(projectId: string): boolean {
-    return this.running.has(projectId);
+    return this.deps.lock.holder(projectId) === 'chat';
   }
 
   async history(projectId: string): Promise<DisplayMessage[]> {
@@ -108,22 +110,20 @@ export class ChatService {
   }
 
   stop(projectId: string): boolean {
-    const controller = this.running.get(projectId);
-    controller?.abort();
-    return Boolean(controller);
+    if (this.deps.lock.holder(projectId) !== 'chat') return false;
+    return this.deps.lock.abort(projectId);
   }
 
   /** Traite un message utilisateur ; la réponse est diffusée par événements SSE. */
   async send(projectId: string, text: string): Promise<void> {
     const content = text.trim();
     if (!content) throw Object.assign(new Error('Message vide.'), { statusCode: 400 });
-    if (this.isRunning(projectId)) throw Object.assign(new Error('Une réponse est déjà en cours.'), { statusCode: 409 });
-    await this.deps.store.readManifest(projectId);
-    const controller = new AbortController();
-    this.running.set(projectId, controller);
+    // Lève une 409 si le chat ou le pilote automatique travaille déjà sur ce projet.
+    const controller = this.deps.lock.acquire(projectId, 'chat');
     this.emit(projectId, { kind: 'status', running: true });
-    await this.display(projectId, { id: shortId('msg'), role: 'user', text: content, at: nowIso() });
     try {
+      await this.deps.store.readManifest(projectId);
+      await this.display(projectId, { id: shortId('msg'), role: 'user', text: content, at: nowIso() });
       if (this.deps.llm) await this.runAi(projectId, content, controller.signal);
       else await this.runOffline(projectId, content);
     } catch (error) {
@@ -135,9 +135,20 @@ export class ChatService {
             : describeApiError(error);
       await this.display(projectId, { id: shortId('msg'), role: 'system', text: `⚠️ ${message}`, at: nowIso() });
     } finally {
-      this.running.delete(projectId);
+      this.deps.lock.release(projectId, controller);
       this.emit(projectId, { kind: 'status', running: false });
     }
+  }
+
+  /**
+   * Ajoute un message affiché (assistant ou système) sans passer par l'IA : écrit seulement le
+   * journal d'affichage et diffuse l'événement chat. Utilisé par le pilote automatique pour
+   * annoncer ses actions dans le chat visible du projet.
+   */
+  async post(projectId: string, message: { role: 'assistant' | 'system'; text: string }): Promise<DisplayMessage> {
+    const display: DisplayMessage = { id: shortId('msg'), role: message.role, text: message.text, at: nowIso() };
+    await this.display(projectId, display);
+    return display;
   }
 
   private async runOffline(projectId: string, text: string): Promise<void> {

@@ -35,7 +35,7 @@ export const PlayerPhysicsSchema = z.object({
   coyoteTime: z.number().min(0).max(0.5).default(0.1),
   /** Un appui sur saut un peu avant d'atterrir est mémorisé pendant ce délai (s). */
   jumpBuffer: z.number().min(0).max(0.5).default(0.12),
-  /** Invulnérabilité (s) après un coup. */
+  /** Invulnérabilité (s) après une réapparition. */
   invincibleTime: z.number().min(0).default(1.2),
 });
 export type PlayerPhysics = z.infer<typeof PlayerPhysicsSchema>;
@@ -203,7 +203,7 @@ export const PlatformerStateSchema = z.object({
   lives: z.number().int().min(0),
   coins: z.number().int().min(0),
   score: z.number().int().min(0),
-  /** Pièces déjà ramassées et ennemis éliminés, par niveau (identifiants d'entités). */
+  /** Pièces déjà ramassées, par niveau (identifiants d'entités ; les ennemis réapparaissent). */
   collected: z.record(z.string(), z.array(z.string())).default({}),
   /** Dernier point de contrôle activé dans le niveau courant. */
   checkpoint: z.string().optional(),
