@@ -48,7 +48,14 @@ const DB_INPUT: RpgDatabaseInput = {
 };
 const db = RpgDatabaseSchema.parse(DB_INPUT);
 
-function setup(troop: string, options: { party?: string[]; seed?: number; canEscape?: boolean; variance?: number } = {}) {
+interface SetupOptions {
+  party?: string[];
+  seed?: number;
+  canEscape?: boolean;
+  variance?: number;
+}
+
+function setup(troop: string, options: SetupOptions = {}) {
   const system = RpgSystemSchema.parse({ startMap: 'carte', party: options.party ?? ['hero'] });
   const state: GameState = createGameState(system, db);
   const battle = new BattleSystem({
@@ -103,7 +110,8 @@ describe('BattleSystem', () => {
     expect(turn2).toContainEqual({ type: 'damage', target: { side: 'enemy', index: 1 }, value: 20, hp: 0 });
     expect(battle.phase).toBe('win');
     expect(battle.result).toBe('win');
-    expect(battle.rewards).toEqual({ exp: 20, gold: 14, items: [], levelUps: [{ actor: 'hero', name: 'Héros', level: 2 }] });
+    const levelUps = [{ actor: 'hero', name: 'Héros', level: 2 }];
+    expect(battle.rewards).toEqual({ exp: 20, gold: 14, items: [], levelUps });
     expect(state.gold).toBe(14);
     expect(state.party[0]!.level).toBe(2);
     expect(messages(turn2)).toEqual(

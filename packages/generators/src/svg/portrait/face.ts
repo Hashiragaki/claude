@@ -75,7 +75,6 @@ function eye(b: SvgBuilder, id: PortraitIdentity, c: FaceColors, cx: number, dir
       el('ellipse', { cx: icx, cy: icy, rx, ry, fill: irisFill, stroke: shade(id.eyes, -0.55), 'stroke-width': 2.5 }),
       el('ellipse', { cx: icx, cy: icy + 6 * s.iris, rx: rx * 0.6, ry: ry * 0.45, fill: shade(id.eyes, 0.3), opacity: 0.55 }),
       el('ellipse', { cx: icx, cy: icy - 1, rx: 9 * s.iris, ry: 12 * s.iris, fill: shade(id.eyes, -0.75) }),
-      el('path', { d: `${upper}L${x(1)} ${top - 30}L${x(0)} ${top - 30}Z`, fill: 'none' }),
       el('path', {
         d: d('M', outer[0], outer[1] + 2, 'C', x(0.12), top + 10, x(0.72), top + 10, inner[0], inner[1] + 3),
         fill: 'none',
@@ -225,7 +224,13 @@ function extras(expr: Expression): string {
   }
 }
 
-/** Yeux, sourcils, nez, bouche, joues et effets d'expression. */
+/** Sourcils, dessinés par-dessus la frange (comme dans les visual novels) pour rester lisibles. */
+export function drawBrows(expr: Expression, c: FaceColors): string {
+  const s = SETTINGS[expr];
+  return el('g', { opacity: 0.92 }, [brow(c, EYE_X[0], -1, s), brow(c, EYE_X[1], 1, s)]);
+}
+
+/** Yeux, nez, bouche, joues et effets d'expression. */
 export function drawFace(b: SvgBuilder, id: PortraitIdentity, expr: Expression, c: FaceColors): string {
   const s = SETTINGS[expr];
   return [
@@ -233,8 +238,6 @@ export function drawFace(b: SvgBuilder, id: PortraitIdentity, expr: Expression, 
     el('ellipse', { cx: 362, cy: 394, rx: 27, ry: 11, fill: '#ff6a8a', opacity: s.blush }),
     eye(b, id, c, EYE_X[0], -1, s),
     eye(b, id, c, EYE_X[1], 1, s),
-    brow(c, EYE_X[0], -1, s),
-    brow(c, EYE_X[1], 1, s),
     el('path', { d: 'M299 370Q295 381 302 382', fill: 'none', stroke: c.skinShadow, 'stroke-width': 3, 'stroke-linecap': 'round' }),
     mouth(expr, c),
     extras(expr),

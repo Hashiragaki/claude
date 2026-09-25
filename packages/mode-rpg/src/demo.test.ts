@@ -82,14 +82,16 @@ describe('démo « Le Village de Brume »', () => {
     // Combat contre le boss (équipe renforcée, hasard déterministe)
     walkTo(world, P.boss.x - 1, P.boss.y);
     interact(world, P.boss.x, P.boss.y);
-    expect(world.request).toEqual({ kind: 'message', speaker: 'Roi Slime', text: 'Blorp ! Qui ose troubler ma sieste royale ?!' });
+    const roar = 'Blorp ! Qui ose troubler ma sieste royale ?!';
+    expect(world.request).toEqual({ kind: 'message', speaker: 'Roi Slime', text: roar });
     world.resume();
     expect(world.request).toEqual({ kind: 'battle', troop: 'roi_slime', canEscape: false, canLose: false });
     for (const actor of world.state.party) {
       actor.atk = 40;
       actor.maxHp = actor.hp = 400;
     }
-    const battle = new BattleSystem({ state: world.state, database: data.database, troop: 'roi_slime', rng: new Rng(9) });
+    const { state } = world;
+    const battle = new BattleSystem({ state, database: data.database, troop: 'roi_slime', rng: new Rng(9) });
     const { result } = autoBattle(battle);
     expect(result).toBe('win');
     expect(battle.rewards).toMatchObject({ exp: 60, gold: 80, items: [{ item: 'plume_phenix', count: 1 }] });
@@ -117,7 +119,8 @@ describe('démo « Le Village de Brume »', () => {
     world.state.items.cle_coffre = 1;
 
     walkTo(world, P.innDoor.x, P.innDoor.y);
-    expect(world.request).toEqual({ kind: 'teleport', map: 'auberge', x: P.innEntry.x, y: P.innEntry.y, direction: 'up' });
+    const entry = { map: 'auberge', x: P.innEntry.x, y: P.innEntry.y, direction: 'up' };
+    expect(world.request).toEqual({ kind: 'teleport', ...entry });
     world.resume();
     expect(world.map.id).toBe('auberge');
 

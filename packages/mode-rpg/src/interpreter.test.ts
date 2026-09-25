@@ -5,7 +5,13 @@ import { RpgDatabaseSchema, RpgSystemSchema, type Command } from './schema';
 import { createGameState, getSelfSwitch, type GameState } from './state';
 import { TEST_DATABASE } from './test-helpers';
 
-function setup(): { state: GameState; effects: InterpreterEffect[]; run: (c: Command[], eventId?: string) => EventInterpreter } {
+interface Setup {
+  state: GameState;
+  effects: InterpreterEffect[];
+  run: (c: Command[], eventId?: string) => EventInterpreter;
+}
+
+function setup(): Setup {
   const db = RpgDatabaseSchema.parse(TEST_DATABASE);
   const state = createGameState(RpgSystemSchema.parse({ startMap: 'carte', party: ['hero'], startGold: 30 }), db);
   const effects: InterpreterEffect[] = [];
@@ -71,7 +77,12 @@ describe('EventInterpreter', () => {
               {
                 type: 'choice',
                 options: [
-                  { label: 'A', commands: [{ type: 'if', condition: { script: 'gold >= 30' }, then: [{ type: 'text', text: 'imbriqué' }] }] },
+                  {
+                    label: 'A',
+                    commands: [
+                      { type: 'if', condition: { script: 'gold >= 30' }, then: [{ type: 'text', text: 'imbriqué' }] },
+                    ],
+                  },
                   { label: 'B', commands: [] },
                 ],
               },
@@ -81,7 +92,11 @@ describe('EventInterpreter', () => {
         else: [{ type: 'setVariable', name: 'rate', value: 1 }],
       },
       { type: 'if', condition: { switch: 'absent' }, then: [], else: [{ type: 'setVariable', name: 'off', value: 1 }] },
-      { type: 'if', condition: { variable: { name: 'off', op: '==', value: 1 } }, then: [{ type: 'setVariable', name: 'fin', value: 1 }] },
+      {
+        type: 'if',
+        condition: { variable: { name: 'off', op: '==', value: 1 } },
+        then: [{ type: 'setVariable', name: 'fin', value: 1 }],
+      },
     ]);
     expect(interp.waiting?.kind).toBe('choice');
     expect(interp.resume(0)).toEqual({ kind: 'message', text: 'imbriqué' });
@@ -170,7 +185,8 @@ describe('EventInterpreter', () => {
     expect(de).toBeGreaterThanOrEqual(1);
     expect(de).toBeLessThanOrEqual(6);
     expect(effects.some((e) => e.type === 'error' && e.message.includes('script'))).toBe(true);
-    const noEvent = new EventInterpreter([{ type: 'erase' }], { state, rng: new Rng(1), onEffect: (e) => effects.push(e) });
+    const ctx = { state, rng: new Rng(1), onEffect: (e: InterpreterEffect) => effects.push(e) };
+    const noEvent = new EventInterpreter([{ type: 'erase' }], ctx);
     noEvent.run();
     expect(effects.some((e) => e.type === 'error' && e.message.includes('erase'))).toBe(true);
   });

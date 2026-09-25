@@ -25,7 +25,13 @@ import {
 import { TEST_DATABASE } from './test-helpers';
 
 const db = RpgDatabaseSchema.parse(TEST_DATABASE);
-const system = RpgSystemSchema.parse({ startMap: 'carte', startX: 3, startY: 4, party: ['hero', 'inconnu'], startGold: 25 });
+const system = RpgSystemSchema.parse({
+  startMap: 'carte',
+  startX: 3,
+  startY: 4,
+  party: ['hero', 'inconnu'],
+  startGold: 25,
+});
 const hero = db.actors[0]!;
 
 describe('GameState', () => {

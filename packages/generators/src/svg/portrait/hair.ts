@@ -1,4 +1,4 @@
-import { shade } from '../../shared/color';
+import { mix, shade } from '../../shared/color';
 import { d, el } from '../../shared/svg';
 import type { SvgBuilder } from '../builder';
 import type { PortraitHairStyle, PortraitIdentity } from './identity';
@@ -13,7 +13,7 @@ export interface HairColors {
 }
 
 export function hairColors(hair: string, line: string): HairColors {
-  return { base: hair, dark: shade(hair, -0.32), light: shade(hair, 0.38), line };
+  return { base: hair, dark: mix(shade(hair, -0.3), '#3a3048', 0.18), light: shade(hair, 0.38), line };
 }
 
 /** Longueur des mèches latérales devant le visage. */
@@ -79,15 +79,18 @@ export function frontHairPath(style: PortraitHairStyle): string {
 
 /** Volume arrière de la tête (derrière le visage). */
 export function backHeadPath(style: PortraitHairStyle): string {
-  const bottom = style === 'bob' ? 486 : style === 'long' ? 520 : 410;
-  const w = style === 'bob' ? 16 : 0;
-  return d(
-    'M', 178 - w, 300,
-    'C', 160, 120, 440, 120, 422 + w, 300,
-    'C', 428 + w, 360, 426 + w, 420, 410 + w, bottom,
-    'L', 190 - w, bottom,
-    'C', 174 - w, 420, 172 - w, 360, 178 - w, 300, 'Z',
-  );
+  if (style === 'bob' || style === 'long') {
+    const bottom = style === 'bob' ? 486 : 520;
+    const w = style === 'bob' ? 16 : 0;
+    return d(
+      'M', 178 - w, 300,
+      'C', 160, 120, 440, 120, 422 + w, 300,
+      'C', 428 + w, 360, 426 + w, 420, 410 + w, bottom,
+      'L', 190 - w, bottom,
+      'C', 174 - w, 420, 172 - w, 360, 178 - w, 300, 'Z',
+    );
+  }
+  return 'M178 300C160 120 440 120 422 300C426 340 420 372 400 392C360 410 240 410 200 392C180 372 174 340 178 300Z';
 }
 
 /** Cheveux derrière le corps : cheveux longs, queue-de-cheval, couettes. */
@@ -122,6 +125,28 @@ export function drawBackHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors)
   }
 }
 
+/** Reflet « anneau de lumière » : croissants fins le long d'un arc au sommet du crâne. */
+function shineRing(): string {
+  const at = (t: number): P => {
+    const u = 1 - t;
+    return [u * u * 204 + 2 * u * t * 300 + t * t * 396, u * u * 220 + 2 * u * t * 170 + t * t * 220];
+  };
+  const segments: [number, number, number][] = [
+    [0.1, 0.27, 7],
+    [0.33, 0.58, 9],
+    [0.64, 0.78, 7],
+    [0.83, 0.9, 5],
+  ];
+  return segments
+    .map(([t0, t1, thick]) => {
+      const a = at(t0);
+      const m = at((t0 + t1) / 2);
+      const e = at(t1);
+      return d('M', a[0], a[1], 'Q', m[0], m[1] - thick, e[0], e[1], 'Q', m[0], m[1] + thick * 0.6, a[0], a[1], 'Z');
+    })
+    .join('');
+}
+
 /** Frange, mèches, reflets et accessoire de tête. */
 export function drawFrontHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors): string {
   const path = frontHairPath(id.hairStyle);
@@ -136,21 +161,19 @@ export function drawFrontHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors
   const strands = tips
     .map(([x, y]) => d('M', 300 + (x - 300) * 0.3, 150, 'Q', 300 + (x - 300) * 0.8, 200, x, y - 16))
     .join('');
+  const { valleys } = fringe(id.hairStyle);
+  const inner = valleys
+    .slice(1, -1)
+    .map(([x, y], i) => d('M', x - 9, y, 'Q', x - 2, y + 30, x + (i % 2 ? 4 : -4), y + 46, 'Q', x + 4, y + 26, x + 9, y, 'Z'))
+    .join('');
   const parts = [
+    el('path', { d: inner, fill: c.dark }),
     el('path', { d: path, fill, ...b.line(1.2, c.line) }),
     el('g', { 'clip-path': `url(#${clip})` }, [
       el('path', { d: strands, fill: 'none', stroke: c.dark, 'stroke-width': 3, opacity: 0.55, 'stroke-linecap': 'round' }),
       el('path', { d: 'M196 330C206 280 212 250 226 232', fill: 'none', stroke: c.dark, 'stroke-width': 10, opacity: 0.35 }),
       el('path', { d: 'M404 330C394 280 388 250 374 232', fill: 'none', stroke: c.dark, 'stroke-width': 10, opacity: 0.35 }),
-      el('path', {
-        d: 'M206 214Q300 166 394 214',
-        fill: 'none',
-        stroke: c.light,
-        'stroke-width': 11,
-        'stroke-dasharray': '34 14',
-        'stroke-linecap': 'round',
-        opacity: 0.75,
-      }),
+      el('path', { d: shineRing(), fill: c.light, opacity: 0.55 }),
     ]),
   ];
   if (id.hairStyle === 'twintails' || id.hairStyle === 'ponytail') {

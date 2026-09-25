@@ -133,7 +133,12 @@ describe('RpgWorld — pages et déclencheurs', () => {
         y: 1,
         pages: [{ graphic: { charset: 'c', direction: 'down' }, commands: [{ type: 'text', text: 'Bonjour' }] }],
       })
-      .event({ id: 'piege', x: 1, y: 3, pages: [{ trigger: 'touch', commands: [{ type: 'setSwitch', name: 'touche' }] }] })
+      .event({
+        id: 'piege',
+        x: 1,
+        y: 3,
+        pages: [{ trigger: 'touch', commands: [{ type: 'setSwitch', name: 'touche' }] }],
+      })
       .event({ id: 'sol', x: 1, y: 1, pages: [{ priority: 'below', commands: [{ type: 'setSwitch', name: 'sol' }] }] })
       .door('porte', 5, 1, { map: 'maison', x: 2, y: 2, direction: 'up' })
       .build();
@@ -305,7 +310,9 @@ describe('RpgWorld — rencontres, téléportations et sauvegarde', () => {
         id: 'fantome',
         x: 3,
         y: 1,
-        pages: [{ graphic: { charset: 'c' }, commands: [{ type: 'erase' }, { type: 'teleport', map: 'b', x: 2, y: 2 }] }],
+        pages: [
+          { graphic: { charset: 'c' }, commands: [{ type: 'erase' }, { type: 'teleport', map: 'b', x: 2, y: 2 }] },
+        ],
       })
       .build();
     const b = grassMap('b').door('retour', 2, 3, { map: 'a', x: 1, y: 1 }).build();
