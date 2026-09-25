@@ -25,6 +25,8 @@ cp .env.example .env        # facultatif : renseignez ANTHROPIC_API_KEY pour act
 pnpm dev                    # serveur (http://127.0.0.1:8787) + éditeur (http://127.0.0.1:5173)
 ```
 
+Point d'étape et reprise : [docs/PROCHAINE-SESSION.md](docs/PROCHAINE-SESSION.md).
+
 Ouvrez <http://127.0.0.1:5173>, choisissez un modèle (« Démo : Le Café des Étoiles », « Démo : Le Village de Brume », « Démo : La Clairière »…) et cliquez sur **Jouer**.
 
 Pour une installation « production » (éditeur servi par le serveur, export web activé) :
