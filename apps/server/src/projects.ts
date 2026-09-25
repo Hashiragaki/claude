@@ -25,7 +25,9 @@ export const UpdateProjectSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
   description: z.string().max(2000).optional(),
   locale: z.string().optional(),
-  resolution: z.object({ width: z.number().int().min(64).max(4096), height: z.number().int().min(64).max(4096) }).optional(),
+  resolution: z
+    .object({ width: z.number().int().min(64).max(4096), height: z.number().int().min(64).max(4096) })
+    .optional(),
   pixelArt: z.boolean().optional(),
   entry: z.string().optional(),
 });
@@ -40,7 +42,10 @@ export class ProjectService {
     private readonly hub: EventHub,
   ) {}
 
-  async create(input: CreateProjectInput, report: (progress: string) => void = () => undefined): Promise<ProjectManifest> {
+  async create(
+    input: CreateProjectInput,
+    report: (progress: string) => void = () => undefined,
+  ): Promise<ProjectManifest> {
     const { name, mode: modeId, template: templateId, description } = CreateProjectSchema.parse(input);
     const mode = this.modes.get(modeId);
     const template = mode.templates.find((t) => t.id === templateId) ?? mode.templates[0];
@@ -118,7 +123,9 @@ export class ProjectService {
     try {
       return await mode.validate({ manifest, files: this.store.files(id) });
     } catch (error) {
-      return [{ file: manifest.entry, severity: 'error', message: error instanceof Error ? error.message : String(error) }];
+      return [
+        { file: manifest.entry, severity: 'error', message: error instanceof Error ? error.message : String(error) },
+      ];
     }
   }
 

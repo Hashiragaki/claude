@@ -78,7 +78,10 @@ body,
   background: #1b1f2a;
   border: 2px solid var(--fg-brand);
   color: var(--fg-brand);
-  font: 700 13px/24px Arial, Helvetica, sans-serif;
+  font:
+    700 13px/24px Arial,
+    Helvetica,
+    sans-serif;
   text-align: center;
   letter-spacing: -0.5px;
   flex: none;
@@ -206,10 +209,15 @@ body,
 }
 .fg-checker {
   background-color: #2a2a2a;
-  background-image: linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%),
+  background-image:
+    linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%);
   background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
 }
 .fg-pixelated {
   image-rendering: pixelated;
@@ -496,10 +504,18 @@ body,
 .fg-card .late {
   color: var(--fg-err);
 }
-.fg-prio-low { border-left-color: #6e6e6e; }
-.fg-prio-medium { border-left-color: var(--fg-accent); }
-.fg-prio-high { border-left-color: var(--fg-warn); }
-.fg-prio-critical { border-left-color: var(--fg-err); }
+.fg-prio-low {
+  border-left-color: #6e6e6e;
+}
+.fg-prio-medium {
+  border-left-color: var(--fg-accent);
+}
+.fg-prio-high {
+  border-left-color: var(--fg-warn);
+}
+.fg-prio-critical {
+  border-left-color: var(--fg-err);
+}
 .fg-progress {
   height: 6px;
   border-radius: 3px;
@@ -520,7 +536,8 @@ body,
   animation: fg-autopilot-pulse 1.6s ease-in-out infinite;
 }
 @keyframes fg-autopilot-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 1px rgba(55, 142, 240, 0.35);
   }
   50% {
@@ -548,9 +565,15 @@ body,
   white-space: pre-wrap;
   color: var(--fg-text-2);
 }
-.fg-log.warn { color: #f5c26b; }
-.fg-log.error { color: #ff8f8f; }
-.fg-log.debug { color: var(--fg-text-3); }
+.fg-log.warn {
+  color: #f5c26b;
+}
+.fg-log.error {
+  color: #ff8f8f;
+}
+.fg-log.debug {
+  color: var(--fg-text-3);
+}
 .fg-log time {
   color: var(--fg-text-3);
   margin-right: 8px;
@@ -606,7 +629,9 @@ body,
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.12s, border-color 0.12s;
+  transition:
+    transform 0.12s,
+    border-color 0.12s;
   font: inherit;
 }
 .fg-template:hover {
@@ -660,9 +685,15 @@ body,
   border-radius: 4px;
   color: #fff;
 }
-.fg-mode-vn { background: linear-gradient(135deg, #c2458b, #6a3db8); }
-.fg-mode-rpg { background: linear-gradient(135deg, #2f9e5e, #1f6e9e); }
-.fg-mode-sandbox3d { background: linear-gradient(135deg, #e0782f, #b8403d); }
+.fg-mode-vn {
+  background: linear-gradient(135deg, #c2458b, #6a3db8);
+}
+.fg-mode-rpg {
+  background: linear-gradient(135deg, #2f9e5e, #1f6e9e);
+}
+.fg-mode-sandbox3d {
+  background: linear-gradient(135deg, #e0782f, #b8403d);
+}
 
 /* ---------------------------------------------------------------- Dockview (accordé au thème) */
 .fg-dock-theme {

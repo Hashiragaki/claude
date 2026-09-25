@@ -65,10 +65,14 @@ describe('utilitaires', () => {
 });
 
 describe('AssetRegistry', () => {
-  it('résout id, alias et préfixes d\'alias (attributs Ren\'Py)', () => {
+  it("résout id, alias et préfixes d'alias (attributs Ren'Py)", () => {
     const files = new MemoryProjectFiles();
     const reg = new AssetRegistry(
-      [asset({ id: 'a1', alias: 'alice' }), asset({ id: 'a2', alias: 'Alice  Joyeuse' }), asset({ id: 'b1', alias: 'bg parc' })],
+      [
+        asset({ id: 'a1', alias: 'alice' }),
+        asset({ id: 'a2', alias: 'Alice  Joyeuse' }),
+        asset({ id: 'b1', alias: 'bg parc' }),
+      ],
       files,
     );
     expect(reg.resolve('a1')?.id).toBe('a1');
@@ -159,7 +163,12 @@ describe('Engine', () => {
     };
     const bundle = await loadProjectBundle(files);
     expect(bundle.manifest.resolution).toEqual({ width: 1280, height: 720 });
-    const engine = new Engine({ bundle, modes: new ModeRegistry([mode]), autoLoop: false, saveStorage: new MemorySaveStorage() });
+    const engine = new Engine({
+      bundle,
+      modes: new ModeRegistry([mode]),
+      autoLoop: false,
+      saveStorage: new MemorySaveStorage(),
+    });
     await engine.start();
     expect(count).toBe(5);
     engine.input.tap('confirm');

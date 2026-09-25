@@ -150,9 +150,7 @@ export type EnemyEntity = z.infer<typeof EnemyEntitySchema>;
 export type SpringEntity = z.infer<typeof SpringEntitySchema>;
 export type SignEntity = z.infer<typeof SignEntitySchema>;
 
-export const ENTITY_TYPES: readonly PlatformerEntityType[] = [
-  'coin', 'enemy', 'spring', 'checkpoint', 'goal', 'sign',
-];
+export const ENTITY_TYPES: readonly PlatformerEntityType[] = ['coin', 'enemy', 'spring', 'checkpoint', 'goal', 'sign'];
 
 // ---------------------------------------------------------------------------
 // Niveaux
@@ -181,7 +179,10 @@ export const PlatformerLevelSchema = z.object({
   music: AssetRefSchema.optional(),
   /** Image de fond (défilement parallaxe) ; sinon `backgroundColor`. */
   background: AssetRefSchema.optional(),
-  backgroundColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#79c5f2'),
+  backgroundColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#79c5f2'),
   layers: LevelLayersSchema,
   /** Case de départ du joueur (pieds posés sur le bas de la case). */
   playerStart: z.object({ x: TileCoordSchema, y: TileCoordSchema }),

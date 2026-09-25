@@ -9,7 +9,7 @@ export function toInputSchema(schema: z.ZodType): InputSchema {
   const json = z.toJSONSchema(schema, { unrepresentable: 'any', io: 'input' }) as Record<string, unknown>;
   delete json.$schema;
   if (json.type !== 'object') {
-    throw new Error('Le schéma d\'un outil doit décrire un objet JSON.');
+    throw new Error("Le schéma d'un outil doit décrire un objet JSON.");
   }
   return json as unknown as InputSchema;
 }

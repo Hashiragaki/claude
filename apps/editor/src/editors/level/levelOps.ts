@@ -27,13 +27,22 @@ export function setLayer(level: PlatformerLevel, layer: LevelLayerKey, values: n
 // Édition de tuiles
 // ---------------------------------------------------------------------------
 
-export function paintCell(level: PlatformerLevel, layer: LevelLayerKey, cell: { x: number; y: number }, value: number): PlatformerLevel {
+export function paintCell(
+  level: PlatformerLevel,
+  layer: LevelLayerKey,
+  cell: { x: number; y: number },
+  value: number,
+): PlatformerLevel {
   const values = layerArray(level, layer);
   values[cell.y * level.width + cell.x] = value;
   return setLayer(level, layer, values);
 }
 
-export function eraseCell(level: PlatformerLevel, layer: LevelLayerKey, cell: { x: number; y: number }): PlatformerLevel {
+export function eraseCell(
+  level: PlatformerLevel,
+  layer: LevelLayerKey,
+  cell: { x: number; y: number },
+): PlatformerLevel {
   return paintCell(level, layer, cell, -1);
 }
 
@@ -117,7 +126,11 @@ export function nextEntityId(entities: PlatformerEntity[], type: PlatformerEntit
 }
 
 /** Entité par défaut d'un type donné (miroir des `.default()` du schéma). */
-export function defaultEntity(type: PlatformerEntityType, id: string, cell: { x: number; y: number }): PlatformerEntity {
+export function defaultEntity(
+  type: PlatformerEntityType,
+  id: string,
+  cell: { x: number; y: number },
+): PlatformerEntity {
   const base = { id, x: cell.x, y: cell.y };
   switch (type) {
     case 'coin':
@@ -135,7 +148,11 @@ export function defaultEntity(type: PlatformerEntityType, id: string, cell: { x:
   }
 }
 
-export function addEntity(level: PlatformerLevel, type: PlatformerEntityType, cell: { x: number; y: number }): PlatformerLevel {
+export function addEntity(
+  level: PlatformerLevel,
+  type: PlatformerEntityType,
+  cell: { x: number; y: number },
+): PlatformerLevel {
   const id = nextEntityId(level.entities, type);
   return { ...level, entities: [...level.entities, defaultEntity(type, id, cell)] };
 }

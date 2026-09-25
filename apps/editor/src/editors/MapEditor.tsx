@@ -109,7 +109,10 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
         (raw) => {
           const sys = RpgSystemSchema.parse(raw);
           setSystem(sys);
-          setPath((current) => current ?? (list.includes(`maps/${sys.startMap}.json`) ? `maps/${sys.startMap}.json` : (list[0] ?? null)));
+          setPath(
+            (current) =>
+              current ?? (list.includes(`maps/${sys.startMap}.json`) ? `maps/${sys.startMap}.json` : (list[0] ?? null)),
+          );
         },
         () => setPath((current) => current ?? list[0] ?? null),
       );
@@ -120,22 +123,19 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
   useEffect(() => {
     if (!projectId || !path) return;
     let cancelled = false;
-    void api.readJson<unknown>(projectId, path).then(
-      (raw) => {
-        if (cancelled) return;
-        const parsed = RpgMapSchema.safeParse(raw);
-        if (!parsed.success) {
-          toastError(new Error(`Carte invalide (${path}) : ${parsed.error.issues[0]?.message ?? ''}`));
-          return;
-        }
-        setMap(parsed.data);
-        setDirty(false);
-        setSelectedEvent(null);
-        undoStack.current = [];
-        redoStack.current = [];
-      },
-      toastError,
-    );
+    void api.readJson<unknown>(projectId, path).then((raw) => {
+      if (cancelled) return;
+      const parsed = RpgMapSchema.safeParse(raw);
+      if (!parsed.success) {
+        toastError(new Error(`Carte invalide (${path}) : ${parsed.error.issues[0]?.message ?? ''}`));
+        return;
+      }
+      setMap(parsed.data);
+      setDirty(false);
+      setSelectedEvent(null);
+      undoStack.current = [];
+      redoStack.current = [];
+    }, toastError);
     return () => {
       cancelled = true;
     };
@@ -160,7 +160,8 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
   useEffect(() => {
     if (!map) return;
     const refs = new Set<string>();
-    for (const e of map.events) for (const p of e.pages) if (p.graphic && 'charset' in p.graphic) refs.add(p.graphic.charset);
+    for (const e of map.events)
+      for (const p of e.pages) if (p.graphic && 'charset' in p.graphic) refs.add(p.graphic.charset);
     for (const ref of refs) {
       if (charsetImages[ref]) continue;
       const asset = findAsset(assets, ref);
@@ -237,7 +238,17 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
         const x = (i % map.width) * ts;
         const y = Math.floor(i / map.width) * ts;
         if (tilesetImg) {
-          ctx.drawImage(tilesetImg, (v % columns) * TILE_PX, Math.floor(v / columns) * TILE_PX, TILE_PX, TILE_PX, x, y, ts, ts);
+          ctx.drawImage(
+            tilesetImg,
+            (v % columns) * TILE_PX,
+            Math.floor(v / columns) * TILE_PX,
+            TILE_PX,
+            TILE_PX,
+            x,
+            y,
+            ts,
+            ts,
+          );
         } else {
           ctx.fillStyle = `hsl(${(v * 47) % 360} 35% 35%)`;
           ctx.fillRect(x, y, ts, ts);
@@ -298,7 +309,17 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
         ctx.drawImage(img, fw, Math.max(0, row) * fh, fw, fh, x + (ts - w) / 2, y + ts - h, w, h);
       } else if (graphic && 'tile' in graphic && tilesetImg) {
         const v = graphic.tile;
-        ctx.drawImage(tilesetImg, (v % columns) * TILE_PX, Math.floor(v / columns) * TILE_PX, TILE_PX, TILE_PX, x, y, ts, ts);
+        ctx.drawImage(
+          tilesetImg,
+          (v % columns) * TILE_PX,
+          Math.floor(v / columns) * TILE_PX,
+          TILE_PX,
+          TILE_PX,
+          x,
+          y,
+          ts,
+          ts,
+        );
       }
       ctx.strokeStyle = event.id === selectedEvent ? '#ffd24a' : 'rgba(92,160,242,0.9)';
       ctx.lineWidth = event.id === selectedEvent ? 3 : 2;
@@ -331,7 +352,12 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
     if (rectPreview) {
       const x0 = Math.min(rectPreview.x0, rectPreview.x1);
       const y0 = Math.min(rectPreview.y0, rectPreview.y1);
-      ctx.strokeRect(x0 * ts, y0 * ts, (Math.abs(rectPreview.x1 - rectPreview.x0) + 1) * ts, (Math.abs(rectPreview.y1 - rectPreview.y0) + 1) * ts);
+      ctx.strokeRect(
+        x0 * ts,
+        y0 * ts,
+        (Math.abs(rectPreview.x1 - rectPreview.x0) + 1) * ts,
+        (Math.abs(rectPreview.y1 - rectPreview.y0) + 1) * ts,
+      );
     } else if (hover) {
       ctx.strokeRect(hover.x * ts + 1, hover.y * ts + 1, ts - 2, ts - 2);
     }
@@ -391,7 +417,9 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
         setRectPreview({ x0: cell.x, y0: cell.y, x1: cell.x, y1: cell.y });
         break;
       case 'fill':
-        commit(setLayer(map, layer, floodFill(layerArray(map, layer), map.width, map.height, cell.x, cell.y, brushValue())));
+        commit(
+          setLayer(map, layer, floodFill(layerArray(map, layer), map.width, map.height, cell.x, cell.y, brushValue())),
+        );
         break;
       case 'picker': {
         if (layer === 'collision') break;
@@ -461,7 +489,21 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
 
   const onMouseUp = () => {
     if (tool === 'rect' && rectPreview && map) {
-      commit(setLayer(map, layer, fillRect(layerArray(map, layer), map.width, rectPreview.x0, rectPreview.y0, rectPreview.x1, rectPreview.y1, brushValue())));
+      commit(
+        setLayer(
+          map,
+          layer,
+          fillRect(
+            layerArray(map, layer),
+            map.width,
+            rectPreview.x0,
+            rectPreview.y0,
+            rectPreview.x1,
+            rectPreview.y1,
+            brushValue(),
+          ),
+        ),
+      );
     }
     setRectPreview(null);
     drag.current = null;
@@ -479,8 +521,19 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
     } else if (mod && e.key.toLowerCase() === 's') {
       e.preventDefault();
       void save();
-    } else if (!mod && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
-      const shortcuts: Record<string, Tool> = { b: 'pencil', r: 'rect', g: 'fill', e: 'eraser', i: 'picker', v: 'event' };
+    } else if (
+      !mod &&
+      (e.target as HTMLElement).tagName !== 'INPUT' &&
+      (e.target as HTMLElement).tagName !== 'TEXTAREA'
+    ) {
+      const shortcuts: Record<string, Tool> = {
+        b: 'pencil',
+        r: 'rect',
+        g: 'fill',
+        e: 'eraser',
+        i: 'picker',
+        v: 'event',
+      };
       const next = shortcuts[e.key.toLowerCase()];
       if (next) setTool(next);
     }
@@ -534,7 +587,12 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
           <Tooltip>Nouvelle carte</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger>
-          <ActionButton isQuiet aria-label="Propriétés de la carte" onPress={() => setDialog('props')} isDisabled={!map}>
+          <ActionButton
+            isQuiet
+            aria-label="Propriétés de la carte"
+            onPress={() => setDialog('props')}
+            isDisabled={!map}
+          >
             <Properties />
           </ActionButton>
           <Tooltip>Propriétés de la carte</Tooltip>
@@ -549,12 +607,24 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
           </TooltipTrigger>
         ))}
         <Divider orientation="vertical" size="S" />
-        <Picker aria-label="Calque" isQuiet selectedKey={layer} onSelectionChange={(k) => setLayerKey(k as LayerKey)} width="size-2400">
+        <Picker
+          aria-label="Calque"
+          isQuiet
+          selectedKey={layer}
+          onSelectionChange={(k) => setLayerKey(k as LayerKey)}
+          width="size-2400"
+        >
           {(Object.keys(LAYER_LABELS) as LayerKey[]).map((k) => (
             <Item key={k}>{`Calque : ${LAYER_LABELS[k]}`}</Item>
           ))}
         </Picker>
-        <Picker aria-label="Zoom" isQuiet selectedKey={String(zoom)} onSelectionChange={(k) => setZoom(Number(k))} width="size-1200">
+        <Picker
+          aria-label="Zoom"
+          isQuiet
+          selectedKey={String(zoom)}
+          onSelectionChange={(k) => setZoom(Number(k))}
+          width="size-1200"
+        >
           <Item key="1">×1</Item>
           <Item key="2">×2</Item>
           <Item key="3">×3</Item>
@@ -567,7 +637,9 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
           <Redo />
         </ActionButton>
         <div className="fg-spacer" />
-        <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{hover && map ? `(${hover.x}, ${hover.y})` : ''}</span>
+        <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
+          {hover && map ? `(${hover.x}, ${hover.y})` : ''}
+        </span>
         <ActionButton onPress={() => void save()} isDisabled={!dirty}>
           <SaveFloppy />
           <Text>Enregistrer{dirty ? ' •' : ''}</Text>
@@ -603,12 +675,22 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
             <div className="fg-empty">{maps.length ? 'Chargement…' : 'Aucune carte. Créez-en une avec « + ».'}</div>
           )}
         </div>
-        <aside style={{ width: 330, borderLeft: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)', padding: 10 }}>
+        <aside
+          style={{
+            width: 330,
+            borderLeft: '1px solid var(--fg-bg-0)',
+            overflow: 'auto',
+            background: 'var(--fg-bg-1)',
+            padding: 10,
+          }}
+        >
           {tool === 'event' && selected ? (
             <EventInspector
               key={selected.id}
               event={selected}
-              onChange={(event) => map && commit({ ...map, events: map.events.map((e) => (e.id === event.id ? event : e)) })}
+              onChange={(event) =>
+                map && commit({ ...map, events: map.events.map((e) => (e.id === event.id ? event : e)) })
+              }
               onDelete={() => {
                 if (!map) return;
                 commit({ ...map, events: map.events.filter((e) => e.id !== selected.id) });
@@ -621,14 +703,19 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
                 Collisions
               </div>
               <p style={{ fontSize: 12, color: 'var(--fg-text-2)', margin: 0 }}>
-                Par défaut, la praticabilité vient des tuiles (rouge pâle = bloquant). Vous pouvez la forcer case par case.
+                Par défaut, la praticabilité vient des tuiles (rouge pâle = bloquant). Vous pouvez la forcer case par
+                case.
               </p>
               {[
                 [1, 'Bloquer'],
                 [2, 'Forcer le passage'],
                 [0, 'Automatique (selon les tuiles)'],
               ].map(([value, label]) => (
-                <ToggleButton key={String(value)} isSelected={collisionBrush === value} onChange={() => setCollisionBrush(value as number)}>
+                <ToggleButton
+                  key={String(value)}
+                  isSelected={collisionBrush === value}
+                  onChange={() => setCollisionBrush(value as number)}
+                >
                   {label as string}
                 </ToggleButton>
               ))}
@@ -639,17 +726,27 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
                 Tuiles — {tilesetAsset?.name ?? map?.tileset ?? '—'}
               </div>
               {tilesetImg ? (
-                <canvas ref={paletteRef} className="fg-tile-palette" onClick={onPaletteClick} style={{ width: '100%' }} />
+                <canvas
+                  ref={paletteRef}
+                  className="fg-tile-palette"
+                  onClick={onPaletteClick}
+                  style={{ width: '100%' }}
+                />
               ) : (
-                <p style={{ fontSize: 12, color: 'var(--fg-warn)' }}>Tileset introuvable : vérifiez l'alias dans les propriétés de la carte.</p>
+                <p style={{ fontSize: 12, color: 'var(--fg-warn)' }}>
+                  Tileset introuvable : vérifiez l'alias dans les propriétés de la carte.
+                </p>
               )}
               <span style={{ fontSize: 12, color: 'var(--fg-text-2)' }}>
-                Tuile #{tile} : {tileName?.name ?? '—'} {tileName ? (tileName.passable ? '· praticable' : '· bloquante') : ''}
-                {tileName && tileName.layer !== layer ? ` · calque conseillé : ${LAYER_LABELS[tileName.layer as LayerKey]}` : ''}
+                Tuile #{tile} : {tileName?.name ?? '—'}{' '}
+                {tileName ? (tileName.passable ? '· praticable' : '· bloquante') : ''}
+                {tileName && tileName.layer !== layer
+                  ? ` · calque conseillé : ${LAYER_LABELS[tileName.layer as LayerKey]}`
+                  : ''}
               </span>
               <p style={{ fontSize: 11, color: 'var(--fg-text-3)', margin: 0 }}>
-                Astuce : les feuillages et toits vont sur le calque « Au-dessus », les objets sur « Décor ». Outil Événements (V)
-                : cliquez une case pour créer ou sélectionner un événement, glissez pour le déplacer.
+                Astuce : les feuillages et toits vont sur le calque « Au-dessus », les objets sur « Décor ». Outil
+                Événements (V) : cliquez une case pour créer ou sélectionner un événement, glissez pour le déplacer.
               </p>
             </Flex>
           )}
@@ -668,7 +765,14 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
             }}
             tilesets={tilesetAssets}
             onSubmit={async (values) => {
-              const created = emptyMap(values.id, values.name, values.width, values.height, values.tileset, TILE.ground);
+              const created = emptyMap(
+                values.id,
+                values.name,
+                values.width,
+                values.height,
+                values.tileset,
+                TILE.ground,
+              );
               const file = `maps/${values.id}.json`;
               await api.writeJson(projectId, file, created);
               setMaps((m) => [...m, file].sort());
@@ -681,13 +785,25 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
         {dialog === 'props' && map && (
           <MapDialog
             title="Propriétés de la carte"
-            initial={{ id: map.id, name: map.name, width: map.width, height: map.height, tileset: map.tileset, music: map.music, rate: map.encounters?.rate, troops: map.encounters?.troops.join(', ') }}
+            initial={{
+              id: map.id,
+              name: map.name,
+              width: map.width,
+              height: map.height,
+              tileset: map.tileset,
+              music: map.music,
+              rate: map.encounters?.rate,
+              troops: map.encounters?.troops.join(', '),
+            }}
             tilesets={tilesetAssets}
             musics={assets.filter((a) => a.kind === 'music' && a.alias)}
             showEncounters
             lockId
             onSubmit={async (values) => {
-              let next = map.width !== values.width || map.height !== values.height ? resizeMap(map, values.width, values.height, TILE.ground) : map;
+              let next =
+                map.width !== values.width || map.height !== values.height
+                  ? resizeMap(map, values.width, values.height, TILE.ground)
+                  : map;
               const troops = (values.troops ?? '')
                 .split(',')
                 .map((t) => t.trim())
@@ -697,7 +813,13 @@ export function MapEditor({ initialPath }: { initialPath?: string }) {
                 name: values.name,
                 tileset: values.tileset,
                 ...(values.music ? { music: values.music } : { music: undefined }),
-                encounters: troops.length ? { troops, rate: values.rate ?? 20, ...(map.encounters?.onlyOnRole ? { onlyOnRole: map.encounters.onlyOnRole } : {}) } : undefined,
+                encounters: troops.length
+                  ? {
+                      troops,
+                      rate: values.rate ?? 20,
+                      ...(map.encounters?.onlyOnRole ? { onlyOnRole: map.encounters.onlyOnRole } : {}),
+                    }
+                  : undefined,
               };
               commit(next);
               setDialog(null);
@@ -746,27 +868,69 @@ function MapDialog(props: {
       <Content>
         <Flex direction="column" gap="size-100">
           <Flex gap="size-100">
-            <TextField label="Identifiant" value={values.id} onChange={(id) => set({ id: id.replace(/[^a-z0-9_-]/gi, '') })} isReadOnly={props.lockId} flex />
+            <TextField
+              label="Identifiant"
+              value={values.id}
+              onChange={(id) => set({ id: id.replace(/[^a-z0-9_-]/gi, '') })}
+              isReadOnly={props.lockId}
+              flex
+            />
             <TextField label="Nom" value={values.name} onChange={(name) => set({ name })} flex />
           </Flex>
           <Flex gap="size-100">
-            <NumberField label="Largeur (cases)" value={values.width} minValue={5} maxValue={200} onChange={(width) => set({ width })} flex />
-            <NumberField label="Hauteur (cases)" value={values.height} minValue={5} maxValue={200} onChange={(height) => set({ height })} flex />
+            <NumberField
+              label="Largeur (cases)"
+              value={values.width}
+              minValue={5}
+              maxValue={200}
+              onChange={(width) => set({ width })}
+              flex
+            />
+            <NumberField
+              label="Hauteur (cases)"
+              value={values.height}
+              minValue={5}
+              maxValue={200}
+              onChange={(height) => set({ height })}
+              flex
+            />
           </Flex>
-          <Picker label="Tileset (alias)" selectedKey={values.tileset} onSelectionChange={(k) => set({ tileset: String(k) })}>
+          <Picker
+            label="Tileset (alias)"
+            selectedKey={values.tileset}
+            onSelectionChange={(k) => set({ tileset: String(k) })}
+          >
             {props.tilesets.map((t) => (
               <Item key={t.alias!}>{`${t.alias} — ${t.name}`}</Item>
             ))}
           </Picker>
           {props.musics && (
-            <Picker label="Musique" selectedKey={values.music ?? 'none'} onSelectionChange={(k) => set({ music: k === 'none' ? undefined : String(k) })}>
-              {[<Item key="none">Musique par défaut</Item>, ...props.musics.map((m) => <Item key={m.alias!}>{m.alias!}</Item>)]}
+            <Picker
+              label="Musique"
+              selectedKey={values.music ?? 'none'}
+              onSelectionChange={(k) => set({ music: k === 'none' ? undefined : String(k) })}
+            >
+              {[
+                <Item key="none">Musique par défaut</Item>,
+                ...props.musics.map((m) => <Item key={m.alias!}>{m.alias!}</Item>),
+              ]}
             </Picker>
           )}
           {props.showEncounters && (
             <Flex gap="size-100">
-              <TextField label="Rencontres : troupes (ids séparés par des virgules)" value={values.troops ?? ''} onChange={(troops) => set({ troops })} flex />
-              <NumberField label="Pas moyens" value={values.rate ?? 20} minValue={1} onChange={(rate) => set({ rate })} width="size-1600" />
+              <TextField
+                label="Rencontres : troupes (ids séparés par des virgules)"
+                value={values.troops ?? ''}
+                onChange={(troops) => set({ troops })}
+                flex
+              />
+              <NumberField
+                label="Pas moyens"
+                value={values.rate ?? 20}
+                minValue={1}
+                onChange={(rate) => set({ rate })}
+                width="size-1600"
+              />
             </Flex>
           )}
         </Flex>
@@ -775,7 +939,11 @@ function MapDialog(props: {
         <Button variant="secondary" onPress={props.onClose}>
           Annuler
         </Button>
-        <Button variant="accent" onPress={() => void props.onSubmit(values).catch(toastError)} isDisabled={!values.id || !values.tileset}>
+        <Button
+          variant="accent"
+          onPress={() => void props.onSubmit(values).catch(toastError)}
+          isDisabled={!values.id || !values.tileset}
+        >
           Valider
         </Button>
       </ButtonGroup>

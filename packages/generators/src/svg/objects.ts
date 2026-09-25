@@ -26,8 +26,20 @@ export const OBJECT_WORDS: Record<ObjectName, readonly string[]> = {
   sword: ['epee', 'sword', 'lame', 'blade', 'sabre', 'katana', 'arme', 'weapon'],
   key: ['cle', 'clef', 'key'],
   gem: [
-    'gemme', 'gem', 'cristal', 'crystal', 'diamant', 'diamond', 'rubis', 'ruby', 'emeraude',
-    'emerald', 'saphir', 'sapphire', 'joyau', 'jewel',
+    'gemme',
+    'gem',
+    'cristal',
+    'crystal',
+    'diamant',
+    'diamond',
+    'rubis',
+    'ruby',
+    'emeraude',
+    'emerald',
+    'saphir',
+    'sapphire',
+    'joyau',
+    'jewel',
   ],
   scroll: ['parchemin', 'scroll', 'rouleau', 'carte', 'map', 'lettre', 'letter', 'quete', 'quest'],
   coin: ['piece', 'coin', 'monnaie', 'money', 'or', 'gold'],
@@ -86,10 +98,7 @@ const ramp3 = (c: string): [string, string, string] => [shade(c, -0.4), c, shade
 
 function sparkle(x: number, y: number, r: number, color = '#ffffff'): string {
   return el('path', {
-    d: d(
-      'M', x, y - r, 'Q', x, y, x + r, y, 'Q', x, y, x, y + r, 'Q', x, y, x - r, y, 'Q', x, y,
-      x, y - r, 'Z'
-    ),
+    d: d('M', x, y - r, 'Q', x, y, x + r, y, 'Q', x, y, x, y + r, 'Q', x, y, x - r, y, 'Q', x, y, x, y - r, 'Z'),
     fill: color,
   });
 }
@@ -108,12 +117,32 @@ function shine(x1: number, y1: number, x2: number, y2: number, w = 9): string {
 const DRAW: Record<ObjectName, (x: Ctx) => string> = {
   potion: ({ b, c, line }) =>
     [
-      el('circle', { cx: 128, cy: 160, r: 74, fill: b.lin([[0, '#eef8ff'], [1, '#b8d0e4']]), opacity: 0.9, ...line }),
+      el('circle', {
+        cx: 128,
+        cy: 160,
+        r: 74,
+        fill: b.lin([
+          [0, '#eef8ff'],
+          [1, '#b8d0e4'],
+        ]),
+        opacity: 0.9,
+        ...line,
+      }),
       el('path', { d: 'M60 170A70 70 0 0 0 196 170C196 150 60 150 60 170Z', fill: tri(b, ramp3(c), [0, 0, 0.6, 1]) }),
       el('path', { d: 'M62 166Q128 150 194 166Q128 184 62 166Z', fill: shade(c, 0.3) }),
       el('circle', { cx: 150, cy: 196, r: 7, fill: '#ffffff', opacity: 0.5 }),
       el('circle', { cx: 120, cy: 210, r: 5, fill: '#ffffff', opacity: 0.4 }),
-      el('rect', { x: 104, y: 56, width: 48, height: 40, fill: b.lin([[0, '#eef8ff'], [1, '#c4d8ea']]), ...line }),
+      el('rect', {
+        x: 104,
+        y: 56,
+        width: 48,
+        height: 40,
+        fill: b.lin([
+          [0, '#eef8ff'],
+          [1, '#c4d8ea'],
+        ]),
+        ...line,
+      }),
       el('rect', { x: 96, y: 26, width: 64, height: 36, rx: 8, fill: tri(b, WOOD), ...line }),
       el('path', { d: 'M104 40H152', stroke: WOOD[0], 'stroke-width': 3, opacity: 0.6 }),
       shine(86, 150, 104, 116, 10),
@@ -143,7 +172,10 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('circle', { cx: 80, cy: 80, r: 50, fill: tri(b, GOLD), ...line }),
       el('circle', { cx: 80, cy: 80, r: 24, fill: 'none', stroke: GOLD[0], 'stroke-width': 6 }),
       el('path', {
-        d: points(starPoints(80, 80, 16, 7, 4, -45)).replace(/^/, 'M').replace(/ /g, 'L') + 'Z',
+        d:
+          points(starPoints(80, 80, 16, 7, 4, -45))
+            .replace(/^/, 'M')
+            .replace(/ /g, 'L') + 'Z',
         fill: GOLD[0],
       }),
       el('path', { d: 'M108 112L212 216', stroke: GOLD[0], 'stroke-width': 28, 'stroke-linecap': 'round' }),
@@ -194,7 +226,10 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('path', { d: 'M150 178L140 226L156 214L166 228L170 178Z', fill: shade(c, -0.1), ...line }),
       el('circle', { cx: 158, cy: 176, r: 20, fill: tri(b, ramp3(c)), ...line }),
       el('path', {
-        d: points(starPoints(158, 176, 10, 4, 5)).replace(/^/, 'M').replace(/ /g, 'L') + 'Z',
+        d:
+          points(starPoints(158, 176, 10, 4, 5))
+            .replace(/^/, 'M')
+            .replace(/ /g, 'L') + 'Z',
         fill: shade(c, -0.35),
       }),
     ].join('');
@@ -206,7 +241,10 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('circle', { cx: 128, cy: 128, r: 92, fill: tri(b, g), ...line }),
       el('circle', { cx: 128, cy: 128, r: 70, fill: 'none', stroke: g[0], 'stroke-width': 6, opacity: 0.6 }),
       el('path', {
-        d: points(starPoints(128, 128, 44, 18, 5)).replace(/^/, 'M').replace(/ /g, 'L') + 'Z',
+        d:
+          points(starPoints(128, 128, 44, 18, 5))
+            .replace(/^/, 'M')
+            .replace(/ /g, 'L') + 'Z',
         fill: g[1] as string,
         stroke: g[0],
         'stroke-width': 5,
@@ -225,9 +263,13 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       }),
       el('path', { d: 'M128 42L196 64V120C196 164 166 196 128 214C90 196 60 164 60 120V64Z', fill: tri(b, ramp3(c)) }),
       el('path', { d: 'M116 70H140V116H182V140H140V196H116V140H74V116H116Z', fill: tri(b, GOLD), ...line }),
-      ...[[128, 32], [56, 58], [200, 58], [56, 140], [200, 140]].map(([x, y]) =>
-        el('circle', { cx: x, cy: y, r: 6, fill: STEEL[2], ...line })
-      ),
+      ...[
+        [128, 32],
+        [56, 58],
+        [200, 58],
+        [56, 140],
+        [200, 140],
+      ].map(([x, y]) => el('circle', { cx: x, cy: y, r: 6, fill: STEEL[2], ...line })),
       shine(70, 150, 72, 80, 9),
     ].join(''),
   book: ({ b, c, line }) =>
@@ -238,17 +280,25 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('rect', { x: 44, y: 30, width: 26, height: 196, rx: 8, fill: shade(c, -0.3) }),
       el('rect', { x: 86, y: 60, width: 88, height: 136, rx: 8, fill: 'none', stroke: GOLD[1], 'stroke-width': 5 }),
       el('path', {
-        d: points(regularPolygon(130, 128, 26, 6)).replace(/^/, 'M').replace(/ /g, 'L') + 'Z',
+        d:
+          points(regularPolygon(130, 128, 26, 6))
+            .replace(/^/, 'M')
+            .replace(/ /g, 'L') + 'Z',
         fill: tri(b, GOLD),
         ...line,
       }),
       el('circle', { cx: 130, cy: 128, r: 12, fill: shade(c, 0.5), ...line }),
-      ...[[70, 36], [174, 36], [70, 212], [174, 212]].map(([x, y]) =>
+      ...[
+        [70, 36],
+        [174, 36],
+        [70, 212],
+        [174, 212],
+      ].map(([x, y]) =>
         el('path', {
           d: d('M', x, y, 'h', 16, 'l', -16, 16, 'Z'),
           fill: GOLD[1],
           transform: x > 100 ? `rotate(90 ${x} ${y})` : undefined,
-        })
+        }),
       ),
       sparkle(200, 40, 12),
     ].join(''),
@@ -257,8 +307,12 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('path', {
         d: 'M128 222C60 170 26 130 30 90C34 50 76 32 104 48C116 55 124 64 128 74C132 64 140 55 152 48C180 32 222 50 226 90C230 130 196 170 128 222Z',
         fill: b.rad(
-          [[0, shade(c, 0.35)], [0.6, c], [1, shade(c, -0.35)]],
-          { cx: 0.35, cy: 0.3, r: 0.8 }
+          [
+            [0, shade(c, 0.35)],
+            [0.6, c],
+            [1, shade(c, -0.35)],
+          ],
+          { cx: 0.35, cy: 0.3, r: 0.8 },
         ),
         ...line,
       }),
@@ -283,8 +337,12 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
         cy: 150,
         r: 84,
         fill: b.rad(
-          [[0, shade(c, 0.45)], [0.5, c], [1, shade(c, -0.4)]],
-          { cx: 0.35, cy: 0.3, r: 0.8 }
+          [
+            [0, shade(c, 0.45)],
+            [0.5, c],
+            [1, shade(c, -0.4)],
+          ],
+          { cx: 0.35, cy: 0.3, r: 0.8 },
         ),
         ...line,
       }),
@@ -341,8 +399,12 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
         cy: 70,
         r: 28,
         fill: b.rad(
-          [[0, '#ffffff'], [0.4, shade(c, 0.3)], [1, c]],
-          { cx: 0.35, cy: 0.35 }
+          [
+            [0, '#ffffff'],
+            [0.4, shade(c, 0.3)],
+            [1, c],
+          ],
+          { cx: 0.35, cy: 0.35 },
         ),
         ...line,
       }),
@@ -355,20 +417,33 @@ const DRAW: Record<ObjectName, (x: Ctx) => string> = {
       el('ellipse', { cx: 128, cy: 222, rx: 70, ry: 10, fill: '#1a1024', opacity: 0.2 }),
       el('path', {
         d: 'M96 130C92 170 88 200 96 220H160C168 200 164 170 160 130Z',
-        fill: b.lin([[0, '#fff8ec'], [1, '#e0cfb0']], [0, 0, 1, 0]),
+        fill: b.lin(
+          [
+            [0, '#fff8ec'],
+            [1, '#e0cfb0'],
+          ],
+          [0, 0, 1, 0],
+        ),
         ...line,
       }),
       el('path', {
         d: 'M24 136C24 70 72 30 128 30C184 30 232 70 232 136C232 150 24 150 24 136Z',
         fill: b.rad(
-          [[0, shade(c, 0.35)], [0.6, c], [1, shade(c, -0.35)]],
-          { cx: 0.35, cy: 0.3, r: 0.8 }
+          [
+            [0, shade(c, 0.35)],
+            [0.6, c],
+            [1, shade(c, -0.35)],
+          ],
+          { cx: 0.35, cy: 0.3, r: 0.8 },
         ),
         ...line,
       }),
-      ...[[78, 84, 18], [144, 60, 14], [184, 104, 16], [118, 112, 10]].map(([x, y, r]) =>
-        el('circle', { cx: x, cy: y, r, fill: '#fff8ec' })
-      ),
+      ...[
+        [78, 84, 18],
+        [144, 60, 14],
+        [184, 104, 16],
+        [118, 112, 10],
+      ].map(([x, y, r]) => el('circle', { cx: x, cy: y, r, fill: '#fff8ec' })),
       el('path', {
         d: 'M40 136Q128 154 216 136',
         fill: 'none',

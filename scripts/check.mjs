@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Vérification rapide et déterministe de packages : tsc + vitest + lignes > 120 caractères.
- * Usage : node scripts/check.mjs packages/core apps/server [--no-tests] [--json]
+ * Vérification rapide et déterministe de packages : tsc + vitest + format Prettier (+ lignes > 120 en info).
+ * Usage : node scripts/check.mjs packages/core apps/server [--no-tests] [--json] [--long]
  * Sans argument : tous les packages et applications. Code de sortie 1 si un contrôle échoue.
  * Pensé pour les agents : sortie courte (résumé texte, ou JSON avec --json).
  */
@@ -44,7 +44,7 @@ function walk(dir, out = []) {
 
 function checkTarget(target) {
   const dir = path.join(ROOT, target);
-  const result = { target, tsc: { ok: true, errors: [] }, tests: null, longLines: [] };
+  const result = { target, tsc: { ok: true, errors: [] }, tests: null, format: { ok: true, files: [] }, longLines: [] };
   if (!existsSync(dir)) {
     result.tsc = { ok: false, errors: [`dossier introuvable : ${target}`] };
     return result;
@@ -59,7 +59,11 @@ function checkTarget(target) {
   if (!flags.has('--no-tests')) {
     const tmp = mkdtempSync(path.join(os.tmpdir(), 'forge-check-'));
     const report = path.join(tmp, 'vitest.json');
-    const vt = run('npx', ['vitest', 'run', target, '--reporter=json', `--outputFile=${report}`, '--passWithNoTests'], ROOT);
+    const vt = run(
+      'npx',
+      ['vitest', 'run', target, '--reporter=json', `--outputFile=${report}`, '--passWithNoTests'],
+      ROOT,
+    );
     let tests = { ok: vt.code === 0, passed: 0, failed: 0, failures: [] };
     try {
       const json = JSON.parse(readFileSync(report, 'utf8'));
@@ -68,7 +72,9 @@ function checkTarget(target) {
       for (const file of json.testResults ?? []) {
         for (const t of file.assertionResults ?? []) {
           if (t.status !== 'failed') continue;
-          const msg = String((t.failureMessages ?? [])[0] ?? '').split('\n')[0].slice(0, 300);
+          const msg = String((t.failureMessages ?? [])[0] ?? '')
+            .split('\n')[0]
+            .slice(0, 300);
           tests.failures.push(`${path.relative(ROOT, file.name)} › ${t.fullName} : ${msg}`);
         }
         if (file.status === 'failed' && (file.assertionResults ?? []).length === 0) {
@@ -83,6 +89,13 @@ function checkTarget(target) {
     result.tests = tests;
   }
 
+  const fmt = run('npx', ['prettier', '--check', '--log-level', 'warn', path.join(target, 'src')], ROOT);
+  const unformatted = fmt.out
+    .split('\n')
+    .map((l) => l.replace(/^\[warn\]\s*/, '').trim())
+    .filter((l) => /\.(ts|tsx|mjs|css)$/.test(l));
+  result.format = { ok: fmt.code === 0, files: unformatted.slice(0, MAX_ITEMS) };
+
   for (const file of walk(path.join(dir, 'src'))) {
     readFileSync(file, 'utf8')
       .split('\n')
@@ -95,18 +108,22 @@ function checkTarget(target) {
 }
 
 const results = targets.map(checkTarget);
-const ok = results.every((r) => r.tsc.ok && (r.tests?.ok ?? true) && r.longLines.length === 0);
+const ok = results.every((r) => r.tsc.ok && (r.tests?.ok ?? true) && r.format.ok);
 
 if (flags.has('--json')) {
   console.log(JSON.stringify({ ok, results }, null, 2));
 } else {
   for (const r of results) {
-    const tests = r.tests ? `tests ${r.tests.ok ? 'OK' : 'ÉCHEC'} (${r.tests.passed} ✓, ${r.tests.failed} ✗)` : 'tests ignorés';
-    const lines = r.longLines.length ? `${r.longLines.length} ligne(s) > ${MAX_LINE}` : 'lignes OK';
-    console.log(`${r.target} : tsc ${r.tsc.ok ? 'OK' : 'ÉCHEC'} · ${tests} · ${lines}`);
+    const tests = r.tests
+      ? `tests ${r.tests.ok ? 'OK' : 'ÉCHEC'} (${r.tests.passed} ✓, ${r.tests.failed} ✗)`
+      : 'tests ignorés';
+    const fmt = r.format.ok ? 'format OK' : `format ÉCHEC (${r.format.files.length} fichier(s), lancer pnpm format)`;
+    const lines = r.longLines.length ? `${r.longLines.length} ligne(s) > ${MAX_LINE} (info)` : 'lignes OK';
+    console.log(`${r.target} : tsc ${r.tsc.ok ? 'OK' : 'ÉCHEC'} · ${tests} · ${fmt} · ${lines}`);
     for (const e of r.tsc.errors) console.log(`  tsc  ${e}`);
     for (const f of r.tests?.failures ?? []) console.log(`  test ${f}`);
-    for (const l of r.longLines) console.log(`  long ${l}`);
+    for (const f of r.format.files) console.log(`  fmt  ${f}`);
+    if (flags.has('--long')) for (const l of r.longLines) console.log(`  long ${l}`);
   }
   console.log(ok ? 'RÉSULTAT : OK' : 'RÉSULTAT : ÉCHEC');
 }

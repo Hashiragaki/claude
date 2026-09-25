@@ -24,7 +24,7 @@ describe('routingFromEnv', () => {
     }
   });
 
-  it('surcharge le modèle et l\'effort d\'un rôle', () => {
+  it("surcharge le modèle et l'effort d'un rôle", () => {
     const table = routingFromEnv({
       FORGE_MODEL_GENERATE: 'claude-opus-5',
       FORGE_EFFORT_CHAT: 'medium',
@@ -132,7 +132,7 @@ describe('RoutedLlmClient', () => {
     expect(events[0]?.at).toBe('2026-01-01T00:00:00.000Z');
   });
 
-  it('BudgetExceededError levée par beforeSend annule l\'appel', async () => {
+  it("BudgetExceededError levée par beforeSend annule l'appel", async () => {
     const fake = new FakeLlmClient([{ content: [textBlock('ok')] }]);
     const client = new RoutedLlmClient(fake, {
       beforeSend: () => {

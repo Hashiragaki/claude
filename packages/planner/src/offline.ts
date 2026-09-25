@@ -77,7 +77,9 @@ export function handleOfflineCommand(planner: Planner, message: string): Offline
       case 'tasks': {
         const open = planner.listTasks({ status: ['in_progress', 'todo', 'blocked'] });
         if (!open.length) return reply('Aucune tâche ouverte. Crée-en une avec `/tache …`.');
-        return reply(`**Tâches ouvertes (${open.length})**\n${open.map((t) => `- ${describeTask(t, planner)}`).join('\n')}`);
+        return reply(
+          `**Tâches ouvertes (${open.length})**\n${open.map((t) => `- ${describeTask(t, planner)}`).join('\n')}`,
+        );
       }
       case 'fait':
       case 'done':

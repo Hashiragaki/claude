@@ -35,8 +35,8 @@ const fr = {
   'home.title': 'Accueil',
   'home.recent': 'Projets récents',
   'home.new': 'Nouveau projet',
-  'home.empty': 'Aucun projet pour l\'instant. Créez-en un à partir d\'un modèle.',
-  'home.templates': 'Démarrer à partir d\'un modèle',
+  'home.empty': "Aucun projet pour l'instant. Créez-en un à partir d'un modèle.",
+  'home.templates': "Démarrer à partir d'un modèle",
 } as const;
 
 type Key = keyof typeof fr;

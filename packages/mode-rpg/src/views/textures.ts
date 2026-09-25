@@ -52,7 +52,9 @@ function drawPlaceholderTile(g: Graphics, roleId: string, layer: string): void {
   if (layer === 'overhead') {
     g.circle(s / 2, s / 2, s / 2).fill(color);
   } else if (layer === 'decor') {
-    g.roundRect(2, 2, s - 4, s - 4, 2).fill(color).stroke({ width: 1, color: 0, alpha: 0.35 });
+    g.roundRect(2, 2, s - 4, s - 4, 2)
+      .fill(color)
+      .stroke({ width: 1, color: 0, alpha: 0.35 });
   } else {
     g.rect(0, 0, s, s).fill(color);
   }

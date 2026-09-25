@@ -70,7 +70,7 @@ export class RpgRuntime implements GameRuntime {
   // -------------------------------------------------------------------------
 
   async start(): Promise<void> {
-    if (!this.ctx.mount) throw new Error('Le runtime RPG nécessite un élément d\'affichage');
+    if (!this.ctx.mount) throw new Error("Le runtime RPG nécessite un élément d'affichage");
     const { width: w, height: h } = this;
     this.stage = await createStage(this.ctx.mount, { width: w, height: h, pixelArt: true, background: 0x000000 });
     this.scenes = this.createSceneContext();

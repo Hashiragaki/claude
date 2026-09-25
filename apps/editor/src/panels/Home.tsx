@@ -118,7 +118,15 @@ export function Home() {
                 {modeBadge(p.mode)}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--fg-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--fg-text-3)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {p.description || '—'}
                   </div>
                 </div>
@@ -166,7 +174,10 @@ export function NewProjectDialog(props: { initialMode?: string; initialTemplate?
   const [mode, setMode] = useState(props.initialMode ?? modes[0]?.id ?? 'vn');
   const current = modes.find((m) => m.id === mode);
   const [template, setTemplate] = useState(
-    props.initialTemplate || current?.templates.find((t) => t.id.endsWith('demo'))?.id || current?.templates[0]?.id || '',
+    props.initialTemplate ||
+      current?.templates.find((t) => t.id.endsWith('demo'))?.id ||
+      current?.templates[0]?.id ||
+      '',
   );
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -211,7 +222,11 @@ export function NewProjectDialog(props: { initialMode?: string; initialTemplate?
               <Item key={m.id}>{m.name}</Item>
             ))}
           </Picker>
-          <Picker label="Modèle" selectedKey={selectedTemplate?.id ?? null} onSelectionChange={(k) => setTemplate(String(k))}>
+          <Picker
+            label="Modèle"
+            selectedKey={selectedTemplate?.id ?? null}
+            onSelectionChange={(k) => setTemplate(String(k))}
+          >
             {templates.map((t) => (
               <Item key={t.id}>{t.name}</Item>
             ))}

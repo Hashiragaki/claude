@@ -115,7 +115,7 @@ export class AutopilotService {
 
   /** Lance (et attend) une exécution du pilote. Utilisé par `start` et directement par les tests. */
   run(projectId: string, options: { maxTasks?: number } = {}): Promise<AutopilotStatus> {
-    if (!this.deps.llm) throw Object.assign(new Error('L\'assistant IA n\'est pas configuré.'), { statusCode: 400 });
+    if (!this.deps.llm) throw Object.assign(new Error("L'assistant IA n'est pas configuré."), { statusCode: 400 });
     const maxTasks = Math.min(20, Math.max(1, Math.round(options.maxTasks ?? 5)));
     // Lève une 409 (message selon le détenteur) si le chat ou le pilote travaille déjà.
     const controller = this.deps.lock.acquire(projectId, 'autopilot');

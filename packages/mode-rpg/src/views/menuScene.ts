@@ -272,17 +272,13 @@ export class MenuScene extends Container {
 
   private async confirmTitle(): Promise<boolean> {
     this.help(this.t('rpg.confirmTitle'));
-    const pick = await this.ctx.choose(
-      this.targets,
-      [{ label: this.t('rpg.yes') }, { label: this.t('rpg.no') }],
-      {
-        x: 600,
-        y: this.ctx.height / 2 - choiceMenuHeight(this.ctx.theme, 2) / 2,
-        width: 200,
-        cancelable: true,
-        initialIndex: 1,
-      },
-    );
+    const pick = await this.ctx.choose(this.targets, [{ label: this.t('rpg.yes') }, { label: this.t('rpg.no') }], {
+      x: 600,
+      y: this.ctx.height / 2 - choiceMenuHeight(this.ctx.theme, 2) / 2,
+      width: 200,
+      cancelable: true,
+      initialIndex: 1,
+    });
     this.help(null);
     return pick === 0;
   }

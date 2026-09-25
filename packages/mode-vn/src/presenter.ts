@@ -49,7 +49,10 @@ export class HeadlessPresenter implements VNPresenter {
 
   showMenu(step: MenuStep): void {
     this.choices = step.choices;
-    this.index = Math.max(0, step.choices.findIndex((c) => c.enabled));
+    this.index = Math.max(
+      0,
+      step.choices.findIndex((c) => c.enabled),
+    );
   }
 
   pollMenu(input: InputManager): number | null {

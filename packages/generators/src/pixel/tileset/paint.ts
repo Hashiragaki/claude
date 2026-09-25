@@ -40,7 +40,9 @@ export function blob(
 
 /** Grappe de feuillage : plusieurs boules ombrées qui se chevauchent. */
 export function foliage(t: Tile, clumps: readonly [number, number, number][], tones: readonly string[]): void {
-  clumps.forEach(([x, y, r], i) => blob(t, x, y, r, r * 0.92, tones, { bumps: 5, bumpAmp: 0.12, phase: i * 1.7, bias: -y / 60 }));
+  clumps.forEach(([x, y, r], i) =>
+    blob(t, x, y, r, r * 0.92, tones, { bumps: 5, bumpAmp: 0.12, phase: i * 1.7, bias: -y / 60 }),
+  );
 }
 
 /** Petite flamme (base orange, cœur clair). */

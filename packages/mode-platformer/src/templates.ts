@@ -54,14 +54,26 @@ function backgroundAsset(alias: string, name: string, seed: number, prompt: stri
 
 type PlatformMusicMood = 'calm' | 'happy' | 'tense' | 'sad' | 'epic' | 'mysterious' | 'battle' | 'village';
 
-function musicAsset(alias: string, name: string, mood: PlatformMusicMood, seed: number, prompt: string): TemplateAssetRequest {
+function musicAsset(
+  alias: string,
+  name: string,
+  mood: PlatformMusicMood,
+  seed: number,
+  prompt: string,
+): TemplateAssetRequest {
   return { alias, name, generator: 'music', params: { mood, bars: 8, prompt }, seed, tags: ['platformer', 'musique'] };
 }
 
 /** Effets sonores utilisés par `PlatformerSfxSchema` (`jump`, `coin`, `hurt`, `spring`). */
 type PlatformSfxPreset = 'jump' | 'coin' | 'hit' | 'powerup';
 
-function sfxAsset(alias: string, name: string, preset: PlatformSfxPreset, seed: number, prompt: string): TemplateAssetRequest {
+function sfxAsset(
+  alias: string,
+  name: string,
+  preset: PlatformSfxPreset,
+  seed: number,
+  prompt: string,
+): TemplateAssetRequest {
   return { alias, name, generator: 'sfx', params: { preset, prompt }, seed, tags: ['platformer', 'son'] };
 }
 
@@ -139,75 +151,79 @@ export const platformerEmptyTemplate: ProjectTemplate = {
 
 /** Prairie (120 × 15) : pièces, ennemis marcheurs, ressort, plateformes, point de contrôle, panneau, trous. */
 function buildPrairieLevel() {
-  return new LevelBuilder('prairie', 120, 15, 'tileset-prairie')
-    .name('Prairie')
-    .background('fond-prairie')
-    .backgroundColor('#79c5f2')
-    .music('musique-prairie')
-    .next('grotte')
-    // Plateau de départ
-    .ground(0, 13, 12)
-    // Premier trou, franchissable en sautant
-    .pit(14, 16)
-    // Deuxième plateau avec une plateforme flottante et des pièces
-    .ground(17, 40, 12)
-    .platform(25, 29, 8)
-    .coins(26, 28, 7)
-    .enemy(34, 11, { kind: 'walker', range: 4 })
-    // Deuxième trou
-    .pit(41, 43)
-    // Troisième plateau : ressort vers des blocs flottants, point de contrôle
-    .ground(44, 70, 12)
-    .spring(46, 11)
-    .blocks(50, 54, 6, 'brick')
-    .coins(51, 53, 5)
-    .checkpoint(65, 11)
-    // Troisième trou
-    .pit(71, 73)
-    // Quatrième plateau : ennemi et pièces
-    .ground(74, 95, 12)
-    .enemy(80, 11, { kind: 'walker', range: 5 })
-    .coins(85, 89, 10)
-    // Quatrième trou
-    .pit(96, 98)
-    // Plateau final : panneau d'aide et arrivée
-    .ground(99, 119, 12)
-    .sign(101, 11, 'Sautez par-dessus les trous et évitez les ennemis. Bonne chance !')
-    .goal(117, 11)
-    .start(2, 11)
-    .build();
+  return (
+    new LevelBuilder('prairie', 120, 15, 'tileset-prairie')
+      .name('Prairie')
+      .background('fond-prairie')
+      .backgroundColor('#79c5f2')
+      .music('musique-prairie')
+      .next('grotte')
+      // Plateau de départ
+      .ground(0, 13, 12)
+      // Premier trou, franchissable en sautant
+      .pit(14, 16)
+      // Deuxième plateau avec une plateforme flottante et des pièces
+      .ground(17, 40, 12)
+      .platform(25, 29, 8)
+      .coins(26, 28, 7)
+      .enemy(34, 11, { kind: 'walker', range: 4 })
+      // Deuxième trou
+      .pit(41, 43)
+      // Troisième plateau : ressort vers des blocs flottants, point de contrôle
+      .ground(44, 70, 12)
+      .spring(46, 11)
+      .blocks(50, 54, 6, 'brick')
+      .coins(51, 53, 5)
+      .checkpoint(65, 11)
+      // Troisième trou
+      .pit(71, 73)
+      // Quatrième plateau : ennemi et pièces
+      .ground(74, 95, 12)
+      .enemy(80, 11, { kind: 'walker', range: 5 })
+      .coins(85, 89, 10)
+      // Quatrième trou
+      .pit(96, 98)
+      // Plateau final : panneau d'aide et arrivée
+      .ground(99, 119, 12)
+      .sign(101, 11, 'Sautez par-dessus les trous et évitez les ennemis. Bonne chance !')
+      .goal(117, 11)
+      .start(2, 11)
+      .build()
+  );
 }
 
 /** Grotte (100 × 15) : pics, eau, ennemis sauteurs, plateformes à sens unique, temps limité. */
 function buildGrotteLevel() {
-  return new LevelBuilder('grotte', 100, 15, 'tileset-grotte')
-    .name('Grotte')
-    .background('fond-grotte')
-    .backgroundColor('#1c2333')
-    .music('musique-grotte')
-    .timeLimit(180)
-    // Premier plateau : pics et eau à éviter, ennemi sauteur
-    .ground(0, 40, 12)
-    .spikes(11, 14, 12)
-    .water(20, 26, 12)
-    .enemy(30, 11, { kind: 'hopper', range: 4 })
-    // Premier gouffre, franchi par une plateforme à sens unique
-    .pit(41, 45)
-    .platform(41, 45, 10)
-    // Deuxième plateau : point de contrôle et nouveaux pics
-    .ground(46, 70, 12)
-    .checkpoint(50, 11)
-    .spikes(60, 63, 12)
-    // Deuxième gouffre, franchi par une plateforme à sens unique
-    .pit(71, 74)
-    .platform(71, 74, 9)
-    // Plateau final : ennemi sauteur, pièces et arrivée
-    .ground(75, 99, 12)
-    .enemy(85, 11, { kind: 'hopper', range: 5 })
-    .coins(90, 94, 10)
-    .goal(97, 11)
-    .start(2, 11)
-    .build();
+  return (
+    new LevelBuilder('grotte', 100, 15, 'tileset-grotte')
+      .name('Grotte')
+      .background('fond-grotte')
+      .backgroundColor('#1c2333')
+      .music('musique-grotte')
+      .timeLimit(180)
+      // Premier plateau : pics et eau à éviter, ennemi sauteur
+      .ground(0, 40, 12)
+      .spikes(11, 14, 12)
+      .water(20, 26, 12)
+      .enemy(30, 11, { kind: 'hopper', range: 4 })
+      // Premier gouffre, franchi par une plateforme à sens unique
+      .pit(41, 45)
+      .platform(41, 45, 10)
+      // Deuxième plateau : point de contrôle et nouveaux pics
+      .ground(46, 70, 12)
+      .checkpoint(50, 11)
+      .spikes(60, 63, 12)
+      // Deuxième gouffre, franchi par une plateforme à sens unique
+      .pit(71, 74)
+      .platform(71, 74, 9)
+      // Plateau final : ennemi sauteur, pièces et arrivée
+      .ground(75, 99, 12)
+      .enemy(85, 11, { kind: 'hopper', range: 5 })
+      .coins(90, 94, 10)
+      .goal(97, 11)
+      .start(2, 11)
+      .build()
+  );
 }
 
 const DEMO_SYSTEM: PlatformerSystemInput = {

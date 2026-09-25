@@ -162,7 +162,9 @@ describe('validatePlatformerProject', () => {
     level.layers.terrain = level.layers.terrain.slice(0, -1);
     const bundle = await baseBundle({ levels: { lvl: level } });
     const errors = texts(await validatePlatformerProject(bundle), 'error');
-    expect(errors).toEqual(expect.arrayContaining([expect.stringContaining('Couche « terrain » : 59 tuile(s) au lieu de 60')]));
+    expect(errors).toEqual(
+      expect.arrayContaining([expect.stringContaining('Couche « terrain » : 59 tuile(s) au lieu de 60')]),
+    );
   });
 
   it('signale un index de tuile hors de [-1, 15]', async () => {
@@ -173,7 +175,7 @@ describe('validatePlatformerProject', () => {
     expect(errors).toEqual(expect.arrayContaining([expect.stringContaining('hors limites [-1, 15]')]));
   });
 
-  it('signale des identifiants d\'entités en double', async () => {
+  it("signale des identifiants d'entités en double", async () => {
     const level = baseLevel();
     level.entities = [
       ...level.entities!,
@@ -199,11 +201,17 @@ describe('validatePlatformerProject', () => {
     const level: PlatformerLevelInput = { ...baseLevel(), playerStart: { x: 50, y: 3 } };
     const bundle = await baseBundle({ levels: { lvl: level } });
     const errors = texts(await validatePlatformerProject(bundle), 'error');
-    expect(errors).toEqual(expect.arrayContaining([expect.stringContaining('Départ : position (50, 3) hors du niveau')]));
+    expect(errors).toEqual(
+      expect.arrayContaining([expect.stringContaining('Départ : position (50, 3) hors du niveau')]),
+    );
   });
 
   it('signale un départ dans une tuile solide', async () => {
-    const level = new LevelBuilder('lvl', 10, 6, 'tileset-test').fill(0, 0, 9, 5, 'brick').start(2, 2).goal(8, 2).build();
+    const level = new LevelBuilder('lvl', 10, 6, 'tileset-test')
+      .fill(0, 0, 9, 5, 'brick')
+      .start(2, 2)
+      .goal(8, 2)
+      .build();
     const bundle = await baseBundle({ levels: { lvl: level } });
     const errors = texts(await validatePlatformerProject(bundle), 'error');
     expect(errors).toEqual(
@@ -211,14 +219,14 @@ describe('validatePlatformerProject', () => {
     );
   });
 
-  it('avertit si le niveau n\'a aucune arrivée', async () => {
+  it("avertit si le niveau n'a aucune arrivée", async () => {
     const level = new LevelBuilder('lvl', 10, 6, 'tileset-test').ground(0, 9, 4).start(1, 3).build();
     const bundle = await baseBundle({ levels: { lvl: level } });
     const warnings = texts(await validatePlatformerProject(bundle), 'warning');
     expect(warnings).toEqual(expect.arrayContaining([expect.stringContaining('Aucune arrivée (« goal »)')]));
   });
 
-  it('signale des références d\'assets inexistantes', async () => {
+  it("signale des références d'assets inexistantes", async () => {
     const bundle = await baseBundle({ assets: [] });
     const warnings = texts(await validatePlatformerProject(bundle), 'warning');
     expect(warnings).toEqual(

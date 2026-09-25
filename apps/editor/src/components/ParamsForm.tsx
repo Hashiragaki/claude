@@ -37,7 +37,8 @@ const LABELS: Record<string, string> = {
 function resolve(schema: JsonSchema): JsonSchema {
   if (schema.anyOf) {
     const concrete = schema.anyOf.find((s) => s.type !== 'null');
-    if (concrete) return { ...concrete, description: schema.description ?? concrete.description, default: schema.default };
+    if (concrete)
+      return { ...concrete, description: schema.description ?? concrete.description, default: schema.default };
   }
   return schema;
 }
@@ -96,7 +97,11 @@ export function ParamsForm(props: {
         }
         if (schema.type === 'boolean') {
           return (
-            <Switch key={key} isSelected={(value as boolean | undefined) ?? Boolean(schema.default)} onChange={(v) => set(key, v)}>
+            <Switch
+              key={key}
+              isSelected={(value as boolean | undefined) ?? Boolean(schema.default)}
+              onChange={(v) => set(key, v)}
+            >
               {label}
             </Switch>
           );

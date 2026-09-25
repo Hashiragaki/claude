@@ -27,7 +27,9 @@ if (!template) {
   console.error('Usage : node scripts/snap.mjs --template <id> [--steps "..."] [--out dossier] [--size 960x540]');
   process.exit(2);
 }
-const steps = (opts.steps ?? 'wait:2000,shot:debut,press:Enter,wait:1200,shot:apres-entree,hold:ArrowRight:1200,shot:deplacement')
+const steps = (
+  opts.steps ?? 'wait:2000,shot:debut,press:Enter,wait:1200,shot:apres-entree,hold:ArrowRight:1200,shot:deplacement'
+)
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
@@ -55,11 +57,18 @@ try {
   server.stdout.on('data', (d) => (serverLog += d));
   server.stderr.on('data', (d) => (serverLog += d));
   const api = `http://127.0.0.1:${serverPort}`;
-  await waitFor(async () => (await fetch(`${api}/api/health`)).ok, 60_000, () => `serveur : ${serverLog.slice(-2000)}`);
+  await waitFor(
+    async () => (await fetch(`${api}/api/health`)).ok,
+    60_000,
+    () => `serveur : ${serverLog.slice(-2000)}`,
+  );
 
   const modes = await (await fetch(`${api}/api/modes`)).json();
   const mode = modes.find((m) => (m.templates ?? []).some((t) => t.id === template));
-  if (!mode) throw new Error(`Modèle inconnu : ${template} (disponibles : ${modes.flatMap((m) => m.templates.map((t) => t.id)).join(', ')})`);
+  if (!mode)
+    throw new Error(
+      `Modèle inconnu : ${template} (disponibles : ${modes.flatMap((m) => m.templates.map((t) => t.id)).join(', ')})`,
+    );
   const created = await fetch(`${api}/api/projects`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -111,10 +120,14 @@ try {
   });
   page.on('pageerror', (err) => report.errors.push(`[exception] ${err.message}`));
   page.on('response', (res) => {
-    if (res.status() >= 400 && !res.url().endsWith('/favicon.ico')) report.errors.push(`[http ${res.status()}] ${res.url()}`);
+    if (res.status() >= 400 && !res.url().endsWith('/favicon.ico'))
+      report.errors.push(`[http ${res.status()}] ${res.url()}`);
   });
   await page.goto(`http://127.0.0.1:${vitePort}/player/index.html`, { waitUntil: 'load' });
-  await page.locator('#game').click({ position: { x: 5, y: 5 } }).catch(() => undefined);
+  await page
+    .locator('#game')
+    .click({ position: { x: 5, y: 5 } })
+    .catch(() => undefined);
 
   for (const step of steps) {
     const [kind, a, b] = step.split(':');
@@ -131,7 +144,10 @@ try {
       report.shots.push(path.relative(ROOT, file));
     } else throw new Error(`Étape inconnue : ${step}`);
   }
-  const visibleError = await page.locator('#error').textContent().catch(() => '');
+  const visibleError = await page
+    .locator('#error')
+    .textContent()
+    .catch(() => '');
   if (visibleError) report.errors.push(`[lecteur] ${visibleError}`);
 } catch (error) {
   report.errors.push(`[snap] ${error instanceof Error ? error.message : String(error)}`);
@@ -149,7 +165,9 @@ try {
 }
 
 writeFileSync(path.join(outDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
-console.log(JSON.stringify({ ok: report.errors.length === 0, shots: report.shots, errors: report.errors.slice(0, 20) }, null, 2));
+console.log(
+  JSON.stringify({ ok: report.errors.length === 0, shots: report.shots, errors: report.errors.slice(0, 20) }, null, 2),
+);
 process.exit(report.errors.length === 0 ? 0 : 1);
 
 function parseArgs(argv) {

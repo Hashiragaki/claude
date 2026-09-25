@@ -26,7 +26,7 @@ const EXAMPLES: Record<string, string> = {
   charset: 'Chevalière aux cheveux roux en armure argentée',
   tileset: 'Donjon humide aux murs de pierre moussus',
   anim2d: 'Explosion magique bleue avec étincelles',
-  sfx: 'Ramasser une pièce d\'or',
+  sfx: "Ramasser une pièce d'or",
   music: 'Thème calme et mélancolique pour un village enneigé',
   model3d: 'Lanterne en fer forgé avec une flamme orange',
 };
@@ -98,7 +98,12 @@ export function GenerateDialog(props: { onClose(): void; initialGenerator?: stri
               width="100%"
               height="size-1600"
             />
-            <RadioGroup label="Moteur de génération" orientation="horizontal" value={mode} onChange={(v) => setMode(v as typeof mode)}>
+            <RadioGroup
+              label="Moteur de génération"
+              orientation="horizontal"
+              value={mode}
+              onChange={(v) => setMode(v as typeof mode)}
+            >
               <Radio value="ai" isDisabled={!aiEnabled}>
                 IA (Claude)
               </Radio>

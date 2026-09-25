@@ -40,7 +40,7 @@ describe('EventInterpreter', () => {
     expect(state.switches.vu).toBe(true);
   });
 
-  it('exécute la branche choisie ou celle d\'annulation', () => {
+  it("exécute la branche choisie ou celle d'annulation", () => {
     const { state, run } = setup();
     const commands: Command[] = [
       {
@@ -105,7 +105,7 @@ describe('EventInterpreter', () => {
     expect(state.variables).toEqual({ off: 1, fin: 1 });
   });
 
-  it('modifie objets, or, interrupteurs locaux et efface l\'événement', () => {
+  it("modifie objets, or, interrupteurs locaux et efface l'événement", () => {
     const { state, effects, run } = setup();
     const interp = run([
       { type: 'giveItem', item: 'potion', count: 3 },
@@ -148,7 +148,7 @@ describe('EventInterpreter', () => {
     expect(interp.finished).toBe(true);
   });
 
-  it('suit l\'issue des combats et déclenche le game over', () => {
+  it("suit l'issue des combats et déclenche le game over", () => {
     const { state, run } = setup();
     const battle: Command = {
       type: 'battle',
@@ -164,14 +164,17 @@ describe('EventInterpreter', () => {
     run([battle]).resume('lose');
     run([battle]).resume('escape');
     expect(state.switches).toEqual({ gagne: true, perdu: true, fui: true });
-    const b = run([{ type: 'battle', troop: 'slimes' }, { type: 'setSwitch', name: 'jamais' }]);
+    const b = run([
+      { type: 'battle', troop: 'slimes' },
+      { type: 'setSwitch', name: 'jamais' },
+    ]);
     expect(b.resume('lose')).toEqual({ kind: 'gameOver' });
     expect(b.resume()).toBeNull();
     expect(b.finished).toBe(true);
     expect(state.switches.jamais).toBeUndefined();
   });
 
-  it('exécute des scripts et signale les erreurs sans s\'arrêter', () => {
+  it("exécute des scripts et signale les erreurs sans s'arrêter", () => {
     const { state, effects, run } = setup();
     const interp = run([
       { type: 'script', code: 'score = gold * 2' },

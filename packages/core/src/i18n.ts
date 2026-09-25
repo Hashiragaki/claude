@@ -37,7 +37,7 @@ export const ENGINE_STRINGS: Record<string, Dictionary> = {
     'battle.defeat': 'Défaite…',
     'battle.escaped': 'Vous prenez la fuite !',
     'battle.escapeFailed': 'Impossible de fuir !',
-    'battle.exp': '{value} points d\'expérience gagnés.',
+    'battle.exp': "{value} points d'expérience gagnés.",
     'battle.levelUp': '{name} passe au niveau {level} !',
     'battle.guarding': '{name} se met en garde.',
     'battle.notEnoughMp': 'Pas assez de PM !',
@@ -107,8 +107,6 @@ export class I18n {
   t(key: string, params: Record<string, string | number> = {}): string {
     const template =
       this.dictionaries.get(this.locale)?.[key] ?? this.dictionaries.get(this.fallbackLocale)?.[key] ?? key;
-    return template.replace(/\{(\w+)\}/g, (m, name: string) =>
-      params[name] !== undefined ? String(params[name]) : m,
-    );
+    return template.replace(/\{(\w+)\}/g, (m, name: string) => (params[name] !== undefined ? String(params[name]) : m));
   }
 }

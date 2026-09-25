@@ -5,7 +5,18 @@ import { parseScene } from './schema';
 import { SCENE_ENTRY, blankTemplate, demoTemplate } from './templates';
 
 const MODEL_TEMPLATES = [
-  'tree', 'rock', 'house', 'crate', 'character', 'chest', 'lamp', 'tower', 'fence', 'mushroom', 'sword', 'well',
+  'tree',
+  'rock',
+  'house',
+  'crate',
+  'character',
+  'chest',
+  'lamp',
+  'tower',
+  'fence',
+  'mushroom',
+  'sword',
+  'well',
 ];
 const SUPPORTED_ANIMATIONS: Record<string, string[]> = {
   tree: ['sway'],

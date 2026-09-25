@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-player
+workspace
+test-results
+pnpm-lock.yaml
+*.md

@@ -191,10 +191,10 @@ class ScriptParser {
       case 'show':
         return this.show(s, pos);
       case 'hide': {
-        const tag = s.expectWord('Nom d\'image');
+        const tag = s.expectWord("Nom d'image");
         let transition: string | null = null;
         while (!s.eof()) {
-          const w = s.expectWord('Nom d\'image');
+          const w = s.expectWord("Nom d'image");
           if (w === 'with') transition = this.transitionName(s, pos.line);
         }
         return { kind: 'hide', ...pos, tag, transition };
@@ -370,14 +370,14 @@ class ScriptParser {
   }
 
   private image(s: Scanner, pos: SourcePos): VNNode {
-    const tag = s.expectWord('Tag d\'image');
+    const tag = s.expectWord("Tag d'image");
     const attrs: string[] = [];
-    while (!s.eof() && s.peek() !== '=') attrs.push(s.expectWord('Attribut d\'image'));
-    if (!s.eat('=')) throw new ParseError('« = » attendu après le nom de l\'image', s.column);
-    if (!s.isQuote()) throw new ParseError('Chaîne attendue après « = » (alias d\'asset ou chemin)', s.column + 1);
+    while (!s.eof() && s.peek() !== '=') attrs.push(s.expectWord("Attribut d'image"));
+    if (!s.eat('=')) throw new ParseError("« = » attendu après le nom de l'image", s.column);
+    if (!s.isQuote()) throw new ParseError("Chaîne attendue après « = » (alias d'asset ou chemin)", s.column + 1);
     const ref = s.string();
     s.end();
-    if (!ref.trim()) throw new ParseError('Référence d\'image vide', pos.column);
+    if (!ref.trim()) throw new ParseError("Référence d'image vide", pos.column);
     return { kind: 'image', ...pos, tag, attrs, ref };
   }
 
@@ -386,7 +386,7 @@ class ScriptParser {
     let transition: string | null = null;
     while (!s.eof()) {
       const col = s.column + 1;
-      const w = s.expectWord('Nom d\'image');
+      const w = s.expectWord("Nom d'image");
       if (w === 'with') {
         transition = this.transitionName(s, pos.line);
         s.end();
@@ -400,13 +400,13 @@ class ScriptParser {
 
   private show(s: Scanner, pos: SourcePos): VNNode {
     const col = s.column + 1;
-    const tag = s.expectWord('Nom d\'image');
-    if (tag === 'at' || tag === 'with') throw new ParseError('Nom d\'image attendu après « show »', col);
+    const tag = s.expectWord("Nom d'image");
+    if (tag === 'at' || tag === 'with') throw new ParseError("Nom d'image attendu après « show »", col);
     const attrs: string[] = [];
     let at: string | null = null;
     let transition: string | null = null;
     while (!s.eof()) {
-      const w = s.expectWord('Attribut d\'image');
+      const w = s.expectWord("Attribut d'image");
       if (w === 'at') at = this.positionName(s, pos.line);
       else if (w === 'with') transition = this.transitionName(s, pos.line);
       else attrs.push(w);
@@ -493,7 +493,7 @@ class ScriptParser {
       } else if (node.choices.length > 0) {
         this.report(child.line, child.indent + 1, 'La légende du menu doit précéder les choix');
       } else if (node.caption) {
-        this.report(child.line, child.indent + 1, 'Un menu ne peut avoir qu\'une seule légende');
+        this.report(child.line, child.indent + 1, "Un menu ne peut avoir qu'une seule légende");
       } else {
         node.caption = caption;
       }

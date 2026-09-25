@@ -61,7 +61,10 @@ const SNIPPETS: Record<string, { label: string; text: string }> = {
   say: { label: 'Dialogue', text: 'e "Bonjour !"\n' },
   scene: { label: 'Changer de décor', text: 'scene bg alias with fade\n' },
   show: { label: 'Afficher un personnage', text: 'show alias happy at left with dissolve\n' },
-  menu: { label: 'Menu de choix', text: 'menu:\n    "Premier choix":\n        jump suite\n    "Second choix" if score > 0:\n        pass\n' },
+  menu: {
+    label: 'Menu de choix',
+    text: 'menu:\n    "Premier choix":\n        jump suite\n    "Second choix" if score > 0:\n        pass\n',
+  },
   if: { label: 'Condition', text: 'if score >= 2:\n    e "Bravo !"\nelse:\n    e "Dommage."\n' },
   var: { label: 'Variable', text: '$ score += 1\n' },
   music: { label: 'Musique', text: 'play music "alias" fadein 1.0\n' },
@@ -162,16 +165,29 @@ export function ScriptEditor({ path }: { path: string }) {
             onView={(view) => {
               viewRef.current = view;
               if (view) {
-                view.dom.addEventListener('keyup', () => setCursorLine(view.state.doc.lineAt(view.state.selection.main.head).number));
-                view.dom.addEventListener('mouseup', () => setCursorLine(view.state.doc.lineAt(view.state.selection.main.head).number));
+                view.dom.addEventListener('keyup', () =>
+                  setCursorLine(view.state.doc.lineAt(view.state.selection.main.head).number),
+                );
+                view.dom.addEventListener('mouseup', () =>
+                  setCursorLine(view.state.doc.lineAt(view.state.selection.main.head).number),
+                );
               }
             }}
           />
         </div>
-        <aside style={{ width: 220, borderLeft: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)' }}>
+        <aside
+          style={{ width: 220, borderLeft: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)' }}
+        >
           <div className="fg-section-title">Labels</div>
           {labels.map((l) => (
-            <div key={`${l.name}:${l.line}`} className="fg-cmd" style={{ display: 'flex', alignItems: 'center' }} role="button" tabIndex={0} onClick={() => goToLine(l.line)}>
+            <div
+              key={`${l.name}:${l.line}`}
+              className="fg-cmd"
+              style={{ display: 'flex', alignItems: 'center' }}
+              role="button"
+              tabIndex={0}
+              onClick={() => goToLine(l.line)}
+            >
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
               <span
                 role="button"
@@ -188,7 +204,14 @@ export function ScriptEditor({ path }: { path: string }) {
           ))}
           {characters.length > 0 && <div className="fg-section-title">Personnages</div>}
           {characters.map((c) => (
-            <div key={c.id} className="fg-cmd" role="button" tabIndex={0} onClick={() => insert(`${c.id} "…"`)} title="Insérer une réplique">
+            <div
+              key={c.id}
+              className="fg-cmd"
+              role="button"
+              tabIndex={0}
+              onClick={() => insert(`${c.id} "…"`)}
+              title="Insérer une réplique"
+            >
               {c.id} — {c.name ?? '?'}
             </div>
           ))}
@@ -215,7 +238,9 @@ export function ScriptEditor({ path }: { path: string }) {
               className="fg-cmd"
               role="button"
               tabIndex={0}
-              onClick={() => insert(a.kind === 'music' ? `play music "${a.alias}" fadein 1.0` : `play sound "${a.alias}"`)}
+              onClick={() =>
+                insert(a.kind === 'music' ? `play music "${a.alias}" fadein 1.0` : `play sound "${a.alias}"`)
+              }
             >
               {a.kind === 'music' ? '🎵' : '🔊'} {a.alias}
             </div>

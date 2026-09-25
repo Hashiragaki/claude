@@ -56,7 +56,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
   const tools: AgentTool[] = [
     defineTool({
       name: 'get_project_summary',
-      description: 'Résumé du projet : mode, résolution, fichier d\'entrée, assets et alias disponibles.',
+      description: "Résumé du projet : mode, résolution, fichier d'entrée, assets et alias disponibles.",
       schema: z.object({}),
       run: async () => projectSummary(await deps.store.readManifest(projectId)),
     }),
@@ -72,7 +72,9 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
         const q = search?.toLowerCase();
         const list = m.assets
           .filter((a) => !kind || a.kind === kind)
-          .filter((a) => !q || `${a.name} ${a.alias ?? ''} ${a.prompt ?? ''} ${a.tags.join(' ')}`.toLowerCase().includes(q));
+          .filter(
+            (a) => !q || `${a.name} ${a.alias ?? ''} ${a.prompt ?? ''} ${a.tags.join(' ')}`.toLowerCase().includes(q),
+          );
         return list.map(describeAsset).join('\n') || 'Aucun asset.';
       },
     }),
@@ -116,7 +118,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
     }),
     defineTool({
       name: 'validate_project',
-      description: 'Vérifie le projet (erreurs de script, références d\'assets manquantes, cartes invalides…).',
+      description: "Vérifie le projet (erreurs de script, références d'assets manquantes, cartes invalides…).",
       schema: z.object({}),
       run: async () => {
         const diagnostics = await deps.projects.validate(projectId);
@@ -127,7 +129,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
     }),
     defineTool({
       name: 'list_generators',
-      description: 'Liste les générateurs d\'assets et leurs paramètres (schéma JSON).',
+      description: "Liste les générateurs d'assets et leurs paramètres (schéma JSON).",
       schema: z.object({}),
       run: () => describeGenerators(),
     }),
@@ -139,19 +141,22 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
         name: 'generate_asset',
         description:
           'Génère un asset (image SVG, pixel-art, charset RPG, tileset, effet sonore, musique, modèle 3D, animation 2D) ' +
-          'et l\'ajoute au projet. Donne un `alias` court pour le référencer dans les scripts (ex. « bg plage », ' +
+          "et l'ajoute au projet. Donne un `alias` court pour le référencer dans les scripts (ex. « bg plage », " +
           '« mina joyeuse »). `parentId` + `instruction` retouchent un asset existant. Prend de quelques secondes à ' +
           'quelques minutes.',
         schema: z.object({
           generator: z.string().describe('Identifiant du générateur (voir list_generators)'),
-          prompt: z.string().describe('Description détaillée de l\'asset voulu'),
+          prompt: z.string().describe("Description détaillée de l'asset voulu"),
           params: z.record(z.string(), z.unknown()).optional().describe('Paramètres spécifiques au générateur'),
           name: z.string().optional(),
           alias: z.string().optional(),
           tags: z.array(z.string()).optional(),
           parentId: z.string().optional(),
           instruction: z.string().optional(),
-          review: z.boolean().optional().describe('Critique visuelle du rendu par l\'IA (mettre à false pour aller plus vite)'),
+          review: z
+            .boolean()
+            .optional()
+            .describe("Critique visuelle du rendu par l'IA (mettre à false pour aller plus vite)"),
         }),
         run: async (input, signal) => {
           const asset = await deps.generate({ ...input, params: input.params ?? {}, mode: 'ai' }, signal);

@@ -16,12 +16,15 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "start": "pnpm --filter @forge/server start",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "format": "prettier --write \"**/*.{ts,tsx,mjs,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\""
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.19.0",
     "concurrently": "^10.0.5",
+    "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
   }

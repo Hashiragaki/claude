@@ -14,7 +14,7 @@ try {
   await app.listen({ port: config.port, host: config.host });
   const ai = config.ai.enabled
     ? `activée (modèle ${config.ai.model ?? 'claude-opus-5'})`
-    : 'désactivée — définissez ANTHROPIC_API_KEY pour l\'activer (mode procédural et commandes hors-ligne disponibles)';
+    : "désactivée — définissez ANTHROPIC_API_KEY pour l'activer (mode procédural et commandes hors-ligne disponibles)";
   console.log(`\n  Forge — serveur prêt sur http://${config.host}:${config.port}`);
   console.log(`  Projets : ${config.dataDir}`);
   console.log(`  IA : ${ai}\n`);

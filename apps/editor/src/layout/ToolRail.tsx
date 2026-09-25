@@ -33,7 +33,8 @@ export function ToolRail() {
       key: 'script',
       label: `Script (${project.entry})`,
       icon: <FileCode />,
-      onPress: () => openDocument({ kind: 'script', path: project.entry, title: project.entry.split('/').pop() ?? 'Script' }),
+      onPress: () =>
+        openDocument({ kind: 'script', path: project.entry, title: project.entry.split('/').pop() ?? 'Script' }),
     });
   }
   if (project.mode === 'rpg') {

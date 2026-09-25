@@ -54,7 +54,11 @@ export function CommandList(props: { commands: Command[]; onChange(commands: Com
       );
       for (const child of childLists(command)) {
         rows.push(
-          <div key={`${path.join('.')}:${index}:${child.key.join('.')}:h`} className="fg-cmd" style={{ paddingLeft: 6 + (depth + 1) * 16, color: 'var(--fg-text-3)' }}>
+          <div
+            key={`${path.join('.')}:${index}:${child.key.join('.')}:h`}
+            className="fg-cmd"
+            style={{ paddingLeft: 6 + (depth + 1) * 16, color: 'var(--fg-text-3)' }}
+          >
             ▸ {child.label}
           </div>,
         );
@@ -125,7 +129,10 @@ export function CommandList(props: { commands: Command[]; onChange(commands: Com
     }
     const result = CommandSchema.safeParse(parsed);
     if (!result.success) {
-      setEditing({ ...editing, error: result.error.issues.map((i) => `${i.path.join('.') || 'commande'} : ${i.message}`).join('\n') });
+      setEditing({
+        ...editing,
+        error: result.error.issues.map((i) => `${i.path.join('.') || 'commande'} : ${i.message}`).join('\n'),
+      });
       return;
     }
     const { list, index } = editing.selection;
@@ -149,7 +156,12 @@ export function CommandList(props: { commands: Command[]; onChange(commands: Com
             ))}
           </Menu>
         </MenuTrigger>
-        <ActionButton isQuiet aria-label="Modifier" isDisabled={!current} onPress={() => current && openEditor(selection, current)}>
+        <ActionButton
+          isQuiet
+          aria-label="Modifier"
+          isDisabled={!current}
+          onPress={() => current && openEditor(selection, current)}
+        >
           <Edit />
         </ActionButton>
         <ActionButton isQuiet aria-label="Monter" isDisabled={!current} onPress={() => move(-1)}>
@@ -162,9 +174,14 @@ export function CommandList(props: { commands: Command[]; onChange(commands: Com
           <Delete />
         </ActionButton>
       </div>
-      <div style={{ background: 'var(--fg-bg-0)', borderRadius: 4, padding: '4px 0', maxHeight: 360, overflow: 'auto' }}>{rows}</div>
+      <div
+        style={{ background: 'var(--fg-bg-0)', borderRadius: 4, padding: '4px 0', maxHeight: 360, overflow: 'auto' }}
+      >
+        {rows}
+      </div>
       <p style={{ margin: 0, fontSize: 11, color: 'var(--fg-text-3)' }}>
-        Double-cliquez sur une commande pour la modifier. « Ajouter » insère avant la ligne sélectionnée (◆ vide = fin de liste).
+        Double-cliquez sur une commande pour la modifier. « Ajouter » insère avant la ligne sélectionnée (◆ vide = fin
+        de liste).
       </p>
       <DialogContainer onDismiss={() => setEditing(null)}>
         {editing && (
@@ -172,10 +189,19 @@ export function CommandList(props: { commands: Command[]; onChange(commands: Com
             <Heading>Modifier la commande</Heading>
             <Divider />
             <Content>
-              <div style={{ height: 320, display: 'flex', flexDirection: 'column', border: '1px solid var(--fg-border)' }}>
-                <CodeEditor value={editing.text} language="json" onChange={(text) => setEditing({ ...editing, text, error: undefined })} onSave={commitEdit} />
+              <div
+                style={{ height: 320, display: 'flex', flexDirection: 'column', border: '1px solid var(--fg-border)' }}
+              >
+                <CodeEditor
+                  value={editing.text}
+                  language="json"
+                  onChange={(text) => setEditing({ ...editing, text, error: undefined })}
+                  onSave={commitEdit}
+                />
               </div>
-              {editing.error && <pre style={{ color: 'var(--fg-err)', fontSize: 12, whiteSpace: 'pre-wrap' }}>{editing.error}</pre>}
+              {editing.error && (
+                <pre style={{ color: 'var(--fg-err)', fontSize: 12, whiteSpace: 'pre-wrap' }}>{editing.error}</pre>
+              )}
             </Content>
             <ButtonGroup>
               <Button variant="secondary" onPress={() => setEditing(null)}>

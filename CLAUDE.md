@@ -23,16 +23,19 @@ hors-ligne), modes de jeu en plugins, planificateur long terme avec chat. Monore
 - TypeScript 7 strict, ESM, `verbatimModuleSyntax` → `import type` pour les types ; pas de `any` nouveau.
 - zod v4 : `.default()` prend la valeur de SORTIE ; pour un objet par défaut à compléter, `.prefault({})`.
   Schémas d'outils IA convertis par `z.toJSONSchema(schema, { io: 'input' })` : pas de `.transform`.
-- Lignes ≤ 120 caractères. Textes d'interface et commentaires en français ; identifiants en anglais.
+- Formatage Prettier (`.prettierrc.json`, 120 colonnes) appliqué automatiquement après chaque écriture d'agent
+  (hook `.claude/hooks/format.mjs`) ; sinon `pnpm format`. Textes d'interface et commentaires en français ; identifiants
+  en anglais.
 - Tests Vitest à côté du code (`*.test.ts`), environnement Node : pas de DOM réel, faux objets minimaux.
 - Les contrats partagés (`schema.ts`, `types.ts`, `mode.ts`, `tiles.ts`, `generators/src/types.ts`) ne se modifient
   pas dans une tâche d'implémentation : signaler le besoin.
 - Aucun appel réel à l'API Claude dans les tests : `FakeLlmClient`.
 
 ## Vérifier
-- Un ou plusieurs packages : `node scripts/check.mjs packages/core apps/server` (tsc + vitest + lignes > 120,
-  résumé JSON). Tout le dépôt : `pnpm typecheck && pnpm test`.
-- Navigateur : `pnpm e2e` (Playwright, Chromium `/opt/pw-browsers/chromium`).
+- Un ou plusieurs packages : `node scripts/check.mjs packages/core apps/server` (tsc + vitest + format, résumé court ;
+  `--json` pour un objet). Tout le dépôt : `pnpm typecheck && pnpm test`.
+- Navigateur : `pnpm e2e` (Playwright, Chromium `/opt/pw-browsers/chromium`) ; rendu d'un jeu :
+  `node scripts/snap.mjs --template rpg-demo` (captures PNG + erreurs console, à relire avec l'outil Read).
 
 ## Travail en parallèle
 Plusieurs agents modifient le dépôt en même temps, chacun sur une liste de fichiers autorisés : ne modifier que

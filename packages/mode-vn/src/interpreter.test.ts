@@ -63,7 +63,7 @@ describe('VNInterpreter : répliques et texte', () => {
     expect(say(interp.advance()).speaker).toEqual({ name: 'Inconnue', color: null });
     expect(say(interp.advance())).toMatchObject({
       speaker: { name: 'Sacha', color: null },
-      text: 'Moi, c\'est Sacha.\nEnchanté.',
+      text: "Moi, c'est Sacha.\nEnchanté.",
     });
     expect(say(interp.advance()).text).toBe('Un [crochet] et None.');
     expect(say(interp.advance())).toMatchObject({ speaker: null, text: 'Chapitre 1', centered: true });
@@ -74,7 +74,7 @@ describe('VNInterpreter : répliques et texte', () => {
       'Il était une fois…',
       'Bonjour Sacha ! Tu as 2 points.',
       'Qui es-tu ?',
-      'Moi, c\'est Sacha.\nEnchanté.',
+      "Moi, c'est Sacha.\nEnchanté.",
       'Un [crochet] et None.',
       'Chapitre 1',
     ]);
@@ -146,7 +146,11 @@ describe('VNInterpreter : contrôle', () => {
       '        "petit"',
       '    "suite"',
     ];
-    for (const [value, expected] of [[20, 'grand'], [7, 'moyen'], [1, 'petit']] as const) {
+    for (const [value, expected] of [
+      [20, 'grand'],
+      [7, 'moyen'],
+      [1, 'petit'],
+    ] as const) {
       const interp = vn(src(value));
       expect(say(interp.start()).text).toBe(expected);
       expect(say(interp.advance()).text).toBe('suite');
@@ -197,7 +201,7 @@ describe('VNInterpreter : contrôle', () => {
     expect(() => interp.start()).toThrow(/boucle infinie/);
   });
 
-  it('localise les erreurs d\'exécution et permet de continuer', () => {
+  it("localise les erreurs d'exécution et permet de continuer", () => {
     const logs: string[] = [];
     const interp = vn(['label start:', '    "a"', '    $ x = inconnue + 1', '    "b [1/0]"', '    "c"'], {
       log: (_level, message) => logs.push(message),
@@ -212,7 +216,7 @@ describe('VNInterpreter : contrôle', () => {
 });
 
 describe('VNInterpreter : effets', () => {
-  it('produit les effets de scène, d\'images, d\'audio et de fenêtre', () => {
+  it("produit les effets de scène, d'images, d'audio et de fenêtre", () => {
     const interp = vn([
       ...CAST,
       'image bg cafe = "images/cafe.png"',
@@ -340,7 +344,7 @@ describe('VNInterpreter : retour arrière et sauvegardes', () => {
     expect(interp.rollback()).toBeNull();
   });
 
-  it('sérialise puis restaure à l\'identique (aller-retour JSON)', () => {
+  it("sérialise puis restaure à l'identique (aller-retour JSON)", () => {
     const interp = vn(STORY);
     interp.start();
     interp.advance();

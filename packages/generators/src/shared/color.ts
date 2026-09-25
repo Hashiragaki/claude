@@ -7,9 +7,7 @@ const HEX6 = /^#[0-9a-fA-F]{6}$/;
 const HEX_ANY = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /** Schéma d'une couleur `#rrggbb` (utilisable dans les specs envoyées à Claude). */
-export const hexColorSchema = z
-  .string()
-  .regex(HEX6, 'Couleur attendue au format « #rrggbb » (ex. « #3a7bd5 »).');
+export const hexColorSchema = z.string().regex(HEX6, 'Couleur attendue au format « #rrggbb » (ex. « #3a7bd5 »).');
 
 export function isHexColor(value: string): boolean {
   return HEX_ANY.test(value);
@@ -30,7 +28,10 @@ export function parseColor(value: string): Rgba {
   return [n(0), n(2), n(4), hex.length === 8 ? n(6) : 255];
 }
 
-const byte = (v: number) => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0');
+const byte = (v: number) =>
+  Math.round(clamp(v, 0, 255))
+    .toString(16)
+    .padStart(2, '0');
 
 /** RVB(A) → `#rrggbb` (ou `#rrggbbaa` si l'alpha n'est pas opaque). */
 export function toHex(rgba: readonly number[]): string {

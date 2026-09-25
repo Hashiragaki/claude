@@ -179,7 +179,7 @@ describe('vnMode', () => {
     ]);
   });
 
-  it('signale un script d\'entrée manquant', async () => {
+  it("signale un script d'entrée manquant", async () => {
     const t: ProjectTemplate = { ...template('vn-blank'), files: [] };
     const diags = await vnMode.validate!(await bundleFor(t));
     expect(diags).toContainEqual(
@@ -187,7 +187,7 @@ describe('vnMode', () => {
     );
   });
 
-  it('n\'importe ni pixi.js ni render2d statiquement depuis index.ts', async () => {
+  it("n'importe ni pixi.js ni render2d statiquement depuis index.ts", async () => {
     const fs = (await import(/* @vite-ignore */ String('node:fs'))) as {
       readFileSync(path: URL, encoding: 'utf8'): string;
     };
@@ -220,10 +220,10 @@ describe('démo « Le Café des Étoiles »', () => {
   it('mène à la fin « Sous les étoiles » avec le chocolat chaud', () => {
     const { interp, texts, speakers, menus, effects } = playDemo([0, 0]);
     expect(speakers).toEqual(new Set(['Mina', 'Sacha', 'Léo']));
-    expect(texts).toContain('Moi, c\'est Sacha. Joli nom, pour un café.');
+    expect(texts).toContain("Moi, c'est Sacha. Joli nom, pour un café.");
     expect(texts).toContain('Le Café des Étoiles');
-    expect(texts).toContain('Quelques minutes plus tard, Mina m\'apporte mon chocolat chaud.');
-    expect(texts).toContain('Reste autant que tu veux, la pluie ne va pas s\'arrêter de sitôt.');
+    expect(texts).toContain("Quelques minutes plus tard, Mina m'apporte mon chocolat chaud.");
+    expect(texts).toContain("Reste autant que tu veux, la pluie ne va pas s'arrêter de sitôt.");
     expect(menus[1]?.choices.map((c) => c.enabled)).toEqual([true, true]);
     expect(texts.at(-1)).toBe('Fin : Sous les étoiles');
     expect(interp.getVariables()).toMatchObject({ affection: 2, boisson: 'chocolat chaud' });
@@ -240,22 +240,22 @@ describe('démo « Le Café des Étoiles »', () => {
 
   it('mène à la même fin avec le thé aux étoiles (branche if)', () => {
     const { texts, interp } = playDemo([2, 0]);
-    expect(texts).toContain('Tu sais, Sacha, c\'est rare qu\'un client me fasse autant confiance.');
+    expect(texts).toContain("Tu sais, Sacha, c'est rare qu'un client me fasse autant confiance.");
     expect(interp.getVariables().affection).toBe(3);
     expect(texts.at(-1)).toBe('Fin : Sous les étoiles');
   });
 
-  it('mène à la fin « Un soir de pluie » avec le verre d\'eau (choix conditionnel verrouillé)', () => {
+  it("mène à la fin « Un soir de pluie » avec le verre d'eau (choix conditionnel verrouillé)", () => {
     const { texts, menus, interp } = playDemo([1, 1]);
     expect(menus[0]?.caption).toEqual({
       speaker: { name: 'Mina', color: '#f48fb1' },
-      text: 'Qu\'est-ce que je te sers ?',
+      text: "Qu'est-ce que je te sers ?",
     });
     expect(menus[1]?.choices).toEqual([
-      { text: 'Proposer à Mina d\'aller voir les étoiles filantes.', enabled: false },
+      { text: "Proposer à Mina d'aller voir les étoiles filantes.", enabled: false },
       { text: 'Rentrer chez moi avant la prochaine averse.', enabled: true },
     ]);
-    expect(texts).toContain('Tu as l\'air pressé… Tu es sûr de ne pas vouloir rester un peu ?');
+    expect(texts).toContain("Tu as l'air pressé… Tu es sûr de ne pas vouloir rester un peu ?");
     expect(texts.at(-1)).toBe('Fin : Un soir de pluie');
     expect(interp.getVariables().affection).toBe(1);
     expect(interp.scene).toEqual({ background: 'bg rue', images: [] });
@@ -287,7 +287,11 @@ describe('références et affichage sans écran', () => {
   it('navigue dans les menus au clavier en mode sans affichage', () => {
     const presenter = new HeadlessPresenter();
     const input = new InputManager();
-    const choices = [{ text: 'A', enabled: false }, { text: 'B', enabled: true }, { text: 'C', enabled: true }];
+    const choices = [
+      { text: 'A', enabled: false },
+      { text: 'B', enabled: true },
+      { text: 'C', enabled: true },
+    ];
     presenter.showMenu({ kind: 'menu', caption: null, choices, effects: [] });
     input.tap('down');
     input.update();

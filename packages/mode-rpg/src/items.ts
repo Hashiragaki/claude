@@ -56,8 +56,7 @@ export function applyItemToVitals(item: ItemDef, target: Vitals): ItemEffectResu
 }
 
 export type ItemUseResult =
-  | { ok: true; effect: ItemEffectResult }
-  | { ok: false; reason: 'unknown' | 'none' | 'notUsable' | 'noEffect' };
+  { ok: true; effect: ItemEffectResult } | { ok: false; reason: 'unknown' | 'none' | 'notUsable' | 'noEffect' };
 
 /** Utilise un objet de l'inventaire sur un membre de l'équipe (menu). Consomme l'objet si besoin. */
 export function useItemOnActor(

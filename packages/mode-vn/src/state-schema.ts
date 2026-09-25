@@ -14,15 +14,11 @@ export const VNSaveStateSchema = z.object({
   vars: z.record(z.string(), ValueSchema),
   scene: z.object({
     background: z.string().nullable(),
-    images: z.array(
-      z.object({ tag: z.string(), attrs: z.array(z.string()), position: z.string(), ref: z.string() }),
-    ),
+    images: z.array(z.object({ tag: z.string(), attrs: z.array(z.string()), position: z.string(), ref: z.string() })),
   }),
   audio: z.object({ music: z.string().optional(), sound: z.string().optional(), voice: z.string().optional() }),
   windowShown: z.boolean(),
   scriptHash: z.string(),
   anchors: z.array(z.object({ label: z.string(), offset: z.number().int() }).nullable()).optional(),
-  history: z
-    .array(z.object({ speaker: SpeakerSchema, text: z.string(), choice: z.boolean().optional() }))
-    .optional(),
+  history: z.array(z.object({ speaker: SpeakerSchema, text: z.string(), choice: z.boolean().optional() })).optional(),
 });

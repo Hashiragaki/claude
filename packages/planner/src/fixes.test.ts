@@ -16,9 +16,9 @@ describe('correctifs revue g1-planner', () => {
     const { planner } = makePlanner();
     const a = planner.createTask({ title: 'A', priority: 'low' });
     const b = planner.createTask({ title: 'B', dependsOn: [a.id] });
-    expect(() =>
-      planner.updateTask(a.id, { priority: 'critical', dueDate: '2026-10-01', dependsOn: [b.id] }),
-    ).toThrow(/circulaire/);
+    expect(() => planner.updateTask(a.id, { priority: 'critical', dueDate: '2026-10-01', dependsOn: [b.id] })).toThrow(
+      /circulaire/,
+    );
     // Ni la priorité ni l'échéance n'ont dû être écrites : le patch a été rejeté en bloc.
     const reloaded = planner.requireTask(a.id);
     expect(reloaded.priority).toBe('low');
@@ -48,7 +48,7 @@ describe('correctifs revue g1-planner', () => {
   });
 
   // findings-g1-planner.json : packages/planner/src/offline.ts:85
-  it('/fait par titre agit sur l\'occurrence ouverte, pas sur l\'original déjà terminé', () => {
+  it("/fait par titre agit sur l'occurrence ouverte, pas sur l'original déjà terminé", () => {
     const { planner } = makePlanner();
     planner.createTask({ title: 'Revue hebdo', dueDate: '2026-09-26', recurrence: { every: 1, unit: 'week' } });
     const first = handleOfflineCommand(planner, '/fait Revue hebdo');
@@ -64,7 +64,7 @@ describe('correctifs revue g1-planner', () => {
     expect(planner.listTasks({ status: 'todo' })).toHaveLength(1);
   });
 
-  it('/encours par titre reprend l\'occurrence ouverte, pas l\'original terminé', () => {
+  it("/encours par titre reprend l'occurrence ouverte, pas l'original terminé", () => {
     const { planner } = makePlanner();
     planner.createTask({ title: 'Revue hebdo', dueDate: '2026-09-26', recurrence: { every: 1, unit: 'week' } });
     handleOfflineCommand(planner, '/fait Revue hebdo');

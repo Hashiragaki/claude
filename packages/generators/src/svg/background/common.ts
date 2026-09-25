@@ -40,11 +40,14 @@ export const SKY: Record<TimeOfDay, [string, string, string]> = {
 /** Ciel en dégradé + soleil ou lune. */
 export function sky(s: Scene, horizon = H, sunX = 960): void {
   const [top, mid, low] = SKY[s.time];
-  const fill = s.b.style === 'soft' ? s.b.lin([
-    [0, top],
-    [0.6, mid],
-    [1, low],
-  ]) : mid;
+  const fill =
+    s.b.style === 'soft'
+      ? s.b.lin([
+          [0, top],
+          [0.6, mid],
+          [1, low],
+        ])
+      : mid;
   s.b.e('rect', { width: W, height: horizon, fill });
   if (s.b.style !== 'soft') {
     for (let i = 0; i < 4; i++) {
@@ -102,16 +105,8 @@ export function stars(s: Scene, maxY: number, count: number): void {
 
 /** Nuage cotonneux (grappe d'ellipses avec une base ombrée). */
 export function cloud(s: Scene, x: number, y: number, scale: number): void {
-  const base = s.time === 'day'
-    ? '#ffffff'
-    : s.time === 'sunset'
-      ? '#ffd0b8'
-      : '#3a4878';
-  const shadow = s.time === 'day'
-    ? '#d6e6f4'
-    : s.time === 'sunset'
-      ? '#c07898'
-      : '#26335c';
+  const base = s.time === 'day' ? '#ffffff' : s.time === 'sunset' ? '#ffd0b8' : '#3a4878';
+  const shadow = s.time === 'day' ? '#d6e6f4' : s.time === 'sunset' ? '#c07898' : '#26335c';
   const blobs: [number, number, number][] = [
     [-60, 10, 42],
     [-20, -12, 55],
@@ -136,10 +131,14 @@ export function cloud(s: Scene, x: number, y: number, scale: number): void {
     ry: 22 * scale,
     fill: shadow,
   });
-  s.b.e('g', {
-    transform: `translate(${Math.round(x)} ${Math.round(y)})`,
-    opacity: s.time === 'night' ? 0.7 : 0.95,
-  }, [under, g]);
+  s.b.e(
+    'g',
+    {
+      transform: `translate(${Math.round(x)} ${Math.round(y)})`,
+      opacity: s.time === 'night' ? 0.7 : 0.95,
+    },
+    [under, g],
+  );
 }
 
 export function clouds(s: Scene, count: number, maxY = 300): void {
@@ -165,24 +164,32 @@ export function ambience(s: Scene): void {
 }
 
 /** Arbre feuillu : tronc et grappes de feuillage ombrées. */
-export function tree(
-  s: Scene,
-  x: number,
-  groundY: number,
-  h: number,
-  leaf = '#4a9a4a',
-): void {
+export function tree(s: Scene, x: number, groundY: number, h: number, leaf = '#4a9a4a'): void {
   const trunk = s.L('#7a5236');
   const lf = s.L(leaf);
   const w = h * 0.09;
   s.b.e('path', {
     d: d(
-      'M', x - w, groundY,
-      'C', x - w * 0.6, groundY - h * 0.3, x - w * 0.5, groundY - h * 0.5,
-      x - w * 0.3, groundY - h * 0.6,
-      'L', x + w * 0.3, groundY - h * 0.6,
-      'C', x + w * 0.5, groundY - h * 0.5, x + w * 0.6, groundY - h * 0.3,
-      x + w, groundY,
+      'M',
+      x - w,
+      groundY,
+      'C',
+      x - w * 0.6,
+      groundY - h * 0.3,
+      x - w * 0.5,
+      groundY - h * 0.5,
+      x - w * 0.3,
+      groundY - h * 0.6,
+      'L',
+      x + w * 0.3,
+      groundY - h * 0.6,
+      'C',
+      x + w * 0.5,
+      groundY - h * 0.5,
+      x + w * 0.6,
+      groundY - h * 0.3,
+      x + w,
+      groundY,
       'Z',
     ),
     fill: trunk,

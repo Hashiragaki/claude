@@ -22,7 +22,9 @@ export function requestMessage(what: string, prompt: string, params: object, ext
   const lines = paramLines(params);
   return [
     `Create ${what}.`,
-    desc ? `Description from the user (French): « ${desc} »` : 'No description was given: pick a charming, coherent subject yourself.',
+    desc
+      ? `Description from the user (French): « ${desc} »`
+      : 'No description was given: pick a charming, coherent subject yourself.',
     lines ? `Parameters:\n${lines}` : '',
     ...extra,
     'Answer only by calling the tool with the complete spec.',

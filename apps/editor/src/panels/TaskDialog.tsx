@@ -110,7 +110,12 @@ export function TaskDialog(props: { task?: Task; defaultStatus?: TaskStatus; onC
                   <Item key={k}>{v}</Item>
                 ))}
               </Picker>
-              <Picker label="Priorité" selectedKey={priority} onSelectionChange={(k) => setPriority(k as Priority)} flex>
+              <Picker
+                label="Priorité"
+                selectedKey={priority}
+                onSelectionChange={(k) => setPriority(k as Priority)}
+                flex
+              >
                 {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
                   <Item key={k}>{v}</Item>
                 ))}
@@ -118,16 +123,33 @@ export function TaskDialog(props: { task?: Task; defaultStatus?: TaskStatus; onC
             </Flex>
             <Flex gap="size-100">
               <TextField label="Échéance" value={dueDate} onChange={setDueDate} placeholder="AAAA-MM-JJ" flex />
-              <NumberField label="Estimation (h)" value={estimate} onChange={setEstimate} minValue={0} step={0.5} flex />
+              <NumberField
+                label="Estimation (h)"
+                value={estimate}
+                onChange={setEstimate}
+                minValue={0}
+                step={0.5}
+                flex
+              />
             </Flex>
             <Flex gap="size-100">
-              <Picker label="Jalon" selectedKey={milestoneId || 'none'} onSelectionChange={(k) => setMilestoneId(k === 'none' ? '' : String(k))} flex>
+              <Picker
+                label="Jalon"
+                selectedKey={milestoneId || 'none'}
+                onSelectionChange={(k) => setMilestoneId(k === 'none' ? '' : String(k))}
+                flex
+              >
                 {[
                   <Item key="none">Aucun</Item>,
                   ...(planner?.data.milestones ?? []).map((m) => <Item key={m.id}>{m.title}</Item>),
                 ]}
               </Picker>
-              <Picker label="Réalisée par" selectedKey={assignee} onSelectionChange={(k) => setAssignee(k as 'user' | 'ai')} flex>
+              <Picker
+                label="Réalisée par"
+                selectedKey={assignee}
+                onSelectionChange={(k) => setAssignee(k as 'user' | 'ai')}
+                flex
+              >
                 <Item key="user">Moi</Item>
                 <Item key="ai">L'assistant IA</Item>
               </Picker>
@@ -141,15 +163,19 @@ export function TaskDialog(props: { task?: Task; defaultStatus?: TaskStatus; onC
               onSelectionChange={(k) => k && !dependsOn.includes(String(k)) && setDependsOn([...dependsOn, String(k)])}
               width="100%"
             >
-              {others.filter((t) => !dependsOn.includes(t.id)).map((t) => (
-                <Item key={t.id}>{t.title}</Item>
-              ))}
+              {others
+                .filter((t) => !dependsOn.includes(t.id))
+                .map((t) => (
+                  <Item key={t.id}>{t.title}</Item>
+                ))}
             </Picker>
             <TagGroup
               aria-label="Dépendances"
               items={dependsOn.map((id) => ({ id, name: others.find((t) => t.id === id)?.title ?? id }))}
               onRemove={(keys) => setDependsOn(dependsOn.filter((d) => !keys.has(d)))}
-              renderEmptyState={() => <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>Aucune dépendance</span>}
+              renderEmptyState={() => (
+                <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>Aucune dépendance</span>
+              )}
             >
               {(item) => <Item key={item.id}>{item.name}</Item>}
             </TagGroup>
@@ -160,7 +186,8 @@ export function TaskDialog(props: { task?: Task; defaultStatus?: TaskStatus; onC
                   {[...task.log].reverse().map((entry, i) => (
                     <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid var(--fg-border)' }}>
                       <span style={{ color: 'var(--fg-text-3)' }}>
-                        {new Date(entry.at).toLocaleString('fr-FR')} · {entry.by === 'ai' ? 'IA' : entry.by === 'user' ? 'vous' : 'système'}
+                        {new Date(entry.at).toLocaleString('fr-FR')} ·{' '}
+                        {entry.by === 'ai' ? 'IA' : entry.by === 'user' ? 'vous' : 'système'}
                       </span>
                       <br />
                       {entry.text}

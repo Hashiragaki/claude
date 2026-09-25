@@ -42,7 +42,10 @@ describe('charset — paramètres et schémas', () => {
     expect(a.accessory).toBe('helmet');
     const mage = gen.procedural(gen.paramsSchema.parse({ prompt: 'une sorcière' }), new Rng(1));
     expect(mage.outfitStyle).toBe('robe');
-    const imposed = gen.procedural(gen.paramsSchema.parse({ prompt: 'chevalier', hairStyle: 'bald', skinTone: '#8d5a3b' }), new Rng(1));
+    const imposed = gen.procedural(
+      gen.paramsSchema.parse({ prompt: 'chevalier', hairStyle: 'bald', skinTone: '#8d5a3b' }),
+      new Rng(1),
+    );
     expect(imposed.hairStyle).toBe('bald');
     expect(imposed.skinTone).toBe('#8d5a3b');
   });
@@ -59,7 +62,8 @@ describe('charset — dessin', () => {
       for (let col = 0; col < 3; col++) {
         expect(alphaAt(img, col * 16, row * 24)).toBe(0);
         let filled = 0;
-        for (let y = 0; y < 24; y++) for (let x = 0; x < 16; x++) if (alphaAt(img, col * 16 + x, row * 24 + y) > 0) filled++;
+        for (let y = 0; y < 24; y++)
+          for (let x = 0; x < 16; x++) if (alphaAt(img, col * 16 + x, row * 24 + y) > 0) filled++;
         expect(filled).toBeGreaterThan(120);
       }
     }

@@ -300,7 +300,9 @@ function applyChatEvent(event: ChatEvent): void {
       case 'message': {
         const index = chat.messages.findIndex((m) => m.id === event.message.id);
         chat.messages =
-          index >= 0 ? chat.messages.map((m, i) => (i === index ? event.message : m)) : [...chat.messages, event.message];
+          index >= 0
+            ? chat.messages.map((m, i) => (i === index ? event.message : m))
+            : [...chat.messages, event.message];
         if (event.message.role === 'assistant') chat.thinking = false;
         break;
       }

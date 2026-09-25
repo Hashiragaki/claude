@@ -1,4 +1,13 @@
-import { ActionButton, AlertDialog, Button, DialogContainer, ProgressCircle, TextArea, Tooltip, TooltipTrigger } from '@adobe/react-spectrum';
+import {
+  ActionButton,
+  AlertDialog,
+  Button,
+  DialogContainer,
+  ProgressCircle,
+  TextArea,
+  Tooltip,
+  TooltipTrigger,
+} from '@adobe/react-spectrum';
 import Delete from '@spectrum-icons/workflow/Delete';
 import Send from '@spectrum-icons/workflow/Send';
 import Stop from '@spectrum-icons/workflow/Stop';
@@ -9,13 +18,19 @@ import { requireProjectId, toastError, useApp } from '../state/app';
 
 const SUGGESTIONS_AI = [
   'Planifie le développement de mon jeu sur 3 mois, avec des jalons réalistes.',
-  'Fais une revue de l\'avancement et dis-moi quoi faire aujourd\'hui.',
+  "Fais une revue de l'avancement et dis-moi quoi faire aujourd'hui.",
   'Propose un concept, un univers et trois personnages pour ce jeu, puis mémorise nos choix.',
   'Génère un décor de forêt enchantée au crépuscule (alias « bg foret »).',
-  'Écris la scène d\'introduction dans le script et vérifie qu\'elle n\'a pas d\'erreur.',
+  "Écris la scène d'introduction dans le script et vérifie qu'elle n'a pas d'erreur.",
 ];
 
-const SUGGESTIONS_OFFLINE = ['/aide', '/taches', '/revue', '/tache Écrire le prologue !haute ~3h', '/generer sfx pièce'];
+const SUGGESTIONS_OFFLINE = [
+  '/aide',
+  '/taches',
+  '/revue',
+  '/tache Écrire le prologue !haute ~3h',
+  '/generer sfx pièce',
+];
 
 /** Assistant de production : chat avec l'IA (ou commandes hors-ligne). */
 export function ChatPanel() {
@@ -55,7 +70,12 @@ export function ChatPanel() {
         </span>
         <div className="fg-spacer" />
         <TooltipTrigger>
-          <ActionButton isQuiet aria-label="Effacer la conversation" onPress={() => setConfirmClear(true)} isDisabled={chat.running || chat.messages.length === 0}>
+          <ActionButton
+            isQuiet
+            aria-label="Effacer la conversation"
+            onPress={() => setConfirmClear(true)}
+            isDisabled={chat.running || chat.messages.length === 0}
+          >
             <Delete />
           </ActionButton>
           <Tooltip>Nouvelle conversation (l'ancienne est archivée ; la mémoire du projet est conservée)</Tooltip>
@@ -65,11 +85,11 @@ export function ChatPanel() {
         {chat.messages.length === 0 && (
           <div className="fg-empty" style={{ height: 'auto', paddingTop: 30 }}>
             <div style={{ fontSize: 14, color: 'var(--fg-text)' }}>
-              {chat.ai ? 'Que construisons-nous aujourd\'hui ?' : 'Assistant hors-ligne'}
+              {chat.ai ? "Que construisons-nous aujourd'hui ?" : 'Assistant hors-ligne'}
             </div>
             <div>
               {chat.ai
-                ? 'L\'assistant connaît votre planning, la mémoire du projet et ses fichiers. Il peut planifier, générer des assets et écrire vos scripts.'
+                ? "L'assistant connaît votre planning, la mémoire du projet et ses fichiers. Il peut planifier, générer des assets et écrire vos scripts."
                 : 'Sans clé API, gérez le planning avec des commandes. Tapez /aide pour la liste.'}
             </div>
           </div>
@@ -80,7 +100,7 @@ export function ChatPanel() {
         {chat.running && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-text-3)' }}>
             <ProgressCircle aria-label="Réponse en cours" isIndeterminate size="S" />
-            {chat.thinking ? 'Réflexion…' : 'L\'assistant travaille…'}
+            {chat.thinking ? 'Réflexion…' : "L'assistant travaille…"}
           </div>
         )}
       </div>
@@ -99,7 +119,9 @@ export function ChatPanel() {
           value={draft}
           onChange={setDraft}
           width="100%"
-          placeholder={chat.ai ? 'Écrivez à l\'assistant… (Entrée pour envoyer, Maj+Entrée pour aller à la ligne)' : 'Tapez /aide…'}
+          placeholder={
+            chat.ai ? "Écrivez à l'assistant… (Entrée pour envoyer, Maj+Entrée pour aller à la ligne)" : 'Tapez /aide…'
+          }
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();

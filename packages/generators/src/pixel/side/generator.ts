@@ -70,9 +70,7 @@ export const sideTilesetGenerator: GeneratorDefinition<SideTilesetParams, SideTi
     ]);
   },
   buildEditPrompt(spec, instruction, params) {
-    return editMessage(spec, instruction, params, [
-      'Keep the same theme unless the change explicitly asks otherwise.',
-    ]);
+    return editMessage(spec, instruction, params, ['Keep the same theme unless the change explicitly asks otherwise.']);
   },
   reviewHint:
     'Planche 128×32 : 2 lignes de 8 tuiles 16×16. Ligne 1 (haut→bas, gauche→droite) : top, fill, top_left, ' +

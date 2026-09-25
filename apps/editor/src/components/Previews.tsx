@@ -108,7 +108,12 @@ export function SpritesheetPreview({ asset }: { asset: AssetMeta }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       <canvas ref={canvasRef} />
       {atlas?.animations && Object.keys(atlas.animations).length > 1 && (
-        <Picker aria-label="Animation" isQuiet selectedKey={animation} onSelectionChange={(k) => setAnimation(String(k))}>
+        <Picker
+          aria-label="Animation"
+          isQuiet
+          selectedKey={animation}
+          onSelectionChange={(k) => setAnimation(String(k))}
+        >
           {Object.keys(atlas.animations).map((name) => (
             <Item key={name}>{name}</Item>
           ))}
@@ -194,7 +199,10 @@ export function ModelPreview({ asset }: { asset: AssetMeta }) {
   }, [asset]);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
-      <div ref={mountRef} style={{ width: '100%', height: 280, borderRadius: 4, overflow: 'hidden', background: '#20242c' }} />
+      <div
+        ref={mountRef}
+        style={{ width: '100%', height: 280, borderRadius: 4, overflow: 'hidden', background: '#20242c' }}
+      />
       {animations.length > 0 && (
         <Picker
           aria-label="Animation"

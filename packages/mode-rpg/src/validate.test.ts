@@ -77,7 +77,11 @@ describe('validation', () => {
       /Événement « a » : identifiant en double/,
       /Rencontres : groupe inconnu « inconnu »/,
     ];
-    for (const p of patterns) expect(errors.some((m) => p.test(m)), p.source).toBe(true);
+    for (const p of patterns)
+      expect(
+        errors.some((m) => p.test(m)),
+        p.source,
+      ).toBe(true);
     const warnings = texts(diags, 'warning');
     expect(warnings.some((m) => /tuile\(s\) d'index inconnu/.test(m))).toBe(true);
     expect(warnings.some((m) => /rôle de tuile inconnu « lave »/.test(m))).toBe(true);
@@ -115,7 +119,7 @@ describe('validation', () => {
     const missing = RpgSystemSchema.parse({ startMap: 'ailleurs', party: [] });
     expect(texts(validateSystem(missing, ctx), 'error')).toEqual([
       'Carte de départ introuvable « ailleurs » (maps/ailleurs.json).',
-      'L\'équipe de départ est vide.',
+      "L'équipe de départ est vide.",
     ]);
     const assets = new AssetRegistry(templateAssets(demoTemplate), new MemoryProjectFiles());
     const warnings = texts(validateSystem(bad, { ...ctx, assets }), 'warning');

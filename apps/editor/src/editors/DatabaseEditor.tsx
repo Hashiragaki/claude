@@ -39,7 +39,13 @@ const CATEGORY_LABELS: Record<Category, string> = {
   troops: 'Troupes',
 };
 
-const EFFECT_LABELS: Record<string, string> = { heal: 'Soigne (PV)', mp: 'Restaure (PM)', revive: 'Ressuscite', damage: 'Inflige des dégâts', none: 'Aucun' };
+const EFFECT_LABELS: Record<string, string> = {
+  heal: 'Soigne (PV)',
+  mp: 'Restaure (PM)',
+  revive: 'Ressuscite',
+  damage: 'Inflige des dégâts',
+  none: 'Aucun',
+};
 const TARGET_LABELS: Record<string, string> = {
   enemy: 'Un ennemi',
   allEnemies: 'Tous les ennemis',
@@ -134,7 +140,14 @@ export function DatabaseEditor({ path }: { path: string }) {
   };
 
   const num = (label: string, key: string, min = 0) => (
-    <NumberField key={key} label={label} value={Number(entry?.[key] ?? 0)} minValue={min} onChange={(v) => !Number.isNaN(v) && updateEntry({ [key]: v })} width="size-1600" />
+    <NumberField
+      key={key}
+      label={label}
+      value={Number(entry?.[key] ?? 0)}
+      minValue={min}
+      onChange={(v) => !Number.isNaN(v) && updateEntry({ [key]: v })}
+      width="size-1600"
+    />
   );
   const assetPicker = (label: string, key: string, kind: AssetMeta['kind'], optional = false) => (
     <Picker
@@ -144,7 +157,10 @@ export function DatabaseEditor({ path }: { path: string }) {
       onSelectionChange={(k) => updateEntry({ [key]: k === 'none' ? undefined : String(k) })}
       width="size-3000"
     >
-      {[...(optional ? [<Item key="none">Aucune</Item>] : []), ...assetsOf(kind).map((a) => <Item key={a.alias!}>{a.alias!}</Item>)]}
+      {[
+        ...(optional ? [<Item key="none">Aucune</Item>] : []),
+        ...assetsOf(kind).map((a) => <Item key={a.alias!}>{a.alias!}</Item>),
+      ]}
     </Picker>
   );
   const idList = (label: string, key: string, options: { id: string; name: string }[]) => {
@@ -205,14 +221,30 @@ export function DatabaseEditor({ path }: { path: string }) {
         const effect = (entry.effect as { type: string; value: number } | undefined) ?? { type: 'none', value: 0 };
         form = [
           ...common,
-          <TextArea key="desc" label="Description" value={String(entry.description ?? '')} onChange={(description) => updateEntry({ description })} width="100%" />,
+          <TextArea
+            key="desc"
+            label="Description"
+            value={String(entry.description ?? '')}
+            onChange={(description) => updateEntry({ description })}
+            width="100%"
+          />,
           <Flex key="effect" gap="size-100" wrap alignItems="end">
-            <Picker label="Effet" selectedKey={effect.type} onSelectionChange={(k) => updateEntry({ effect: { ...effect, type: String(k) } })} width="size-2400">
+            <Picker
+              label="Effet"
+              selectedKey={effect.type}
+              onSelectionChange={(k) => updateEntry({ effect: { ...effect, type: String(k) } })}
+              width="size-2400"
+            >
               {ITEM_EFFECTS.map((e) => (
                 <Item key={e}>{EFFECT_LABELS[e] ?? e}</Item>
               ))}
             </Picker>
-            <NumberField label="Valeur" value={effect.value} onChange={(value) => updateEntry({ effect: { ...effect, value } })} width="size-1600" />
+            <NumberField
+              label="Valeur"
+              value={effect.value}
+              onChange={(value) => updateEntry({ effect: { ...effect, value } })}
+              width="size-1600"
+            />
             {num('Prix', 'price')}
           </Flex>,
           <Flex key="flags" gap="size-200">
@@ -229,13 +261,29 @@ export function DatabaseEditor({ path }: { path: string }) {
       case 'skills':
         form = [
           ...common,
-          <TextArea key="desc" label="Description" value={String(entry.description ?? '')} onChange={(description) => updateEntry({ description })} width="100%" />,
+          <TextArea
+            key="desc"
+            label="Description"
+            value={String(entry.description ?? '')}
+            onChange={(description) => updateEntry({ description })}
+            width="100%"
+          />,
           <Flex key="kind" gap="size-100" wrap>
-            <Picker label="Type" selectedKey={String(entry.type ?? 'damage')} onSelectionChange={(k) => updateEntry({ type: String(k) })} width="size-2000">
+            <Picker
+              label="Type"
+              selectedKey={String(entry.type ?? 'damage')}
+              onSelectionChange={(k) => updateEntry({ type: String(k) })}
+              width="size-2000"
+            >
               <Item key="damage">Dégâts</Item>
               <Item key="heal">Soin</Item>
             </Picker>
-            <Picker label="Cible" selectedKey={String(entry.target ?? 'enemy')} onSelectionChange={(k) => updateEntry({ target: String(k) })} width="size-2400">
+            <Picker
+              label="Cible"
+              selectedKey={String(entry.target ?? 'enemy')}
+              onSelectionChange={(k) => updateEntry({ target: String(k) })}
+              width="size-2400"
+            >
               {SKILL_TARGETS.map((t) => (
                 <Item key={t}>{TARGET_LABELS[t] ?? t}</Item>
               ))}
@@ -271,7 +319,9 @@ export function DatabaseEditor({ path }: { path: string }) {
                 <Picker
                   aria-label="Objet"
                   selectedKey={d.item}
-                  onSelectionChange={(k) => updateEntry({ drops: drops.map((x, j) => (j === i ? { ...x, item: String(k) } : x)) })}
+                  onSelectionChange={(k) =>
+                    updateEntry({ drops: drops.map((x, j) => (j === i ? { ...x, item: String(k) } : x)) })
+                  }
                   width="size-3000"
                 >
                   {db.items.map((it) => (
@@ -288,12 +338,19 @@ export function DatabaseEditor({ path }: { path: string }) {
                   onChange={(chance) => updateEntry({ drops: drops.map((x, j) => (j === i ? { ...x, chance } : x)) })}
                   width="size-1600"
                 />
-                <ActionButton aria-label="Retirer" onPress={() => updateEntry({ drops: drops.filter((_, j) => j !== i) })}>
+                <ActionButton
+                  aria-label="Retirer"
+                  onPress={() => updateEntry({ drops: drops.filter((_, j) => j !== i) })}
+                >
                   <Delete />
                 </ActionButton>
               </Flex>
             ))}
-            <ActionButton isQuiet onPress={() => db.items[0] && updateEntry({ drops: [...drops, { item: db.items[0].id, chance: 0.25 }] })} isDisabled={db.items.length === 0}>
+            <ActionButton
+              isQuiet
+              onPress={() => db.items[0] && updateEntry({ drops: [...drops, { item: db.items[0].id, chance: 0.25 }] })}
+              isDisabled={db.items.length === 0}
+            >
               <Add />
               <Text>Ajouter un butin</Text>
             </ActionButton>
@@ -311,12 +368,24 @@ export function DatabaseEditor({ path }: { path: string }) {
     setSystem({ ...system, ...patch });
     setDirty(true);
   };
-  const musicOptions = [<Item key="none">Aucune</Item>, ...assetsOf('music').map((a) => <Item key={a.alias!}>{a.alias!}</Item>)];
+  const musicOptions = [
+    <Item key="none">Aucune</Item>,
+    ...assetsOf('music').map((a) => <Item key={a.alias!}>{a.alias!}</Item>),
+  ];
 
   return (
     <div className="fg-panel">
       <div className="fg-toolbar">
-        <Tabs aria-label="Catégories" selectedKey={category} onSelectionChange={(k) => { setCategory(k as Category | 'system'); setSelected(null); }} isQuiet density="compact">
+        <Tabs
+          aria-label="Catégories"
+          selectedKey={category}
+          onSelectionChange={(k) => {
+            setCategory(k as Category | 'system');
+            setSelected(null);
+          }}
+          isQuiet
+          density="compact"
+        >
           <TabList>
             {[
               ...(Object.keys(CATEGORY_LABELS) as Category[]).map((c) => <Item key={c}>{CATEGORY_LABELS[c]}</Item>),
@@ -340,11 +409,42 @@ export function DatabaseEditor({ path }: { path: string }) {
           <Flex direction="column" gap="size-100" maxWidth="size-6000">
             <TextField label="Titre du jeu" value={system.title} onChange={(title) => setSys({ title })} />
             <Flex gap="size-100" wrap>
-              <TextField label="Carte de départ" value={system.startMap} onChange={(startMap) => setSys({ startMap })} width="size-2000" />
-              <NumberField label="X" value={system.startX} minValue={0} onChange={(startX) => setSys({ startX })} width="size-1200" />
-              <NumberField label="Y" value={system.startY} minValue={0} onChange={(startY) => setSys({ startY })} width="size-1200" />
-              <NumberField label="Or de départ" value={system.startGold} minValue={0} onChange={(startGold) => setSys({ startGold })} width="size-1600" />
-              <NumberField label="Zoom" value={system.zoom} minValue={1} maxValue={6} step={1} onChange={(zoom) => setSys({ zoom })} width="size-1200" />
+              <TextField
+                label="Carte de départ"
+                value={system.startMap}
+                onChange={(startMap) => setSys({ startMap })}
+                width="size-2000"
+              />
+              <NumberField
+                label="X"
+                value={system.startX}
+                minValue={0}
+                onChange={(startX) => setSys({ startX })}
+                width="size-1200"
+              />
+              <NumberField
+                label="Y"
+                value={system.startY}
+                minValue={0}
+                onChange={(startY) => setSys({ startY })}
+                width="size-1200"
+              />
+              <NumberField
+                label="Or de départ"
+                value={system.startGold}
+                minValue={0}
+                onChange={(startGold) => setSys({ startGold })}
+                width="size-1600"
+              />
+              <NumberField
+                label="Zoom"
+                value={system.zoom}
+                minValue={1}
+                maxValue={6}
+                step={1}
+                onChange={(zoom) => setSys({ zoom })}
+                width="size-1200"
+              />
             </Flex>
             <Picker
               label="Ajouter un héros à l'équipe"
@@ -357,7 +457,10 @@ export function DatabaseEditor({ path }: { path: string }) {
             </Picker>
             <TagGroup
               aria-label="Équipe"
-              items={system.party.map((id, i) => ({ key: `${id}:${i}`, name: db.actors.find((a) => a.id === id)?.name ?? id }))}
+              items={system.party.map((id, i) => ({
+                key: `${id}:${i}`,
+                name: db.actors.find((a) => a.id === id)?.name ?? id,
+              }))}
               onRemove={(keys) => setSys({ party: system.party.filter((id, i) => !keys.has(`${id}:${i}`)) })}
             >
               {(item) => <Item key={item.key}>{item.name}</Item>}
@@ -366,7 +469,14 @@ export function DatabaseEditor({ path }: { path: string }) {
               {(['titleMusic', 'mapMusic', 'battleMusic', 'victoryMusic'] as const).map((key) => (
                 <Picker
                   key={key}
-                  label={{ titleMusic: 'Musique du titre', mapMusic: 'Musique des cartes', battleMusic: 'Musique de combat', victoryMusic: 'Victoire' }[key]}
+                  label={
+                    {
+                      titleMusic: 'Musique du titre',
+                      mapMusic: 'Musique des cartes',
+                      battleMusic: 'Musique de combat',
+                      victoryMusic: 'Victoire',
+                    }[key]
+                  }
                   selectedKey={system[key] ?? 'none'}
                   onSelectionChange={(k) => setSys({ [key]: k === 'none' ? undefined : String(k) })}
                   width="size-2400"
@@ -380,13 +490,23 @@ export function DatabaseEditor({ path }: { path: string }) {
               selectedKey={system.battleback ?? 'none'}
               onSelectionChange={(k) => setSys({ battleback: k === 'none' ? undefined : String(k) })}
             >
-              {[<Item key="none">Dégradé par défaut</Item>, ...assetsOf('image').map((a) => <Item key={a.alias!}>{a.alias!}</Item>)]}
+              {[
+                <Item key="none">Dégradé par défaut</Item>,
+                ...assetsOf('image').map((a) => <Item key={a.alias!}>{a.alias!}</Item>),
+              ]}
             </Picker>
           </Flex>
         </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-          <div style={{ width: 240, borderRight: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)' }}>
+          <div
+            style={{
+              width: 240,
+              borderRight: '1px solid var(--fg-bg-0)',
+              overflow: 'auto',
+              background: 'var(--fg-bg-1)',
+            }}
+          >
             <Flex margin="size-100" gap="size-100">
               <ActionButton onPress={addEntry} isDisabled={!canAdd}>
                 <Add />

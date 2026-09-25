@@ -102,7 +102,7 @@ export function TopBar() {
         <Tooltip>
           {health?.ai.enabled
             ? `Modèle : ${health.ai.model}`
-            : 'Définissez ANTHROPIC_API_KEY avant de lancer le serveur pour activer l\'assistant et la génération par IA. Le mode procédural reste disponible.'}
+            : "Définissez ANTHROPIC_API_KEY avant de lancer le serveur pour activer l'assistant et la génération par IA. Le mode procédural reste disponible."}
         </Tooltip>
       </TooltipTrigger>
       {project &&
@@ -121,8 +121,8 @@ export function TopBar() {
         {dialog === 'new' && <NewProjectDialog onClose={() => setDialog(null)} />}
         {dialog === 'about' && (
           <AlertDialog title="À propos de Forge" variant="information" primaryActionLabel="Fermer">
-            Forge 0.1 — moteur de jeu web : génération d'assets par IA (Claude) ou procédurale, modes Visual Novel,
-            RPG et 3D, et planification long terme avec un assistant. Serveur : {health?.dataDir ?? '?'}.
+            Forge 0.1 — moteur de jeu web : génération d'assets par IA (Claude) ou procédurale, modes Visual Novel, RPG
+            et 3D, et planification long terme avec un assistant. Serveur : {health?.dataDir ?? '?'}.
           </AlertDialog>
         )}
       </DialogContainer>

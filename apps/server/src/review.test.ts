@@ -17,7 +17,12 @@ const PIXEL_SPEC = {
 
 async function makeServer(llm: LlmClient | null): Promise<{ server: ForgeServer; dir: string }> {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'forge-review-test-'));
-  const config = { ...loadConfig({}), dataDir: dir, playerDist: path.join(dir, 'no-player'), editorDist: path.join(dir, 'no-editor') };
+  const config = {
+    ...loadConfig({}),
+    dataDir: dir,
+    playerDist: path.join(dir, 'no-player'),
+    editorDist: path.join(dir, 'no-editor'),
+  };
   const server = await createServer({ config, llm });
   return { server, dir };
 }
@@ -31,7 +36,7 @@ describe('critique visuelle des assets générés', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('montre le rendu à l\'IA, la laisse l\'accepter, et note les tours de critique', async () => {
+  it("montre le rendu à l'IA, la laisse l'accepter, et note les tours de critique", async () => {
     const llm = new FakeLlmClient();
     ({ server, dir } = await makeServer(llm));
     const project = await server.projects.create({ name: 'Critique', mode: 'vn', template: 'vn-blank' });
@@ -57,7 +62,7 @@ describe('critique visuelle des assets générés', () => {
     expect(asset.info.reviewRounds).toBe(1);
   });
 
-  it('n\'envoie qu\'une requête et ne note aucune critique quand review vaut false', async () => {
+  it("n'envoie qu'une requête et ne note aucune critique quand review vaut false", async () => {
     const llm = new FakeLlmClient();
     ({ server, dir } = await makeServer(llm));
     const project = await server.projects.create({ name: 'Sans critique', mode: 'vn', template: 'vn-blank' });
@@ -75,7 +80,7 @@ describe('critique visuelle des assets générés', () => {
     expect(asset.info.reviewRounds).toBeUndefined();
   });
 
-  it('n\'appelle jamais le modèle en mode procédural', async () => {
+  it("n'appelle jamais le modèle en mode procédural", async () => {
     const llm = new FakeLlmClient();
     ({ server, dir } = await makeServer(llm));
     const project = await server.projects.create({ name: 'Procédural', mode: 'vn', template: 'vn-blank' });

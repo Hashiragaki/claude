@@ -104,7 +104,12 @@ export function encodePng(width: number, height: number, rgba: Uint8Array): Uint
 /** Lit la largeur et la hauteur d'un PNG (en-tête IHDR), ou `undefined` si ce n'est pas un PNG. */
 export function readPngSize(png: Uint8Array): { width: number; height: number } | undefined {
   if (png.length < 24 || PNG_SIGNATURE.some((b, i) => png[i] !== b)) return undefined;
-  const u32 = (o: number) => (((png[o] as number) << 24) | ((png[o + 1] as number) << 16) | ((png[o + 2] as number) << 8) | (png[o + 3] as number)) >>> 0;
+  const u32 = (o: number) =>
+    (((png[o] as number) << 24) |
+      ((png[o + 1] as number) << 16) |
+      ((png[o + 2] as number) << 8) |
+      (png[o + 3] as number)) >>>
+    0;
   return { width: u32(16), height: u32(20) };
 }
 

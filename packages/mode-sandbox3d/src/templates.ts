@@ -59,9 +59,7 @@ const blankScene: SceneInput = {
   spawn: { x: 0, z: 5, rotation: 180 },
   player: { speed: 3 },
   camera: { distance: 6, height: 2.5 },
-  objects: [
-    { id: 'arbre', model: 'arbre', position: [0, 0, -3], animation: 'sway', collider: { radius: 0.5 } },
-  ],
+  objects: [{ id: 'arbre', model: 'arbre', position: [0, 0, -3], animation: 'sway', collider: { radius: 0.5 } }],
 };
 
 export const blankTemplate: ProjectTemplate = {

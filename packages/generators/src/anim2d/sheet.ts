@@ -108,7 +108,9 @@ export function buildSheetSvg(spec: Anim2dSpec): string {
             `${pose.opacity < 1 ? ` opacity="${num(pose.opacity, 3)}"` : ''}/>`,
         );
       }
-      cells.push(`<g transform="translate(${f * spec.width} ${row * spec.height})" clip-path="url(#cell)">${uses.join('')}</g>`);
+      cells.push(
+        `<g transform="translate(${f * spec.width} ${row * spec.height})" clip-path="url(#cell)">${uses.join('')}</g>`,
+      );
     }
   });
   return (

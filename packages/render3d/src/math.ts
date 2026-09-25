@@ -75,7 +75,14 @@ export function parseHexColor(value: string | number | undefined, fallback = 0xf
   if (typeof value === 'number') return value;
   if (!value) return fallback;
   const hex = value.trim().replace(/^#/, '');
-  if (/^[0-9a-f]{3}$/i.test(hex)) return parseInt(hex.split('').map((c) => c + c).join(''), 16);
+  if (/^[0-9a-f]{3}$/i.test(hex))
+    return parseInt(
+      hex
+        .split('')
+        .map((c) => c + c)
+        .join(''),
+      16,
+    );
   if (/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(hex)) return parseInt(hex.slice(0, 6), 16);
   return fallback;
 }

@@ -54,7 +54,12 @@ function Tree(props: { value: Json; path: string; onEdit(path: string, value: un
   const { value, path } = props;
   if (value !== null && typeof value === 'object') {
     const entries = Array.isArray(value) ? value.map((v, i) => [String(i), v] as const) : Object.entries(value);
-    if (entries.length === 0) return <span className="fg-mono" style={{ color: 'var(--fg-text-3)' }}>{Array.isArray(value) ? '[]' : '{}'}</span>;
+    if (entries.length === 0)
+      return (
+        <span className="fg-mono" style={{ color: 'var(--fg-text-3)' }}>
+          {Array.isArray(value) ? '[]' : '{}'}
+        </span>
+      );
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {entries.map(([key, child]) => {

@@ -13,10 +13,7 @@ export type Vec3 = z.infer<typeof Vec3Schema>;
 
 export const TimeOfDaySchema = z.enum(['day', 'sunset', 'night']);
 
-export const ColliderSchema = z.union([
-  z.object({ radius: z.number().nonnegative() }),
-  z.literal(false),
-]);
+export const ColliderSchema = z.union([z.object({ radius: z.number().nonnegative() }), z.literal(false)]);
 
 export const InteractionSchema = z.object({
   /** Texte affiché dans la boîte de dialogue. */
@@ -78,9 +75,7 @@ export const SceneSchema = z
         path: ['far'],
       })
       .optional(),
-    ground: z
-      .object({ size: z.number().positive().max(2000), color: HexColorSchema })
-      .default(DEFAULT_GROUND),
+    ground: z.object({ size: z.number().positive().max(2000), color: HexColorSchema }).default(DEFAULT_GROUND),
     spawn: z
       .object({
         x: z.number(),

@@ -88,7 +88,12 @@ export function drawTreeTop(t: Tile): void {
     case 'dungeon': {
       const { stone, stoneDark } = t.pal;
       for (let y = 5; y < T; y++) {
-        for (let x = 4; x <= 11; x++) t.set(x, y, x === 4 ? shade(stone, 0.2) : x >= 10 ? stoneDark : x % 2 === 1 ? mix(stone, stoneDark, 0.3) : stone);
+        for (let x = 4; x <= 11; x++)
+          t.set(
+            x,
+            y,
+            x === 4 ? shade(stone, 0.2) : x >= 10 ? stoneDark : x % 2 === 1 ? mix(stone, stoneDark, 0.3) : stone,
+          );
       }
       t.rect(2, 1, 12, 2, shade(stone, 0.15));
       t.rect(3, 3, 10, 2, stone);
@@ -194,7 +199,12 @@ export function drawTreeTrunk(t: Tile): void {
     case 'dungeon': {
       const { stone, stoneDark } = t.pal;
       for (let y = 0; y < 12; y++) {
-        for (let x = 4; x <= 11; x++) t.set(x, y, x === 4 ? shade(stone, 0.2) : x >= 10 ? stoneDark : x % 2 === 1 ? mix(stone, stoneDark, 0.3) : stone);
+        for (let x = 4; x <= 11; x++)
+          t.set(
+            x,
+            y,
+            x === 4 ? shade(stone, 0.2) : x >= 10 ? stoneDark : x % 2 === 1 ? mix(stone, stoneDark, 0.3) : stone,
+          );
       }
       t.rect(3, 12, 10, 2, stone);
       t.rect(2, 14, 12, 2, shade(stone, 0.1));
@@ -214,7 +224,8 @@ export function drawTreeTrunk(t: Tile): void {
       t.hline(3, 12, 9, pot[3] as string);
       for (let y = 11; y < 16; y++) {
         const inset = Math.floor((y - 11) / 2);
-        for (let x = 4 + inset; x <= 11 - inset; x++) t.set(x, y, x <= 5 + inset ? (pot[2] as string) : x >= 10 - inset ? (pot[0] as string) : (pot[1] as string));
+        for (let x = 4 + inset; x <= 11 - inset; x++)
+          t.set(x, y, x <= 5 + inset ? (pot[2] as string) : x >= 10 - inset ? (pot[0] as string) : (pot[1] as string));
       }
       break;
     }
@@ -222,7 +233,8 @@ export function drawTreeTrunk(t: Tile): void {
       const stem = '#e4dccb';
       for (let y = 0; y < 16; y++) {
         const flare = y > 11 ? y - 11 : 0;
-        for (let x = 6 - flare; x <= 9 + flare; x++) t.set(x, y, x === 6 - flare ? '#fffaf0' : x >= 9 + flare ? shade(stem, -0.3) : stem);
+        for (let x = 6 - flare; x <= 9 + flare; x++)
+          t.set(x, y, x === 6 - flare ? '#fffaf0' : x >= 9 + flare ? shade(stem, -0.3) : stem);
       }
       t.hline(5, 10, 4, shade(stem, -0.15));
       t.hline(5, 10, 3, '#fffaf0');
@@ -287,7 +299,8 @@ export function drawBush(t: Tile): void {
         [7, 9],
         [3, 8],
         [12, 7],
-      ] as const) t.set(x, y, '#f4ecd0');
+      ] as const)
+        t.set(x, y, '#f4ecd0');
       t.set(7, 2, t.pal.accent);
       break;
     }
@@ -304,7 +317,12 @@ export function drawBush(t: Tile): void {
       const pot = ['#6e3222', '#a4502e', '#cc7446'];
       for (let y = 10; y < 15; y++) {
         const inset = Math.floor((y - 10) / 3);
-        for (let x = 5 + inset; x <= 10 - inset; x++) t.set(x, y, x === 5 + inset ? (pot[2] as string) : x === 10 - inset ? (pot[0] as string) : (pot[1] as string));
+        for (let x = 5 + inset; x <= 10 - inset; x++)
+          t.set(
+            x,
+            y,
+            x === 5 + inset ? (pot[2] as string) : x === 10 - inset ? (pot[0] as string) : (pot[1] as string),
+          );
       }
       t.hline(4, 11, 10, pot[2] as string);
       break;
@@ -327,7 +345,8 @@ export function drawBush(t: Tile): void {
           [10, 7],
           [8, 11],
           [12, 10],
-        ] as const) t.set(x, y, t.pal.accent === '#f0c83c' ? '#d8344a' : t.pal.accent);
+        ] as const)
+          t.set(x, y, t.pal.accent === '#f0c83c' ? '#d8344a' : t.pal.accent);
       }
   }
   t.outlined();
@@ -465,7 +484,8 @@ export function drawLog(t: Tile): void {
       [13, 11],
       [3, 11],
       [12, 14],
-    ] as const) t.set(x, y, bone[3] as string);
+    ] as const)
+      t.set(x, y, bone[3] as string);
     t.outlined();
     t.shadow(8, 14.8, 6, 1.2);
     return;
@@ -480,7 +500,8 @@ export function drawLog(t: Tile): void {
       [7, 4, shade(t.pal.accent, 0.3)],
       [9, 5, '#f0c040'],
       [11, 5, t.pal.accent],
-    ] as const) blob(t, x, y, 1.6, 1.4, ramp5(c, shade(c, -0.4)));
+    ] as const)
+      blob(t, x, y, 1.6, 1.4, ramp5(c, shade(c, -0.4)));
     for (const x of [4, 11]) blob(t, x, 12.5, 1.6, 1.6, steel);
     t.outlined();
     t.shadow(8, 14.6, 6, 1.2);
@@ -490,7 +511,11 @@ export function drawLog(t: Tile): void {
     for (let y = y0; y < y0 + 5; y++) {
       for (let x = x0; x < x1; x++) {
         const ly = y - y0;
-        t.set(x, y, ly === 0 ? shade(wood, 0.2) : ly === 4 ? woodDark : (x * 3 + ly) % 7 === 0 ? mix(wood, woodDark, 0.5) : wood);
+        t.set(
+          x,
+          y,
+          ly === 0 ? shade(wood, 0.2) : ly === 4 ? woodDark : (x * 3 + ly) % 7 === 0 ? mix(wood, woodDark, 0.5) : wood,
+        );
       }
     }
     const end = ['#c89a5e', '#e8c088', '#b07a44'];
@@ -566,4 +591,3 @@ export function drawCrate(t: Tile): void {
   t.outlined();
   t.shadow(8, 15.2, 6.5, 1);
 }
-

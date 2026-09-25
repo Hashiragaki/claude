@@ -16,14 +16,7 @@ import {
   type Sky,
   type View3d,
 } from '@forge/render3d';
-import {
-  BoxGeometry,
-  CapsuleGeometry,
-  Group,
-  Mesh,
-  MeshStandardMaterial,
-  type Object3D,
-} from 'three';
+import { BoxGeometry, CapsuleGeometry, Group, Mesh, MeshStandardMaterial, type Object3D } from 'three';
 import { colliderRadius, type InteractionEvent } from './interaction';
 import { SandboxOverlay } from './overlay';
 import { parseScene, type SceneData, type SceneObject } from './schema';

@@ -3,12 +3,7 @@ import { jsonFile, pngFile } from '../shared/files';
 import { sanitizeSvg } from '../svg/sanitize';
 import type { GeneratorDefinition } from '../types';
 import { proceduralAnim } from './procedural';
-import {
-  anim2dParamsSchema,
-  anim2dSpecSchema,
-  type Anim2dParams,
-  type Anim2dSpec,
-} from './schema';
+import { anim2dParamsSchema, anim2dSpecSchema, type Anim2dParams, type Anim2dSpec } from './schema';
 import { buildAtlas, buildSheetSvg, sheetLayout } from './sheet';
 
 const SYSTEM_PROMPT =
@@ -55,10 +50,7 @@ const SYSTEM_PROMPT =
   `numbers to 1 decimal.\n` +
   `${FRENCH_AUDIENCE_NOTE}`;
 
-export const anim2dGenerator: GeneratorDefinition<
-  Anim2dParams,
-  Anim2dSpec
-> = {
+export const anim2dGenerator: GeneratorDefinition<Anim2dParams, Anim2dSpec> = {
   id: 'anim2d',
   kind: 'spritesheet',
   label: 'Animation 2D',
@@ -69,27 +61,13 @@ export const anim2dGenerator: GeneratorDefinition<
   specSchema: anim2dSpecSchema,
   systemPrompt: SYSTEM_PROMPT,
   buildPrompt(params) {
-    return requestMessage(
-      `a 2D cut-out animation (subject type: ${params.subject})`,
-      params.prompt,
-      params,
-      [
-        `Frame size: ${params.width}x${params.height}, ` +
-          `${params.frames} frames per animation, ${params.fps} fps.`,
-        `Produce exactly these animations, in this order: ` +
-          `${params.animations.join(', ')}.`,
-      ],
-    );
+    return requestMessage(`a 2D cut-out animation (subject type: ${params.subject})`, params.prompt, params, [
+      `Frame size: ${params.width}x${params.height}, ` + `${params.frames} frames per animation, ${params.fps} fps.`,
+      `Produce exactly these animations, in this order: ` + `${params.animations.join(', ')}.`,
+    ]);
   },
   buildEditPrompt(spec, instruction, params) {
-    return editMessage(
-      spec,
-      instruction,
-      params,
-      [
-        'Keep the same frame size, animation names and frame counts.',
-      ],
-    );
+    return editMessage(spec, instruction, params, ['Keep the same frame size, animation names and frame counts.']);
   },
   procedural(params, rng) {
     return proceduralAnim(params, rng);
@@ -100,17 +78,9 @@ export const anim2dGenerator: GeneratorDefinition<
       width: layout.width,
       height: layout.height,
     });
-    const png = await ctx.rasterizeSvg(
-      svg,
-      layout.width,
-      layout.height,
-    );
+    const png = await ctx.rasterizeSvg(svg, layout.width, layout.height);
     return {
-      files: [
-        pngFile('main', png),
-        jsonFile('atlas', buildAtlas(spec)),
-        jsonFile('source', spec),
-      ],
+      files: [pngFile('main', png), jsonFile('atlas', buildAtlas(spec)), jsonFile('source', spec)],
       info: {
         frameWidth: spec.width,
         frameHeight: spec.height,

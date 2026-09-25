@@ -91,8 +91,6 @@ export function ridgePath(
     const y = baseY - rng.float(0.2, 1) * opts.amplitude * (opts.sharp && i % 2 === 1 ? 1.4 : 1);
     pts.push([x, y]);
   }
-  const top = opts.sharp
-    ? `M${pts.map(([x, y]) => `${num(x)} ${num(y)}`).join('L')}`
-    : smoothOpenPath(pts);
+  const top = opts.sharp ? `M${pts.map(([x, y]) => `${num(x)} ${num(y)}`).join('L')}` : smoothOpenPath(pts);
   return `${top}L${num(width)} ${num(bottom)}L0 ${num(bottom)}Z`;
 }

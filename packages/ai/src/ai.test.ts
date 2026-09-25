@@ -60,7 +60,7 @@ describe('generateStructured', () => {
     expect(JSON.stringify(last.content)).toContain('is_error');
   });
 
-  it('relance si le modèle oublie l\'outil, puis échoue après le maximum d\'essais', async () => {
+  it("relance si le modèle oublie l'outil, puis échoue après le maximum d'essais", async () => {
     const llm = new FakeLlmClient([
       { content: [textBlock('Je réfléchis…')] },
       { content: [textBlock('Toujours rien')] },
@@ -100,7 +100,7 @@ describe('runAgent', () => {
           toolUseBlock('inconnu', {}),
         ],
       },
-      { content: [textBlock('C\'est fait !')] },
+      { content: [textBlock("C'est fait !")] },
     ]);
     const events: AgentEvent[] = [];
     const result = await runAgent({
@@ -111,21 +111,27 @@ describe('runAgent', () => {
       onEvent: (e) => events.push(e),
     });
     expect(created).toEqual(['Écrire le chapitre 1']);
-    expect(result.text).toBe('C\'est fait !');
+    expect(result.text).toBe("C'est fait !");
     expect(result.added).toHaveLength(3);
     const toolResults = result.added[1]!.content as { is_error?: boolean }[];
     expect(toolResults).toHaveLength(3);
     expect(toolResults.map((r) => Boolean(r.is_error))).toEqual([false, true, true]);
     expect(events.filter((e) => e.type === 'tool_end')).toHaveLength(3);
-    expect(events.at(-1)).toMatchObject({ type: 'done', text: 'C\'est fait !' });
+    expect(events.at(-1)).toMatchObject({ type: 'done', text: "C'est fait !" });
     // L'historique envoyé au second appel contient les résultats d'outils (ajout uniquement).
     expect(llm.requests[1]!.messages).toHaveLength(3);
   });
 
-  it('s\'arrête au nombre maximal d\'itérations', async () => {
+  it("s'arrête au nombre maximal d'itérations", async () => {
     const loop = defineTool({ name: 'ping', description: 'ping', schema: z.object({}), run: () => 'pong' });
     const llm = new FakeLlmClient(Array.from({ length: 5 }, () => ({ content: [toolUseBlock('ping', {})] })));
-    const result = await runAgent({ llm, system: 's', messages: [{ role: 'user', content: 'go' }], tools: [loop], maxIterations: 3 });
+    const result = await runAgent({
+      llm,
+      system: 's',
+      messages: [{ role: 'user', content: 'go' }],
+      tools: [loop],
+      maxIterations: 3,
+    });
     expect(llm.requests).toHaveLength(3);
     expect(result.stopReason).toBe('tool_use');
   });

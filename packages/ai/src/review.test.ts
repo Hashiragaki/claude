@@ -50,7 +50,11 @@ describe('generateStructured avec critique visuelle', () => {
     expect(toolResult.type).toBe('tool_result');
     expect(toolResult.tool_use_id).toBe('toolu_1');
     expect(toolResult.is_error).toBeFalsy();
-    const blocks = toolResult.content as { type: string; text?: string; source?: { media_type?: string; data?: string } }[];
+    const blocks = toolResult.content as {
+      type: string;
+      text?: string;
+      source?: { media_type?: string; data?: string };
+    }[];
     expect(blocks.some((b) => b.type === 'text' && typeof b.text === 'string' && b.text.length > 0)).toBe(true);
     const imageBlock = blocks.find((b) => b.type === 'image');
     expect(imageBlock?.source?.media_type).toBe('image/png');

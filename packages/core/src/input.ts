@@ -1,17 +1,7 @@
 import { Emitter } from './events';
 
 export type Action =
-  | 'up'
-  | 'down'
-  | 'left'
-  | 'right'
-  | 'confirm'
-  | 'cancel'
-  | 'menu'
-  | 'dash'
-  | 'skip'
-  | 'auto'
-  | 'history';
+  'up' | 'down' | 'left' | 'right' | 'confirm' | 'cancel' | 'menu' | 'dash' | 'skip' | 'auto' | 'history';
 
 /**
  * Associations par défaut, en `KeyboardEvent.code` (position physique) :

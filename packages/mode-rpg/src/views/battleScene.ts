@@ -497,7 +497,9 @@ function placeholderBattler(id: string, size: number): Graphics {
   const g = new Graphics();
   const color = colorFromText(id);
   g.ellipse(0, -2, size * 0.42, size * 0.08).fill({ color: 0x000000, alpha: 0.3 });
-  g.ellipse(0, -size * 0.35, size * 0.4, size * 0.35).fill(color).stroke({ width: 3, color: 0x000000, alpha: 0.4 });
+  g.ellipse(0, -size * 0.35, size * 0.4, size * 0.35)
+    .fill(color)
+    .stroke({ width: 3, color: 0x000000, alpha: 0.4 });
   g.circle(-size * 0.13, -size * 0.42, size * 0.06).fill(0xffffff);
   g.circle(size * 0.13, -size * 0.42, size * 0.06).fill(0xffffff);
   g.circle(-size * 0.13, -size * 0.42, size * 0.03).fill(0x000000);

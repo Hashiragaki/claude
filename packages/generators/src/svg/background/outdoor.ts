@@ -4,15 +4,8 @@ import { d, el } from '../../shared/svg';
 import { H, W, ambience, clouds, halo, sky, stars, tree, windowFill, type Scene } from './common';
 
 /** Collines superposées : du plus lointain (brumeux) au plus proche. */
-function hills(
-  s: Scene,
-  layers: { y: number; color: string; amp: number; seg: number; sharp?: boolean }[],
-): void {
-  const haze = s.time === 'night'
-    ? '#2a3868'
-    : s.time === 'sunset'
-      ? '#e8a0a0'
-      : '#c8e4f4';
+function hills(s: Scene, layers: { y: number; color: string; amp: number; seg: number; sharp?: boolean }[]): void {
+  const haze = s.time === 'night' ? '#2a3868' : s.time === 'sunset' ? '#e8a0a0' : '#c8e4f4';
   layers.forEach((layer, i) => {
     const k = (layers.length - 1 - i) / Math.max(1, layers.length);
     const base = mix(s.L(layer.color), haze, k * 0.55);
@@ -73,8 +66,19 @@ function lampPost(s: Scene, x: number, ground: number, h = 260): void {
   s.b.e('rect', { x: x - 14, y: ground - 14, width: 28, height: 14, rx: 3, fill: metal });
   s.b.e('path', {
     d: d(
-      'M', x - 22, ground - h, 'L', x + 22, ground - h, 'L', x + 14, ground - h - 40,
-      'L', x - 14, ground - h - 40, 'Z',
+      'M',
+      x - 22,
+      ground - h,
+      'L',
+      x + 22,
+      ground - h,
+      'L',
+      x + 14,
+      ground - h - 40,
+      'L',
+      x - 14,
+      ground - h - 40,
+      'Z',
     ),
     fill: s.time === 'day' ? '#e8eef4' : '#ffe08a',
     stroke: metal,
@@ -90,8 +94,7 @@ function lampPost(s: Scene, x: number, ground: number, h = 260): void {
 function bench(s: Scene, x: number, ground: number): void {
   const wood = s.L('#b07a48');
   const metal = s.L('#3a4050');
-  for (const dx of [16, 164])
-    s.b.e('rect', { x: x + dx, y: ground - 50, width: 8, height: 50, fill: metal });
+  for (const dx of [16, 164]) s.b.e('rect', { x: x + dx, y: ground - 50, width: 8, height: 50, fill: metal });
   for (const y of [-78, -64])
     s.b.e('rect', {
       x,
@@ -142,7 +145,10 @@ export function park(s: Scene): void {
   const path = s.L('#e2cc9a');
   s.b.e('path', {
     d: 'M560 450C600 450 640 450 660 452C700 520 820 600 900 720L360 720C470 620 560 520 560 450Z',
-    fill: s.b.lin([[0, shade(path, -0.1)], [1, path]]),
+    fill: s.b.lin([
+      [0, shade(path, -0.1)],
+      [1, path],
+    ]),
   });
   s.b.e('path', {
     d: 'M560 450C560 520 470 620 360 720M660 452C700 520 820 600 900 720',
@@ -192,19 +198,31 @@ export function forest(s: Scene): void {
       const w = h * 0.32;
       trees.push(
         d(
-          'M', x, layer.y - h,
-          'L', x + w * 0.5, layer.y - h * 0.55,
-          'L', x + w * 0.3, layer.y - h * 0.55,
-          'L', x + w * 0.7, layer.y - h * 0.15,
-          'L', x - w * 0.7, layer.y - h * 0.15,
-          'L', x - w * 0.3, layer.y - h * 0.55,
-          'L', x - w * 0.5, layer.y - h * 0.55,
+          'M',
+          x,
+          layer.y - h,
+          'L',
+          x + w * 0.5,
+          layer.y - h * 0.55,
+          'L',
+          x + w * 0.3,
+          layer.y - h * 0.55,
+          'L',
+          x + w * 0.7,
+          layer.y - h * 0.15,
+          'L',
+          x - w * 0.7,
+          layer.y - h * 0.15,
+          'L',
+          x - w * 0.3,
+          layer.y - h * 0.55,
+          'L',
+          x - w * 0.5,
+          layer.y - h * 0.55,
           'Z',
         ),
       );
-      trunks.push(
-        d('M', x - w * 0.07, layer.y - h * 0.16, 'h', w * 0.14, 'V', layer.y, 'h', -w * 0.14, 'Z'),
-      );
+      trunks.push(d('M', x - w * 0.07, layer.y - h * 0.16, 'h', w * 0.14, 'V', layer.y, 'h', -w * 0.14, 'Z'));
     }
     s.b.e('path', { d: trunks.join(''), fill: shade(c, -0.35) });
     s.b.e('path', { d: trees.join(''), fill: c });
@@ -232,9 +250,14 @@ export function forest(s: Scene): void {
       const rad = ((a - 90) * Math.PI) / 180;
       ferns.push(
         d(
-          'M', x, y,
-          'Q', x + Math.cos(rad) * 20, y + Math.sin(rad) * 34,
-          x + Math.cos(rad) * 44, y + Math.sin(rad) * 40,
+          'M',
+          x,
+          y,
+          'Q',
+          x + Math.cos(rad) * 20,
+          y + Math.sin(rad) * 34,
+          x + Math.cos(rad) * 44,
+          y + Math.sin(rad) * 40,
         ),
       );
     }
@@ -277,7 +300,10 @@ export function beach(s: Scene): void {
     y: horizon,
     width: W,
     height: H - horizon,
-    fill: s.b.lin([[0, shade(sea, -0.15)], [1, mix(sea, '#6ad8e0', 0.5)]]),
+    fill: s.b.lin([
+      [0, shade(sea, -0.15)],
+      [1, mix(sea, '#6ad8e0', 0.5)],
+    ]),
   });
   const glint = s.time === 'sunset' ? '#ffd08a' : s.time === 'night' ? '#dfe8ff' : '#ffffff';
   const lines: string[] = [];
@@ -291,7 +317,10 @@ export function beach(s: Scene): void {
   const sand = s.L('#f0d49a');
   s.b.e('path', {
     d: 'M0 520C300 500 700 540 1280 500L1280 720L0 720Z',
-    fill: s.b.lin([[0, shade(sand, 0.08)], [1, shade(sand, -0.12)]]),
+    fill: s.b.lin([
+      [0, shade(sand, 0.08)],
+      [1, shade(sand, -0.12)],
+    ]),
   });
   s.b.e('path', {
     d: 'M0 516C300 496 700 536 1280 496',
@@ -325,9 +354,19 @@ export function beach(s: Scene): void {
   ] as const) {
     s.b.e('path', {
       d: d(
-        'M', 1038, 330,
-        'Q', 1038 + dx * 0.5, 330 + dy - 60 * flip * 0.2, 1038 + dx, 330 + dy + 40,
-        'Q', 1038 + dx * 0.45, 330 + dy * 0.4, 1038, 336,
+        'M',
+        1038,
+        330,
+        'Q',
+        1038 + dx * 0.5,
+        330 + dy - 60 * flip * 0.2,
+        1038 + dx,
+        330 + dy + 40,
+        'Q',
+        1038 + dx * 0.45,
+        330 + dy * 0.4,
+        1038,
+        336,
         'Z',
       ),
       fill: leaf,
@@ -337,7 +376,8 @@ export function beach(s: Scene): void {
   for (const [x, y] of [
     [1030, 344],
     [1050, 348],
-  ] as const) s.b.e('circle', { cx: x, cy: y, r: 12, fill: s.L('#6a4a2a') });
+  ] as const)
+    s.b.e('circle', { cx: x, cy: y, r: 12, fill: s.L('#6a4a2a') });
   // Parasol et serviette
   const stripe = s.accent ?? '#e84a5a';
   s.b.e('path', { d: 'M300 470L306 660', stroke: s.L('#e8e0d0'), 'stroke-width': 6 });
@@ -351,16 +391,36 @@ export function beach(s: Scene): void {
   ] as const) {
     s.b.e('path', {
       d: d(
-        'M', x, y - 12,
-        'L', x + 4, y - 3,
-        'L', x + 13, y - 3,
-        'L', x + 6, y + 3,
-        'L', x + 9, y + 12,
-        'L', x, y + 7,
-        'L', x - 9, y + 12,
-        'L', x - 6, y + 3,
-        'L', x - 13, y - 3,
-        'L', x - 4, y - 3,
+        'M',
+        x,
+        y - 12,
+        'L',
+        x + 4,
+        y - 3,
+        'L',
+        x + 13,
+        y - 3,
+        'L',
+        x + 6,
+        y + 3,
+        'L',
+        x + 9,
+        y + 12,
+        'L',
+        x,
+        y + 7,
+        'L',
+        x - 9,
+        y + 12,
+        'L',
+        x - 6,
+        y + 3,
+        'L',
+        x - 13,
+        y - 3,
+        'L',
+        x - 4,
+        y - 3,
         'Z',
       ),
       fill: s.L('#f08a5a'),
@@ -415,13 +475,7 @@ export function castle(s: Scene): void {
       const wy = y + 30 + k * 50;
       if (wy + 30 > y + h) break;
       s.b.e('path', {
-        d: d(
-          'M', x - 7, wy + 26,
-          'V', wy + 8,
-          'Q', x, wy - 2, x + 7, wy + 8,
-          'V', wy + 26,
-          'Z',
-        ),
+        d: d('M', x - 7, wy + 26, 'V', wy + 8, 'Q', x, wy - 2, x + 7, wy + 8, 'V', wy + 26, 'Z'),
         fill: windowFill(s, lit && k === 0),
       });
     }
@@ -440,7 +494,8 @@ export function castle(s: Scene): void {
       [520, 290],
       [860, 280],
       [690, 210],
-    ] as const) halo(s, x, y, 60);
+    ] as const)
+      halo(s, x, y, 60);
   }
   grassField(s, 560, '#5aae5a');
   s.b.e('path', {
@@ -558,7 +613,14 @@ export function street(s: Scene): void {
 }
 
 export function space(s: Scene): void {
-  s.b.e('rect', { width: W, height: H, fill: s.b.lin([[0, '#05061a'], [1, '#141a44']]) });
+  s.b.e('rect', {
+    width: W,
+    height: H,
+    fill: s.b.lin([
+      [0, '#05061a'],
+      [1, '#141a44'],
+    ]),
+  });
   const nebula = [
     [300, 260, 380, '#8a3ab0'],
     [900, 420, 420, '#2a6ad0'],
@@ -584,7 +646,11 @@ export function space(s: Scene): void {
     cy: 300,
     r: 140,
     fill: s.b.rad(
-      [[0, shade(planet, 0.35)], [0.7, planet], [1, shade(planet, -0.45)]],
+      [
+        [0, shade(planet, 0.35)],
+        [0.7, planet],
+        [1, shade(planet, -0.45)],
+      ],
       { cx: 0.35, cy: 0.35, r: 0.75 },
     ),
   });
@@ -607,13 +673,20 @@ export function space(s: Scene): void {
     cx: 240,
     cy: 520,
     r: 60,
-    fill: s.b.rad([[0, '#e8e8f0'], [1, '#6a6a88']], { cx: 0.35, cy: 0.3, r: 0.8 }),
+    fill: s.b.rad(
+      [
+        [0, '#e8e8f0'],
+        [1, '#6a6a88'],
+      ],
+      { cx: 0.35, cy: 0.3, r: 0.8 },
+    ),
   });
   for (const [x, y, r] of [
     [220, 500, 10],
     [262, 540, 7],
     [230, 548, 5],
-  ] as const) s.b.e('circle', { cx: x, cy: y, r, fill: '#8a8aa4', opacity: 0.6 });
+  ] as const)
+    s.b.e('circle', { cx: x, cy: y, r, fill: '#8a8aa4', opacity: 0.6 });
   s.b.e('path', {
     d: 'M180 120L420 200',
     stroke: '#ffffff',
@@ -623,7 +696,13 @@ export function space(s: Scene): void {
   });
   s.b.e('circle', { cx: 420, cy: 200, r: 5, fill: '#ffffff' });
   s.b.e('path', {
-    d: smoothOpenPath([[0, 690], [400, 640], [800, 680], [1280, 630]]) + 'L1280 720L0 720Z',
+    d:
+      smoothOpenPath([
+        [0, 690],
+        [400, 640],
+        [800, 680],
+        [1280, 630],
+      ]) + 'L1280 720L0 720Z',
     fill: '#2a2a44',
   });
 }

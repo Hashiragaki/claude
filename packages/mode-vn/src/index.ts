@@ -23,8 +23,8 @@ export const vnMode: GameModeDefinition = {
   id: 'vn',
   name: 'Visual Novel',
   description:
-    'Romans visuels à embranchements écrits dans un langage de script inspiré de Ren\'Py : dialogues, '
-    + 'personnages, choix, variables, transitions, musique, sauvegardes et retour arrière.',
+    "Romans visuels à embranchements écrits dans un langage de script inspiré de Ren'Py : dialogues, " +
+    'personnages, choix, variables, transitions, musique, sauvegardes et retour arrière.',
   templates: VN_TEMPLATES,
   async createRuntime(ctx) {
     const { VNRuntime } = await import('./runtime');

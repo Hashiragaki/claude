@@ -52,9 +52,40 @@ export function frontHairPath(style: PortraitHairStyle): string {
   const out: string[] = [];
   out.push(d('M', 194, side));
   if (style === 'spiky') {
-    out.push(d('L', 176, 330, 'L', 186, 300, 'L', 162, 268, 'L', 184, 240, 'L', 170, 200, 'L', 200, 186, 'L', 206, 140, 'L', 244, 158));
-    out.push(d('L', 262, 112, 'L', 292, 146, 'L', 318, 100, 'L', 340, 146, 'L', 378, 118, 'L', 382, 160, 'L', 420, 158));
-    out.push(d('L', 412, 196, 'L', 438, 226, 'L', 416, 250, 'L', 440, 280, 'L', 414, 302, 'L', 424, 334, 'L', 406, side));
+    out.push(
+      d(
+        'L',
+        176,
+        330,
+        'L',
+        186,
+        300,
+        'L',
+        162,
+        268,
+        'L',
+        184,
+        240,
+        'L',
+        170,
+        200,
+        'L',
+        200,
+        186,
+        'L',
+        206,
+        140,
+        'L',
+        244,
+        158,
+      ),
+    );
+    out.push(
+      d('L', 262, 112, 'L', 292, 146, 'L', 318, 100, 'L', 340, 146, 'L', 378, 118, 'L', 382, 160, 'L', 420, 158),
+    );
+    out.push(
+      d('L', 412, 196, 'L', 438, 226, 'L', 416, 250, 'L', 440, 280, 'L', 414, 302, 'L', 424, 334, 'L', 406, side),
+    );
   } else {
     const bulge = long ? 150 : style === 'bob' ? 168 : 172;
     out.push(d('C', long ? 150 : 172, side - 90, bulge, 180, 300, 136));
@@ -83,11 +114,34 @@ export function backHeadPath(style: PortraitHairStyle): string {
     const bottom = style === 'bob' ? 486 : 520;
     const w = style === 'bob' ? 16 : 0;
     return d(
-      'M', 178 - w, 300,
-      'C', 160, 120, 440, 120, 422 + w, 300,
-      'C', 428 + w, 360, 426 + w, 420, 410 + w, bottom,
-      'L', 190 - w, bottom,
-      'C', 174 - w, 420, 172 - w, 360, 178 - w, 300, 'Z',
+      'M',
+      178 - w,
+      300,
+      'C',
+      160,
+      120,
+      440,
+      120,
+      422 + w,
+      300,
+      'C',
+      428 + w,
+      360,
+      426 + w,
+      420,
+      410 + w,
+      bottom,
+      'L',
+      190 - w,
+      bottom,
+      'C',
+      174 - w,
+      420,
+      172 - w,
+      360,
+      178 - w,
+      300,
+      'Z',
     );
   }
   return 'M178 300C160 120 440 120 422 300C426 340 420 372 400 392C360 410 240 410 200 392C180 372 174 340 178 300Z';
@@ -102,7 +156,11 @@ export function drawBackHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors)
   const line = b.line(1.2, c.line);
   switch (id.hairStyle) {
     case 'long':
-      return el('path', { d: 'M178 300C150 420 140 600 156 790C230 812 370 812 444 790C460 600 450 420 422 300Z', fill, ...line });
+      return el('path', {
+        d: 'M178 300C150 420 140 600 156 790C230 812 370 812 444 790C460 600 450 420 422 300Z',
+        fill,
+        ...line,
+      });
     case 'ponytail':
       return el('path', {
         d: 'M388 188C470 190 500 280 488 380C478 470 500 560 470 640C452 600 440 540 436 480C432 400 440 300 380 250Z',
@@ -113,7 +171,40 @@ export function drawBackHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors)
       const tail = (dir: number) => {
         const x = (v: number) => 300 + dir * v;
         return el('path', {
-          d: d('M', x(110), 214, 'C', x(190), 230, x(230), 360, x(214), 480, 'C', x(204), 580, x(226), 660, x(196), 740, 'C', x(170), 660, x(150), 580, x(148), 480, 'C', x(146), 380, x(140), 290, x(96), 250, 'Z'),
+          d: d(
+            'M',
+            x(110),
+            214,
+            'C',
+            x(190),
+            230,
+            x(230),
+            360,
+            x(214),
+            480,
+            'C',
+            x(204),
+            580,
+            x(226),
+            660,
+            x(196),
+            740,
+            'C',
+            x(170),
+            660,
+            x(150),
+            580,
+            x(148),
+            480,
+            'C',
+            x(146),
+            380,
+            x(140),
+            290,
+            x(96),
+            250,
+            'Z',
+          ),
           fill,
           ...line,
         });
@@ -164,20 +255,47 @@ export function drawFrontHair(b: SvgBuilder, id: PortraitIdentity, c: HairColors
   const { valleys } = fringe(id.hairStyle);
   const inner = valleys
     .slice(1, -1)
-    .map(([x, y], i) => d('M', x - 9, y, 'Q', x - 2, y + 30, x + (i % 2 ? 4 : -4), y + 46, 'Q', x + 4, y + 26, x + 9, y, 'Z'))
+    .map(([x, y], i) =>
+      d('M', x - 9, y, 'Q', x - 2, y + 30, x + (i % 2 ? 4 : -4), y + 46, 'Q', x + 4, y + 26, x + 9, y, 'Z'),
+    )
     .join('');
   const parts = [
     el('path', { d: inner, fill: c.dark }),
     el('path', { d: path, fill, ...b.line(1.2, c.line) }),
     el('g', { 'clip-path': `url(#${clip})` }, [
-      el('path', { d: strands, fill: 'none', stroke: c.dark, 'stroke-width': 3, opacity: 0.55, 'stroke-linecap': 'round' }),
-      el('path', { d: 'M196 330C206 280 212 250 226 232', fill: 'none', stroke: c.dark, 'stroke-width': 10, opacity: 0.35 }),
-      el('path', { d: 'M404 330C394 280 388 250 374 232', fill: 'none', stroke: c.dark, 'stroke-width': 10, opacity: 0.35 }),
+      el('path', {
+        d: strands,
+        fill: 'none',
+        stroke: c.dark,
+        'stroke-width': 3,
+        opacity: 0.55,
+        'stroke-linecap': 'round',
+      }),
+      el('path', {
+        d: 'M196 330C206 280 212 250 226 232',
+        fill: 'none',
+        stroke: c.dark,
+        'stroke-width': 10,
+        opacity: 0.35,
+      }),
+      el('path', {
+        d: 'M404 330C394 280 388 250 374 232',
+        fill: 'none',
+        stroke: c.dark,
+        'stroke-width': 10,
+        opacity: 0.35,
+      }),
       el('path', { d: shineRing(), fill: c.light, opacity: 0.55 }),
     ]),
   ];
   if (id.hairStyle === 'twintails' || id.hairStyle === 'ponytail') {
-    const ties: P[] = id.hairStyle === 'twintails' ? [[196, 222], [404, 222]] : [[392, 196]];
+    const ties: P[] =
+      id.hairStyle === 'twintails'
+        ? [
+            [196, 222],
+            [404, 222],
+          ]
+        : [[392, 196]];
     for (const [x, y] of ties) {
       parts.push(el('circle', { cx: x, cy: y, r: 13, fill: id.accent, ...b.line(0.8, c.line) }));
       parts.push(el('circle', { cx: x - 4, cy: y - 4, r: 4, fill: '#ffffff', opacity: 0.6 }));
@@ -193,8 +311,26 @@ function accessory(b: SvgBuilder, id: PortraitIdentity, c: HairColors): string {
   switch (id.accessory) {
     case 'clip':
       return (
-        el('rect', { x: 356, y: 222, width: 40, height: 11, rx: 5.5, fill: a, transform: 'rotate(-28 376 227)', ...line }) +
-        el('rect', { x: 356, y: 222, width: 40, height: 11, rx: 5.5, fill: shade(a, 0.2), transform: 'rotate(22 376 227)', ...line })
+        el('rect', {
+          x: 356,
+          y: 222,
+          width: 40,
+          height: 11,
+          rx: 5.5,
+          fill: a,
+          transform: 'rotate(-28 376 227)',
+          ...line,
+        }) +
+        el('rect', {
+          x: 356,
+          y: 222,
+          width: 40,
+          height: 11,
+          rx: 5.5,
+          fill: shade(a, 0.2),
+          transform: 'rotate(22 376 227)',
+          ...line,
+        })
       );
     case 'ribbon':
       return (
@@ -203,7 +339,13 @@ function accessory(b: SvgBuilder, id: PortraitIdentity, c: HairColors): string {
         el('circle', { cx: 396, cy: 170, r: 9, fill: shade(a, 0.15), ...line })
       );
     case 'headband':
-      return el('path', { d: 'M196 246C200 150 400 150 404 246', fill: 'none', stroke: a, 'stroke-width': 13, 'stroke-linecap': 'round' });
+      return el('path', {
+        d: 'M196 246C200 150 400 150 404 246',
+        fill: 'none',
+        stroke: a,
+        'stroke-width': 13,
+        'stroke-linecap': 'round',
+      });
     default:
       return '';
   }

@@ -90,17 +90,23 @@ interface RenderCache {
 }
 
 /** Rend un `GeneratorResult` en image à montrer à l'IA pour critique (voir `StructuredReview.render`). */
-function buildReviewRender(result: GeneratorResult): { image?: { data: Uint8Array; mediaType: 'image/png' }; note?: string } | null {
+function buildReviewRender(
+  result: GeneratorResult,
+): { image?: { data: Uint8Array; mediaType: 'image/png' }; note?: string } | null {
   const main = result.files.find((f) => f.role === 'main');
   if (!main || !(main.data instanceof Uint8Array)) return null;
   const size = readPngSize(main.data);
   if (!size) return null;
   const largest = Math.max(size.width, size.height);
   const needsUpscale = Boolean(result.info.pixelArt) || largest < 256;
-  if (!needsUpscale) return { image: { data: main.data, mediaType: 'image/png' }, note: `Rendu ${size.width}×${size.height}` };
+  if (!needsUpscale)
+    return { image: { data: main.data, mediaType: 'image/png' }, note: `Rendu ${size.width}×${size.height}` };
   const factor = Math.min(8, Math.max(2, Math.floor(512 / largest)));
   const upscaled = upscalePngNearest(main.data, factor);
-  return { image: { data: upscaled, mediaType: 'image/png' }, note: `Rendu ${size.width}×${size.height} (agrandi ×${factor})` };
+  return {
+    image: { data: upscaled, mediaType: 'image/png' },
+    note: `Rendu ${size.width}×${size.height} (agrandi ×${factor})`,
+  };
 }
 
 /**
@@ -143,7 +149,7 @@ export class GenerationService {
     const seed = req.seed ?? Math.floor(Math.random() * 2 ** 31);
     const useAi = req.mode === 'ai' || (req.mode === 'auto' && this.llm !== null);
     if ((useAi || req.instruction) && !this.llm) {
-      throw new Error('L\'IA n\'est pas configurée (ANTHROPIC_API_KEY) : utilisez le mode procédural.');
+      throw new Error("L'IA n'est pas configurée (ANTHROPIC_API_KEY) : utilisez le mode procédural.");
     }
 
     // Critique active seulement quand l'IA produit la spec (génération ou retouche), pour un
@@ -159,7 +165,7 @@ export class GenerationService {
     let aiCostUsd = 0;
     let budgetNote: string | undefined;
     if (req.instruction && parent) {
-      report('Retouche par l\'IA…');
+      report("Retouche par l'IA…");
       const current = await this.loadSpec(projectId, parent);
       const ai = await this.askAi(
         generator,
@@ -177,7 +183,7 @@ export class GenerationService {
       aiCostUsd = ai.costUsd;
       origin = 'ai';
     } else if (useAi) {
-      report('Génération par l\'IA…');
+      report("Génération par l'IA…");
       try {
         const ai = await this.askAi(
           generator,
@@ -213,7 +219,8 @@ export class GenerationService {
     // Le dernier tour de critique a déjà rendu cette spec exacte : pas la peine de la refaire.
     const result = cache && cache.spec === spec ? cache.result : await generator.render(spec, params, { rasterizeSvg });
 
-    const prompt = typeof (params as { prompt?: unknown }).prompt === 'string' ? (params as { prompt: string }).prompt : '';
+    const prompt =
+      typeof (params as { prompt?: unknown }).prompt === 'string' ? (params as { prompt: string }).prompt : '';
     const name = req.name ?? parent?.name ?? (prompt ? truncateWords(prompt, 6) : generator.label);
     const id = shortId('a');
     const base = `assets/${KIND_DIRS[generator.kind] ?? 'misc'}/${slugify(name, 32)}-${id.slice(2, 8)}`;
@@ -225,11 +232,12 @@ export class GenerationService {
     let source: string | undefined;
     const extra: Record<string, string> = {};
     const mainFile = result.files.find((f) => f.role === 'main');
-    if (!mainFile) throw new Error('Le générateur n\'a produit aucun fichier principal.');
+    if (!mainFile) throw new Error("Le générateur n'a produit aucun fichier principal.");
     for (const f of result.files) {
       const target = assetFile(f.role, f.ext);
       let data = f.data;
-      if (f.role === 'atlas' && typeof data === 'string') data = patchAtlasImage(data, `${base.split('/').pop()}.${mainFile.ext}`);
+      if (f.role === 'atlas' && typeof data === 'string')
+        data = patchAtlasImage(data, `${base.split('/').pop()}.${mainFile.ext}`);
       await this.store.writeFile(projectId, target, data);
       if (f.role === 'main') file = target;
       else if (f.role === 'source') source = target;
@@ -328,7 +336,7 @@ export class GenerationService {
           if (attempt > 1) report(`Correction par l'IA (essai ${attempt})… ${error ? error.split('\n')[0] : ''}`);
         },
         review,
-        onReview: () => report('Critique du rendu par l\'IA…'),
+        onReview: () => report("Critique du rendu par l'IA…"),
       });
       const model = result.escalated
         ? (escalateSetting?.model ?? routed?.model ?? llm.model)
@@ -337,14 +345,15 @@ export class GenerationService {
       return { value: result.value, reviews: result.reviews, cache, usage: result.usage, costUsd };
     } catch (error) {
       if (error instanceof BudgetExceededError) throw error;
-      if (error instanceof StructuredGenerationError) throw new Error(`L'IA n'a pas produit un résultat valide : ${error.lastError}`);
+      if (error instanceof StructuredGenerationError)
+        throw new Error(`L'IA n'a pas produit un résultat valide : ${error.lastError}`);
       throw error;
     }
   }
 
   private async loadSpec(projectId: string, asset: AssetMeta): Promise<unknown> {
     const path = asset.extra.spec;
-    if (!path) throw new Error('Cet asset n\'a pas de spec éditable (import ou ancienne version).');
+    if (!path) throw new Error("Cet asset n'a pas de spec éditable (import ou ancienne version).");
     return JSON.parse(await this.store.readText(projectId, path));
   }
 }

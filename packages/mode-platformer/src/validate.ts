@@ -72,7 +72,11 @@ function checkAsset(
   where: string,
 ): void {
   if (!ref || assets.resolve(ref, kind)) return;
-  diagnostics.push({ file, severity: 'warning', message: `${where} : ${KIND_LABEL[kind]} « ${ref} » introuvable dans les assets.` });
+  diagnostics.push({
+    file,
+    severity: 'warning',
+    message: `${where} : ${KIND_LABEL[kind]} « ${ref} » introuvable dans les assets.`,
+  });
 }
 
 function inBoundsOf(size: { width: number; height: number }, x: number, y: number): boolean {
@@ -131,9 +135,14 @@ function validateLevel(level: PlatformerLevel, assets: AssetRegistry): Diagnosti
     if (ids.has(entity.id)) diagnostics.push({ file, severity: 'error', message: `${label} : identifiant en double.` });
     ids.add(entity.id);
     if (!inBoundsOf(level, entity.x, entity.y)) {
-      diagnostics.push({ file, severity: 'error', message: `${label} : position (${entity.x}, ${entity.y}) hors du niveau.` });
+      diagnostics.push({
+        file,
+        severity: 'error',
+        message: `${label} : position (${entity.x}, ${entity.y}) hors du niveau.`,
+      });
     }
-    if (entity.type === 'enemy' && entity.sprite) checkAsset(diagnostics, file, assets, entity.sprite, 'charset', label);
+    if (entity.type === 'enemy' && entity.sprite)
+      checkAsset(diagnostics, file, assets, entity.sprite, 'charset', label);
   }
   if (!level.entities.some((e: PlatformerEntity) => e.type === 'goal')) {
     diagnostics.push({ file, severity: 'warning', message: 'Aucune arrivée (« goal ») dans ce niveau.' });
@@ -191,7 +200,11 @@ export async function validatePlatformerProject(bundle: ProjectBundle): Promise<
 
   for (const [id, level] of levels) {
     if (level.next && !system.levels.includes(level.next)) {
-      diagnostics.push({ file: levelPath(id), severity: 'error', message: `Niveau suivant inconnu « ${level.next} ».` });
+      diagnostics.push({
+        file: levelPath(id),
+        severity: 'error',
+        message: `Niveau suivant inconnu « ${level.next} ».`,
+      });
     }
     diagnostics.push(...validateLevel(level, assets));
   }

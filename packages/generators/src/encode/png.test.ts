@@ -66,8 +66,22 @@ describe('upscalePngNearest', () => {
   it('agrandit un PNG ×3 au plus proche voisin (dimensions et pixels)', () => {
     // 2×2, un pixel de chaque couleur : le motif ×3 doit rester des blocs 3×3 uniformes.
     const rgba = Uint8Array.from([
-      255, 0, 0, 255, 0, 255, 0, 255, //
-      0, 0, 255, 255, 255, 255, 0, 128,
+      255,
+      0,
+      0,
+      255,
+      0,
+      255,
+      0,
+      255, //
+      0,
+      0,
+      255,
+      255,
+      255,
+      255,
+      0,
+      128,
     ]);
     const png = encodePng(2, 2, rgba);
     const upscaled = upscalePngNearest(png, 3);
@@ -82,7 +96,7 @@ describe('upscalePngNearest', () => {
     for (let y = 3; y < 6; y++) for (let x = 3; x < 6; x++) expect(pixelAt(x, y)).toEqual([255, 255, 0, 128]);
   });
 
-  it('refuse un facteur d\'agrandissement invalide', () => {
+  it("refuse un facteur d'agrandissement invalide", () => {
     const png = encodePng(2, 2, new Uint8Array(16).fill(200));
     expect(() => upscalePngNearest(png, 0)).toThrow(/agrandissement/);
     expect(() => upscalePngNearest(png, 1.5)).toThrow(/agrandissement/);

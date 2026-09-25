@@ -47,16 +47,7 @@ const SCENE_WORDS: Record<Exclude<SceneName, 'generic'>, readonly string[]> = {
 };
 
 const TIME_WORDS: Record<TimeOfDay, readonly string[]> = {
-  night: [
-    'nuit',
-    'night',
-    'soir',
-    'soiree',
-    'evening',
-    'nocturne',
-    'minuit',
-    'midnight',
-  ],
+  night: ['nuit', 'night', 'soir', 'soiree', 'evening', 'nocturne', 'minuit', 'midnight'],
   sunset: [
     'coucher',
     'couchant',
@@ -69,18 +60,7 @@ const TIME_WORDS: Record<TimeOfDay, readonly string[]> = {
     'lever du soleil',
     'sunrise',
   ],
-  day: [
-    'jour',
-    'day',
-    'matin',
-    'morning',
-    'midi',
-    'noon',
-    'apres midi',
-    'afternoon',
-    'ensoleille',
-    'sunny',
-  ],
+  day: ['jour', 'day', 'matin', 'morning', 'midi', 'noon', 'apres midi', 'afternoon', 'ensoleille', 'sunny'],
 };
 
 export function sceneFromText(text: string): SceneName | undefined {

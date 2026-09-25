@@ -1,17 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  InteractionTracker,
-  colliderRadius,
-  findNearestInteractable,
-  sceneColliders,
-} from './interaction';
-import {
-  cameraRelativeDirection,
-  resolveCollisions,
-  slideVelocity,
-  stepMovement,
-  type PlayerState,
-} from './movement';
+import { InteractionTracker, colliderRadius, findNearestInteractable, sceneColliders } from './interaction';
+import { cameraRelativeDirection, resolveCollisions, slideVelocity, stepMovement, type PlayerState } from './movement';
 import { parseScene, type SceneInput } from './schema';
 import { SandboxWorld } from './world';
 

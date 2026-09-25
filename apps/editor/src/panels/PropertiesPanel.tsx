@@ -31,7 +31,13 @@ export function PropertiesPanel() {
   const asset = project.assets.find((a) => a.id === selectedId);
   return (
     <div className="fg-panel">
-      <div className="fg-scroll">{asset ? <AssetProperties key={asset.id} asset={asset} project={project} /> : <ProjectProperties project={project} />}</div>
+      <div className="fg-scroll">
+        {asset ? (
+          <AssetProperties key={asset.id} asset={asset} project={project} />
+        ) : (
+          <ProjectProperties project={project} />
+        )}
+      </div>
     </div>
   );
 }
@@ -82,7 +88,12 @@ function AssetProperties({ asset, project }: { asset: AssetMeta; project: Projec
 
   const retouch = () => {
     if (!instruction.trim()) return;
-    void generateAsset({ generator: asset.generator ?? '', parentId: asset.id, instruction: instruction.trim(), mode: 'ai' })
+    void generateAsset({
+      generator: asset.generator ?? '',
+      parentId: asset.id,
+      instruction: instruction.trim(),
+      mode: 'ai',
+    })
       .then(() => setInstruction(''))
       .catch(toastError);
   };
@@ -91,7 +102,13 @@ function AssetProperties({ asset, project }: { asset: AssetMeta; project: Projec
     <>
       <AssetPreview asset={asset} />
       <Flex direction="column" gap="size-100" marginX="size-150">
-        <TextField label="Nom" value={name} onChange={setName} onBlur={() => name !== asset.name && void save({ name })} width="100%" />
+        <TextField
+          label="Nom"
+          value={name}
+          onChange={setName}
+          onBlur={() => name !== asset.name && void save({ name })}
+          width="100%"
+        />
         <Flex gap="size-100" alignItems="end">
           <TextField
             label="Alias (utilisé dans les scripts et cartes)"
@@ -143,7 +160,9 @@ function AssetProperties({ asset, project }: { asset: AssetMeta; project: Projec
               label="Retoucher avec l'IA"
               value={instruction}
               onChange={setInstruction}
-              placeholder={aiEnabled ? 'ex. « rends le ciel plus orageux », « ajoute un chapeau »' : 'Nécessite une clé API Claude'}
+              placeholder={
+                aiEnabled ? 'ex. « rends le ciel plus orageux », « ajoute un chapeau »' : 'Nécessite une clé API Claude'
+              }
               isDisabled={!aiEnabled}
               width="100%"
             />
@@ -173,7 +192,12 @@ function AssetProperties({ asset, project }: { asset: AssetMeta; project: Projec
         <dd>v{asset.version}</dd>
         <dt>Fichier</dt>
         <dd className="fg-mono">
-          <a href={api.fileUrl(project.id, asset.file)} target="_blank" rel="noreferrer" style={{ color: 'var(--fg-accent-2)' }}>
+          <a
+            href={api.fileUrl(project.id, asset.file)}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: 'var(--fg-accent-2)' }}
+          >
             {asset.file}
           </a>
         </dd>
@@ -224,8 +248,8 @@ function AssetProperties({ asset, project }: { asset: AssetMeta; project: Projec
                 .catch(toastError)
             }
           >
-            « {asset.name} » et ses fichiers seront supprimés. Les scripts qui utilisent l'alias « {asset.alias ?? '—'} »
-            ne le trouveront plus.
+            « {asset.name} » et ses fichiers seront supprimés. Les scripts qui utilisent l'alias « {asset.alias ?? '—'}{' '}
+            » ne le trouveront plus.
           </AlertDialog>
         )}
       </DialogContainer>
@@ -255,7 +279,13 @@ function ProjectProperties({ project }: { project: ProjectManifest }) {
       <div className="fg-section-title" style={{ margin: '0 0 4px' }}>
         Projet
       </div>
-      <TextField label="Nom" value={name} onChange={setName} onBlur={() => name.trim() && name !== project.name && apply({ name })} width="100%" />
+      <TextField
+        label="Nom"
+        value={name}
+        onChange={setName}
+        onBlur={() => name.trim() && name !== project.name && apply({ name })}
+        width="100%"
+      />
       <TextArea
         label="Description"
         value={description}
@@ -284,7 +314,12 @@ function ProjectProperties({ project }: { project: ProjectManifest }) {
       <Switch isSelected={project.pixelArt} onChange={(v) => apply({ pixelArt: v })}>
         Rendu pixel-art (sans lissage)
       </Switch>
-      <Picker label="Langue du jeu" selectedKey={project.locale} onSelectionChange={(k) => apply({ locale: String(k) })} width="100%">
+      <Picker
+        label="Langue du jeu"
+        selectedKey={project.locale}
+        onSelectionChange={(k) => apply({ locale: String(k) })}
+        width="100%"
+      >
         <Item key="fr">Français</Item>
         <Item key="en">English</Item>
       </Picker>

@@ -176,8 +176,10 @@ export const api = {
   createProject: (input: { name: string; mode: string; template?: string; description?: string }) =>
     request<ProjectManifest>('POST', '/api/projects', input),
   getProject: (id: string) => request<ProjectManifest>('GET', p(id)),
-  updateProject: (id: string, patch: Partial<Pick<ProjectManifest, 'name' | 'description' | 'locale' | 'resolution' | 'pixelArt'>>) =>
-    request<ProjectManifest>('PATCH', p(id), patch),
+  updateProject: (
+    id: string,
+    patch: Partial<Pick<ProjectManifest, 'name' | 'description' | 'locale' | 'resolution' | 'pixelArt'>>,
+  ) => request<ProjectManifest>('PATCH', p(id), patch),
   deleteProject: (id: string) => request<{ ok: boolean }>('DELETE', p(id)),
   validate: (id: string) => request<Diagnostic[]>('GET', `${p(id)}/validate`),
   tree: (id: string) => request<{ path: string; size: number }[]>('GET', `${p(id)}/tree`),
@@ -207,9 +209,15 @@ export const api = {
   ) => request<AssetMeta>('POST', `${p(id)}/assets/import`, body),
 
   planner: (id: string) =>
-    request<{ data: PlannerData; review: PlannerReview; statusLabels: Record<TaskStatus, string> }>('GET', `${p(id)}/planner`),
+    request<{ data: PlannerData; review: PlannerReview; statusLabels: Record<TaskStatus, string> }>(
+      'GET',
+      `${p(id)}/planner`,
+    ),
   schedule: (id: string, hoursPerDay: number, skipWeekends: boolean) =>
-    request<Schedule>('GET', `${p(id)}/planner/schedule?hoursPerDay=${hoursPerDay}&skipWeekends=${skipWeekends}&includeDone=true`),
+    request<Schedule>(
+      'GET',
+      `${p(id)}/planner/schedule?hoursPerDay=${hoursPerDay}&skipWeekends=${skipWeekends}&includeDone=true`,
+    ),
   createTask: (id: string, input: TaskInput) => request<Task>('POST', `${p(id)}/planner/tasks`, input),
   updateTask: (id: string, taskId: string, patch: Partial<TaskInput> & { note?: string }) =>
     request<Task>('PATCH', `${p(id)}/planner/tasks/${taskId}`, patch),

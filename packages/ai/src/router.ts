@@ -97,7 +97,11 @@ export const DEFAULT_PRICES: Record<string, ModelPrice> = {
 };
 
 /** Coût estimé (dollars) ; 0 pour un modèle sans prix connu. */
-export function estimateCost(model: string, usage: LlmUsage, prices: Record<string, ModelPrice> = DEFAULT_PRICES): number {
+export function estimateCost(
+  model: string,
+  usage: LlmUsage,
+  prices: Record<string, ModelPrice> = DEFAULT_PRICES,
+): number {
   const key = Object.keys(prices)
     .sort((a, b) => b.length - a.length)
     .find((k) => model === k || model.startsWith(`${k}-`));

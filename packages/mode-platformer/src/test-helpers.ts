@@ -18,10 +18,10 @@ const CHAR_TILES: Record<string, number> = {
   '.': -1,
   ' ': -1,
   '#': PLATFORM_TILE.top,
-  'F': PLATFORM_TILE.fill,
+  F: PLATFORM_TILE.fill,
   '=': PLATFORM_TILE.platform,
-  'B': PLATFORM_TILE.brick,
-  'S': PLATFORM_TILE.stone,
+  B: PLATFORM_TILE.brick,
+  S: PLATFORM_TILE.stone,
   '^': PLATFORM_TILE.spikes,
   '~': PLATFORM_TILE.water,
 };

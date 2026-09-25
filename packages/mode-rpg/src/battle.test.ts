@@ -1,13 +1,6 @@
 import { Rng } from '@forge/core';
 import { describe, expect, it } from 'vitest';
-import {
-  BattleSystem,
-  autoBattle,
-  healAmount,
-  magicDamage,
-  physicalDamage,
-  type BattleLogEntry,
-} from './battle';
+import { BattleSystem, autoBattle, healAmount, magicDamage, physicalDamage, type BattleLogEntry } from './battle';
 import { RpgDatabaseSchema, RpgSystemSchema, type RpgDatabaseInput } from './schema';
 import { createGameState, type GameState } from './state';
 import { TEST_DATABASE } from './test-helpers';
@@ -93,7 +86,7 @@ describe('BattleSystem', () => {
     expect(battle.nextInputIndex(0)).toBeNull();
   });
 
-  it('résout un tour dans l\'ordre d\'agilité puis la victoire avec récompenses et montée de niveau', () => {
+  it("résout un tour dans l'ordre d'agilité puis la victoire avec récompenses et montée de niveau", () => {
     const { state, battle } = setup('slimes');
     battle.start();
     battle.setCommand(0, { kind: 'attack', target: 0 });
@@ -115,7 +108,7 @@ describe('BattleSystem', () => {
     expect(state.gold).toBe(14);
     expect(state.party[0]!.level).toBe(2);
     expect(messages(turn2)).toEqual(
-      expect.arrayContaining(['Victoire !', '20 points d\'expérience gagnés.', 'Héros passe au niveau 2 !']),
+      expect.arrayContaining(['Victoire !', "20 points d'expérience gagnés.", 'Héros passe au niveau 2 !']),
     );
     expect(turn2[turn2.length - 1]).toEqual({ type: 'end', result: 'win' });
     expect(battle.executeTurn()).toEqual([]);
@@ -198,7 +191,7 @@ describe('BattleSystem', () => {
     expect(slow.battle.escapeChance()).toBeCloseTo(0.225);
   });
 
-  it('fait agir l\'IA ennemie avec ses compétences et donne le butin', () => {
+  it("fait agir l'IA ennemie avec ses compétences et donne le butin", () => {
     const { state, battle } = setup('gardien', { seed: 5 });
     state.party[0]!.maxHp = state.party[0]!.hp = 9999;
     const log: BattleLogEntry[] = [];
@@ -215,7 +208,7 @@ describe('BattleSystem', () => {
     expect(messages(battle.executeTurn())).toEqual([]);
   });
 
-  it('se termine par une défaite si l\'équipe tombe', () => {
+  it("se termine par une défaite si l'équipe tombe", () => {
     const { state, battle } = setup('colosse');
     const { result, log } = autoBattle(battle);
     expect(result).toBe('lose');

@@ -52,9 +52,11 @@ export function drawBed(t: Tile): void {
   const { wood, woodDark, accent } = t.pal;
   const theme = t.theme;
   if (theme === 'dungeon' || theme === 'cave') {
-    const straw = theme === 'dungeon' ? ['#8a6a2a', '#b8943e', '#dcbc5e', '#f0dc8a'] : ['#4a3424', '#6e5036', '#94704c', '#b8946a'];
+    const straw =
+      theme === 'dungeon' ? ['#8a6a2a', '#b8943e', '#dcbc5e', '#f0dc8a'] : ['#4a3424', '#6e5036', '#94704c', '#b8946a'];
     t.rect(2, 3, 12, 12, straw[1] as string);
-    for (let y = 3; y < 15; y++) for (let x = 2; x < 14; x++) if (t.rnd(x, y, 90) < 0.25) t.set(x, y, straw[(x + y) % 2 === 0 ? 2 : 0] as string);
+    for (let y = 3; y < 15; y++)
+      for (let x = 2; x < 14; x++) if (t.rnd(x, y, 90) < 0.25) t.set(x, y, straw[(x + y) % 2 === 0 ? 2 : 0] as string);
     t.rect(4, 4, 8, 3, '#d8d0bc');
     t.hline(4, 11, 4, '#f0ead8');
     if (theme === 'cave') {
@@ -128,7 +130,11 @@ export function drawBarrel(t: Tile): void {
     const x1 = 12 + bulge;
     for (let x = x0; x <= x1; x++) {
       const k = (x - x0) / (x1 - x0);
-      t.set(x, y, k < 0.2 ? shade(wood, 0.2) : k > 0.8 ? woodDark : (x - x0) % 3 === 2 ? mix(wood, woodDark, 0.4) : wood);
+      t.set(
+        x,
+        y,
+        k < 0.2 ? shade(wood, 0.2) : k > 0.8 ? woodDark : (x - x0) % 3 === 2 ? mix(wood, woodDark, 0.4) : wood,
+      );
     }
   }
   for (const y of [5, 12]) {
@@ -224,12 +230,19 @@ export function drawRug(t: Tile): void {
       [13, 4],
       [2, 13],
       [13, 13],
-    ] as const) blob(t, x, y, 1.6, 1.6, fur);
-    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) if (t.filled(x, y) && t.rnd(x, y, 91) < 0.15) t.set(x, y, fur[1] as string);
+    ] as const)
+      blob(t, x, y, 1.6, 1.6, fur);
+    for (let y = 0; y < T; y++)
+      for (let x = 0; x < T; x++) if (t.filled(x, y) && t.rnd(x, y, 91) < 0.15) t.set(x, y, fur[1] as string);
     t.outlined();
     return;
   }
-  const fields: Record<string, string> = { desert: accent, dungeon: '#7a2a34', village: t.pal.roof, forest: t.pal.leafDark };
+  const fields: Record<string, string> = {
+    desert: accent,
+    dungeon: '#7a2a34',
+    village: t.pal.roof,
+    forest: t.pal.leafDark,
+  };
   const field = fields[theme] ?? path;
   const border = theme === 'desert' ? '#f0e0b8' : theme === 'dungeon' ? '#c89a3a' : accent;
   t.rect(1, 2, 14, 12, border);

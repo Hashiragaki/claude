@@ -29,7 +29,7 @@ function startDemo(data: RpgProjectData, seed = 2026): RpgWorld {
   world.state.flags.encounters = false;
   frames(world, 1);
   const intro = answer(world);
-  expect(intro).toEqual(['Nous voici enfin au village de Brume !', expect.stringContaining('L\'Ancien du village')]);
+  expect(intro).toEqual(['Nous voici enfin au village de Brume !', expect.stringContaining("L'Ancien du village")]);
   frames(world, 30);
   expect(world.busy).toBe(false);
   expect(world.state.player).toMatchObject({ x: P.start.x, y: P.start.y - 1 });
@@ -62,7 +62,7 @@ describe('démo « Le Village de Brume »', () => {
     talkTo(world, 'mila');
     expect(world.request).toMatchObject({ kind: 'message', speaker: 'Mila' });
     expect(answer(world, [1])).toEqual([
-      'Bonjour ! Vous êtes nouveaux à Brume, n\'est-ce pas ?',
+      "Bonjour ! Vous êtes nouveaux à Brume, n'est-ce pas ?",
       'Ah bon ? Je ne vous ai pourtant jamais vus… Bonne journée !',
       'Des slimes rôdent dans les hautes herbes au sud-ouest. Prudence ! (Discussions : 1)',
     ]);
@@ -112,7 +112,7 @@ describe('démo « Le Village de Brume »', () => {
     expect(getSelfSwitch(world.state, 'village', 'ancien', 'A')).toBe(true);
   });
 
-  it('entre dans l\'auberge, s\'y repose, ouvre le coffre verrouillé et ressort', async () => {
+  it("entre dans l'auberge, s'y repose, ouvre le coffre verrouillé et ressort", async () => {
     const { data } = await loadDemo();
     const world = startDemo(data, 7);
     world.state.party[0]!.hp = 1;
@@ -130,7 +130,7 @@ describe('démo « Le Village de Brume »', () => {
     world.resume();
     world.resume(0);
     frames(world, 40);
-    expect(answer(world)).toEqual(['Bonne nuit ! … Toute l\'équipe est en pleine forme !']);
+    expect(answer(world)).toEqual(["Bonne nuit ! … Toute l'équipe est en pleine forme !"]);
     expect(world.state.gold).toBe(40);
     expect(world.state.party[0]!.hp).toBe(world.state.party[0]!.maxHp);
 

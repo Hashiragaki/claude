@@ -7,7 +7,11 @@ export function drawPanel(g: Graphics, width: number, height: number, theme: UiT
   g.clear();
   g.roundRect(0, 0, width, height, theme.radius).fill({ color: theme.panelColor, alpha: theme.panelAlpha });
   if (theme.borderWidth > 0) {
-    g.roundRect(0, 0, width, height, theme.radius).stroke({ width: theme.borderWidth, color: theme.borderColor, alpha: 0.9 });
+    g.roundRect(0, 0, width, height, theme.radius).stroke({
+      width: theme.borderWidth,
+      color: theme.borderColor,
+      alpha: 0.9,
+    });
   }
   return g;
 }
@@ -57,7 +61,10 @@ export class MessageBox extends Container {
     this.boxWidth = options.width;
     this.boxHeight = options.height;
     drawPanel(this.bg, options.width, options.height, this.theme);
-    this.nameText = new Text({ text: '', style: textStyle(this.theme, { fontWeight: 'bold', fill: this.theme.nameColor }) });
+    this.nameText = new Text({
+      text: '',
+      style: textStyle(this.theme, { fontWeight: 'bold', fill: this.theme.nameColor }),
+    });
     this.body = new Text({ text: '', style: textStyle(this.theme) });
     this.body.position.set(this.theme.padding, this.theme.padding);
     const s = Math.max(6, Math.round(this.theme.fontSize * 0.35));
@@ -70,7 +77,11 @@ export class MessageBox extends Container {
   /** Affiche un texte, avec éventuellement le nom (et la couleur) de l'orateur. */
   show(text: string, speaker?: { name: string; color?: number } | null): void {
     const pad = this.theme.padding;
-    const wrapStyle = textStyle(this.theme, { wordWrap: true, wordWrapWidth: this.boxWidth - pad * 2, breakWords: true });
+    const wrapStyle = textStyle(this.theme, {
+      wordWrap: true,
+      wordWrapWidth: this.boxWidth - pad * 2,
+      breakWords: true,
+    });
     const lines = CanvasTextMetrics.measureText(text, wrapStyle).lines;
     this.fullText = lines.join('\n');
     this.visibleChars = this.charsPerSecond > 0 ? 0 : this.fullText.length;
@@ -82,7 +93,9 @@ export class MessageBox extends Container {
       const h = this.theme.lineHeight + pad * 0.5;
       this.nameBg.clear();
       this.nameBg.roundRect(0, 0, w, h, this.theme.radius).fill({ color: this.theme.panelColor, alpha: 0.95 });
-      this.nameBg.roundRect(0, 0, w, h, this.theme.radius).stroke({ width: this.theme.borderWidth, color: speaker.color ?? this.theme.borderColor });
+      this.nameBg
+        .roundRect(0, 0, w, h, this.theme.radius)
+        .stroke({ width: this.theme.borderWidth, color: speaker.color ?? this.theme.borderColor });
       this.nameBg.position.set(pad * 0.6, -h * 0.7);
       this.nameText.position.set(pad * 0.6 + (w - this.nameText.width) / 2, -h * 0.7 + (h - this.nameText.height) / 2);
       this.nameBg.visible = this.nameText.visible = true;
@@ -307,7 +320,8 @@ export class Fader extends Graphics {
   update(dt: number): void {
     if (this.alpha === this.target) return;
     const step = this.speed * dt;
-    this.alpha = this.alpha < this.target ? Math.min(this.target, this.alpha + step) : Math.max(this.target, this.alpha - step);
+    this.alpha =
+      this.alpha < this.target ? Math.min(this.target, this.alpha + step) : Math.max(this.target, this.alpha - step);
     if (this.alpha === this.target && this.resolveFn) {
       const r = this.resolveFn;
       this.resolveFn = null;

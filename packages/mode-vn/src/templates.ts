@@ -244,15 +244,15 @@ const LEO: CharacterLook = {
 
 const RUE_PROMPT = 'Rue de ville la nuit sous la pluie, enseigne de café lumineuse';
 const CAFE_PROMPT = 'Café chaleureux et cosy le soir, guirlandes lumineuses, plafond étoilé';
-const PARC_PROMPT = 'Parc la nuit, ciel dégagé rempli d\'étoiles filantes';
+const PARC_PROMPT = "Parc la nuit, ciel dégagé rempli d'étoiles filantes";
 
 const demoTemplate: ProjectTemplate = {
   id: 'vn-demo',
   name: 'Démo : Le Café des Étoiles',
   description:
-    'Une courte histoire complète : deux personnages, trois décors, expressions, choix conditionnels, '
-    + 'variable d\'affection, musique et deux fins.',
-  manifest: { ...MANIFEST, description: 'Un soir de pluie, un café mystérieux et une nuit d\'étoiles filantes.' },
+    'Une courte histoire complète : deux personnages, trois décors, expressions, choix conditionnels, ' +
+    "variable d'affection, musique et deux fins.",
+  manifest: { ...MANIFEST, description: "Un soir de pluie, un café mystérieux et une nuit d'étoiles filantes." },
   files: [{ path: VN_ENTRY, content: VN_DEMO_SCRIPT }],
   assets: [
     background('bg rue', 'Décor : rue sous la pluie', 'street', 'night', RUE_PROMPT, 201),
@@ -263,8 +263,8 @@ const demoTemplate: ProjectTemplate = {
     music('musique pluie', 'Musique : soir de pluie', 'sad', 'Piano mélancolique et doux, soirée pluvieuse', 230),
     music('musique cafe', 'Musique : Café des Étoiles', 'calm', 'Ambiance de café chaleureuse et paisible', 231),
     music('musique etoiles', 'Musique : étoiles filantes', 'happy', 'Mélodie féerique sous un ciel étoilé', 232),
-    sfx('clochette', 'Son : clochette de porte', 'coin', 'Petite clochette tintant à l\'ouverture d\'une porte', 240),
-    sfx('etoile filante', 'Son : étoile filante', 'magic', 'Scintillement magique d\'une étoile filante', 241),
+    sfx('clochette', 'Son : clochette de porte', 'coin', "Petite clochette tintant à l'ouverture d'une porte", 240),
+    sfx('etoile filante', 'Son : étoile filante', 'magic', "Scintillement magique d'une étoile filante", 241),
   ],
 };
 

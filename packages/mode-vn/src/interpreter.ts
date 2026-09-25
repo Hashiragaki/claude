@@ -355,10 +355,14 @@ export class VNInterpreter {
       }
       case 'centered': {
         const text = this.text(ins.text, ins);
-        return this.present(pc, { kind: 'say', speaker: null, text, centered: true, effects: this.takeEffects() }, {
-          speaker: null,
-          text,
-        });
+        return this.present(
+          pc,
+          { kind: 'say', speaker: null, text, centered: true, effects: this.takeEffects() },
+          {
+            speaker: null,
+            text,
+          },
+        );
       }
       case 'menu': {
         if (ins.caption) this.sayAttributes(ins.caption);

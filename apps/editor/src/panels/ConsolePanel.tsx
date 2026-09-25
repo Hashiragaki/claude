@@ -11,7 +11,11 @@ export function ConsolePanel() {
   const [filter, setFilter] = useState<'all' | 'warn' | 'error'>('all');
   const endRef = useRef<HTMLDivElement>(null);
   const visible = logs.filter((l) =>
-    filter === 'all' ? l.level !== 'debug' : filter === 'warn' ? l.level === 'warn' || l.level === 'error' : l.level === 'error',
+    filter === 'all'
+      ? l.level !== 'debug'
+      : filter === 'warn'
+        ? l.level === 'warn' || l.level === 'error'
+        : l.level === 'error',
   );
 
   useEffect(() => {
@@ -45,7 +49,10 @@ export function ConsolePanel() {
         {diagnostics.length > 0 && (
           <div style={{ borderBottom: '1px solid var(--fg-border)', padding: '4px 0' }}>
             {diagnostics.map((d, i) => (
-              <div key={i} className={`fg-log ${d.severity === 'error' ? 'error' : d.severity === 'warning' ? 'warn' : ''}`}>
+              <div
+                key={i}
+                className={`fg-log ${d.severity === 'error' ? 'error' : d.severity === 'warning' ? 'warn' : ''}`}
+              >
                 <time>{d.severity === 'error' ? 'ERREUR' : d.severity === 'warning' ? 'ATTENTION' : 'INFO'}</time>
                 {d.file}
                 {d.line ? `:${d.line}` : ''} — {d.message}

@@ -67,7 +67,7 @@ function stops(list: GradientStop[]): string {
         offset: num(o, 3),
         'stop-color': c,
         'stop-opacity': a === undefined ? undefined : a,
-      })
+      }),
     )
     .join('');
 }
@@ -98,7 +98,7 @@ export function radialGradient(
       fx: opts.fx,
       fy: opts.fy,
     },
-    stops(list)
+    stops(list),
   );
 }
 
@@ -111,11 +111,7 @@ export function linearGradientAbs(
   x2: number,
   y2: number,
 ): string {
-  return el(
-    'linearGradient',
-    { id, gradientUnits: 'userSpaceOnUse', x1, y1, x2, y2 },
-    stops(list)
-  );
+  return el('linearGradient', { id, gradientUnits: 'userSpaceOnUse', x1, y1, x2, y2 }, stops(list));
 }
 
 export function radialGradientAbs(id: string, list: GradientStop[], cx: number, cy: number, r: number): string {

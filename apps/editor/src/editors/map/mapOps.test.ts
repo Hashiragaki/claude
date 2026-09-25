@@ -46,11 +46,17 @@ describe('opérations de carte', () => {
 describe('listes de commandes', () => {
   const commands: Command[] = [
     { type: 'text', text: 'Bonjour' },
-    { type: 'choice', options: [{ label: 'Oui', commands: [{ type: 'giveGold', amount: 5 }] }, { label: 'Non', commands: [] }] },
+    {
+      type: 'choice',
+      options: [
+        { label: 'Oui', commands: [{ type: 'giveGold', amount: 5 }] },
+        { label: 'Non', commands: [] },
+      ],
+    },
     { type: 'if', condition: { switch: 'porte' }, then: [] },
   ];
 
-  it('lit et modifie des sous-listes sans muter l\'original', () => {
+  it("lit et modifie des sous-listes sans muter l'original", () => {
     expect(getList(commands, [1, 'options', 0, 'commands'])).toEqual([{ type: 'giveGold', amount: 5 }]);
     const next = editList(commands, [2, 'else'], (list) => list.push({ type: 'healParty' }));
     expect((next[2] as Extract<Command, { type: 'if' }>).else).toEqual([{ type: 'healParty' }]);

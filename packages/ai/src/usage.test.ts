@@ -78,7 +78,7 @@ describe('generateStructured : comptabilité et routage', () => {
     expect(attempts).toHaveLength(3);
   });
 
-  it('échoue normalement (sans escalade) quand `escalate` n\'est pas fourni', async () => {
+  it("échoue normalement (sans escalade) quand `escalate` n'est pas fourni", async () => {
     const llm = new FakeLlmClient([
       { content: [toolUseBlock('submit_result', { color: 'nope1' }, 'toolu_1')] },
       { content: [toolUseBlock('submit_result', { color: 'nope2' }, 'toolu_2')] },
@@ -99,7 +99,7 @@ describe('generateStructured : comptabilité et routage', () => {
     expect(isStrictCompatible(z.toJSONSchema(Loose, { io: 'input' }))).toBe(false);
   });
 
-  it('pose `strict: true` sur l\'outil quand le schéma est compatible', async () => {
+  it("pose `strict: true` sur l'outil quand le schéma est compatible", async () => {
     const llm = new FakeLlmClient([{ content: [toolUseBlock('submit_result', { color: 'red' }, 'toolu_1')] }]);
     await generateStructured({ llm, system: 's', prompt: 'p', schema: Spec });
     const tool = llm.requests[0]!.tools![0] as { strict?: boolean; input_schema: { additionalProperties?: boolean } };
@@ -107,7 +107,7 @@ describe('generateStructured : comptabilité et routage', () => {
     expect(tool.input_schema.additionalProperties).toBe(false);
   });
 
-  it('n\'ajoute pas `strict` quand le schéma n\'est pas compatible', async () => {
+  it("n'ajoute pas `strict` quand le schéma n'est pas compatible", async () => {
     const Loose = z.object({ extra: z.record(z.string(), z.number()) });
     const llm = new FakeLlmClient([{ content: [toolUseBlock('submit_result', { extra: {} }, 'toolu_1')] }]);
     await generateStructured({ llm, system: 's', prompt: 'p', schema: Loose });
@@ -115,7 +115,7 @@ describe('generateStructured : comptabilité et routage', () => {
     expect(tool.strict).toBeUndefined();
   });
 
-  it('n\'ajoute pas `strict` quand `strict: false` est demandé explicitement', async () => {
+  it("n'ajoute pas `strict` quand `strict: false` est demandé explicitement", async () => {
     const llm = new FakeLlmClient([{ content: [toolUseBlock('submit_result', { color: 'red' }, 'toolu_1')] }]);
     await generateStructured({ llm, system: 's', prompt: 'p', schema: Spec, strict: false });
     const tool = llm.requests[0]!.tools![0] as { strict?: boolean };
@@ -125,7 +125,7 @@ describe('generateStructured : comptabilité et routage', () => {
   it('relance sans `strict` après une erreur 400 mentionnant le schéma strict', async () => {
     const strictRejected = new APIError(
       400,
-      { message: 'Le schéma strict n\'est pas pris en charge pour cet outil.' },
+      { message: "Le schéma strict n'est pas pris en charge pour cet outil." },
       undefined,
       new Headers(),
     );
@@ -148,7 +148,7 @@ describe('generateStructured : comptabilité et routage', () => {
 });
 
 describe('runAgent : comptabilité et routage', () => {
-  it('transmet `meta` et cumule l\'usage', async () => {
+  it("transmet `meta` et cumule l'usage", async () => {
     const meta: LlmCallMeta = { role: 'autopilot', projectId: 'p1' };
     const ping = defineTool({ name: 'ping', description: 'ping', schema: z.object({}), run: () => 'pong' });
     const llm = new FakeLlmClient([

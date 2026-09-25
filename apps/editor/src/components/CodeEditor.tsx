@@ -47,7 +47,9 @@ const darkTheme = EditorView.theme(
     '.cm-gutters': { backgroundColor: '#1b1b1b', color: '#6e6e6e', border: 'none' },
     '.cm-activeLine': { backgroundColor: '#2a2d2e80' },
     '.cm-activeLineGutter': { backgroundColor: '#2a2d2e', color: '#c6c6c6' },
-    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: '#264f78 !important' },
+    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
+      backgroundColor: '#264f78 !important',
+    },
     '.cm-tooltip': { backgroundColor: '#252526', border: '1px solid #454545', color: '#ccc' },
     '.cm-diagnostic-error': { borderLeft: '3px solid #e34850' },
     '.cm-diagnostic-warning': { borderLeft: '3px solid #e68619' },

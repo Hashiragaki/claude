@@ -68,9 +68,13 @@ describe('Planner', () => {
     expect(planner.review().completedLast7Days).toHaveLength(0);
   });
 
-  it('crée l\'occurrence suivante d\'une tâche récurrente', () => {
+  it("crée l'occurrence suivante d'une tâche récurrente", () => {
     const { planner } = makePlanner();
-    const t = planner.createTask({ title: 'Revue hebdo', dueDate: '2026-09-26', recurrence: { every: 1, unit: 'week' } });
+    const t = planner.createTask({
+      title: 'Revue hebdo',
+      dueDate: '2026-09-26',
+      recurrence: { every: 1, unit: 'week' },
+    });
     planner.setStatus(t.id, 'done');
     const next = planner.listTasks({ status: 'todo' });
     expect(next).toHaveLength(1);
@@ -119,9 +123,9 @@ describe('Planner', () => {
     expect(persos?.dependsOn).toEqual([scenario?.id]);
     expect(test?.dependsOn).toEqual([persos?.id]);
     const before = planner.data;
-    expect(() => planner.applyPlan({ milestones: [{ title: 'X', tasks: [{ title: 'Y', dependsOnTitles: ['Inexistante'] }] }] })).toThrow(
-      /Dépendance inconnue/,
-    );
+    expect(() =>
+      planner.applyPlan({ milestones: [{ title: 'X', tasks: [{ title: 'Y', dependsOnTitles: ['Inexistante'] }] }] }),
+    ).toThrow(/Dépendance inconnue/);
     expect(planner.data.tasks).toHaveLength(before.tasks.length);
   });
 
@@ -141,7 +145,7 @@ describe('dates et planning', () => {
     expect(addWorkDays('2026-09-25', 1)).toBe('2026-09-28'); // vendredi → lundi
   });
 
-  it('ordonnance les tâches séquentiellement pour l\'utilisateur et en parallèle pour l\'IA', () => {
+  it("ordonnance les tâches séquentiellement pour l'utilisateur et en parallèle pour l'IA", () => {
     const { planner } = makePlanner();
     const a = planner.createTask({ title: 'A', estimateHours: 8, priority: 'high' });
     const b = planner.createTask({ title: 'B', estimateHours: 4, dependsOn: [a.id], dueDate: '2026-09-26' });

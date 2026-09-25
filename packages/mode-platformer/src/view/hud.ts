@@ -46,12 +46,7 @@ export class Hud extends Container {
   }
 
   sync(hud: HudView): void {
-    const parts = [
-      `${hud.levelName || hud.level}`,
-      `Vies ${hud.lives}`,
-      `Pièces ${hud.coins}`,
-      `Score ${hud.score}`,
-    ];
+    const parts = [`${hud.levelName || hud.level}`, `Vies ${hud.lives}`, `Pièces ${hud.coins}`, `Score ${hud.score}`];
     if (hud.timeLeft !== undefined) parts.push(`Temps ${formatTime(hud.timeLeft)}`);
     this.text.text = parts.join('    ');
   }

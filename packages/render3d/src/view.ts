@@ -1,11 +1,4 @@
-import {
-  ACESFilmicToneMapping,
-  PCFShadowMap,
-  PerspectiveCamera,
-  SRGBColorSpace,
-  Scene,
-  WebGLRenderer,
-} from 'three';
+import { ACESFilmicToneMapping, PCFShadowMap, PerspectiveCamera, SRGBColorSpace, Scene, WebGLRenderer } from 'three';
 import { fitAspect, parseHexColor } from './math';
 
 export interface View3dOptions {

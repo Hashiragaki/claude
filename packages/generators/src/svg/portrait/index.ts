@@ -9,7 +9,8 @@ import { expressionFromText, resolveIdentity, type Expression, type PortraitInpu
 
 export { EXPRESSIONS, HAIR_STYLES, type Expression, type PortraitHairStyle } from './identity';
 
-const FACE = 'M195 250C195 150 405 150 405 250C405 330 395 380 365 418C340 445 318 455 300 455C282 455 260 445 235 418C205 380 195 330 195 250Z';
+const FACE =
+  'M195 250C195 150 405 150 405 250C405 330 395 380 365 418C340 445 318 455 300 455C282 455 260 445 235 418C205 380 195 330 195 250Z';
 const EAR_L = 'M200 296C182 288 176 322 184 342C188 352 198 354 205 348Z';
 const EAR_R = 'M400 296C418 288 424 322 416 342C412 352 402 354 395 348Z';
 
@@ -45,11 +46,21 @@ export function drawPortrait(opts: PortraitOptions, rng: Rng): string {
   b.e('path', { d: backHeadPath(id.hairStyle), fill: hc.dark, ...lineAttrs });
   b.e('path', { d: EAR_L, fill: id.skin, ...lineAttrs });
   b.e('path', { d: EAR_R, fill: id.skin, ...lineAttrs });
-  b.e('path', { d: 'M196 308Q188 318 194 334M404 308Q412 318 406 334', fill: 'none', stroke: skinShadow, 'stroke-width': 3 });
+  b.e('path', {
+    d: 'M196 308Q188 318 194 334M404 308Q412 318 406 334',
+    fill: 'none',
+    stroke: skinShadow,
+    'stroke-width': 3,
+  });
   b.e('path', { d: FACE, fill: skinFill, ...lineAttrs });
   b.e('g', { 'clip-path': `url(#${faceClip})` }, [
     el('path', { d: 'M392 250C412 330 392 400 330 452L420 470L430 240Z', fill: skinShadow, opacity: 0.4 }),
-    el('path', { d: frontHairPath(id.hairStyle), fill: mix(skinShadow, hc.dark, 0.15), opacity: 0.55, transform: 'translate(3 11)' }),
+    el('path', {
+      d: frontHairPath(id.hairStyle),
+      fill: mix(skinShadow, hc.dark, 0.15),
+      opacity: 0.55,
+      transform: 'translate(3 11)',
+    }),
   ]);
   const faceColors = {
     skin: id.skin,

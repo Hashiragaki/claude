@@ -37,13 +37,13 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
     }),
     defineTool({
       name: 'get_task',
-      description: 'Détail complet d\'une tâche (description, journal, liens).',
+      description: "Détail complet d'une tâche (description, journal, liens).",
       schema: z.object({ id: z.string() }),
       run: ({ id }) => planner.requireTask(id),
     }),
     defineTool({
       name: 'create_task',
-      description: 'Crée une tâche. Utilise des titres courts à l\'impératif (« Dessiner la carte du village »).',
+      description: "Crée une tâche. Utilise des titres courts à l'impératif (« Dessiner la carte du village »).",
       schema: z.object({ title: z.string().min(1), ...TaskFields }),
       run: (input) => {
         const task = planner.createTask(input, 'ai');
@@ -68,7 +68,7 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
     }),
     defineTool({
       name: 'delete_task',
-      description: 'Supprime définitivement une tâche. Préfère le statut `cancelled` si l\'historique compte.',
+      description: "Supprime définitivement une tâche. Préfère le statut `cancelled` si l'historique compte.",
       schema: z.object({ id: z.string() }),
       run: ({ id }) => {
         planner.deleteTask(id);
@@ -78,7 +78,11 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
     defineTool({
       name: 'create_milestone',
       description: 'Crée un jalon (étape majeure du projet : prototype, démo, alpha…).',
-      schema: z.object({ title: z.string().min(1), description: z.string().optional(), dueDate: DateSchema.optional() }),
+      schema: z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        dueDate: DateSchema.optional(),
+      }),
       run: (input) => {
         const m = planner.createMilestone(input);
         return `Jalon créé : [${m.id}] ${m.title}`;
@@ -102,7 +106,7 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
     defineTool({
       name: 'plan_project',
       description:
-        'Crée d\'un coup un plan complet : plusieurs jalons, chacun avec ses tâches. Les dépendances sont données ' +
+        "Crée d'un coup un plan complet : plusieurs jalons, chacun avec ses tâches. Les dépendances sont données " +
         'par titre de tâche (`dependsOnTitles`). À utiliser pour « planifie mon jeu », « découpe ce jalon »…',
       schema: z.object({
         milestones: z
@@ -139,7 +143,8 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
     }),
     defineTool({
       name: 'review_progress',
-      description: 'Revue de l\'avancement : terminé récemment, en cours, retards, échéances proches, prochaines actions.',
+      description:
+        "Revue de l'avancement : terminé récemment, en cours, retards, échéances proches, prochaines actions.",
       schema: z.object({}),
       run: () => formatReview(planner.review(), planner),
     }),
@@ -147,7 +152,7 @@ export function createPlannerTools(planner: Planner): AgentTool[] {
       name: 'remember',
       description:
         'Enregistre une information durable dans la mémoire du projet (décision de design, style graphique, ' +
-        'personnages, préférences de l\'utilisateur). Elle te sera rappelée dans les conversations futures.',
+        "personnages, préférences de l'utilisateur). Elle te sera rappelée dans les conversations futures.",
       schema: z.object({ text: z.string().min(1).max(2000), tags: z.array(z.string()).optional() }),
       run: ({ text, tags }) => {
         const note = planner.remember(text, tags);

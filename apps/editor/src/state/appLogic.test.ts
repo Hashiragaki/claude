@@ -43,7 +43,7 @@ describe('mergeJobUpdate', () => {
     expect(mergeJobUpdate([], base)).toEqual([base]);
   });
 
-  it("remplace un job existant non terminal par sa mise à jour", () => {
+  it('remplace un job existant non terminal par sa mise à jour', () => {
     const updated: Job = { ...base, progress: '50%' };
     expect(mergeJobUpdate([base], updated)).toEqual([updated]);
   });

@@ -184,7 +184,10 @@ describe('RpgWorld — pages et déclencheurs', () => {
           {
             trigger: 'autorun',
             priority: 'below',
-            commands: [{ type: 'text', text: 'Intro' }, { type: 'setSelfSwitch', letter: 'A' }],
+            commands: [
+              { type: 'text', text: 'Intro' },
+              { type: 'setSelfSwitch', letter: 'A' },
+            ],
           },
           { conditions: { selfSwitch: 'A' }, trigger: 'action', priority: 'below' },
         ],
@@ -197,7 +200,10 @@ describe('RpgWorld — pages et déclencheurs', () => {
           {
             trigger: 'parallel',
             priority: 'below',
-            commands: [{ type: 'setVariable', name: 'tic', op: 'add', value: 1 }, { type: 'wait', seconds: 0.1 }],
+            commands: [
+              { type: 'setVariable', name: 'tic', op: 'add', value: 1 },
+              { type: 'wait', seconds: 0.1 },
+            ],
           },
         ],
       })

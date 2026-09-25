@@ -74,8 +74,7 @@ export async function loadPlatformTilesetInfo(
     problems.push({
       file: tilesPath,
       severity: 'warning',
-      message:
-        `Métadonnées du tileset « ${ref} » illisibles (disposition standard utilisée) : ` + errorMessage(error),
+      message: `Métadonnées du tileset « ${ref} » illisibles (disposition standard utilisée) : ` + errorMessage(error),
     });
     return DEFAULT_PLATFORM_TILESET_INFO;
   }

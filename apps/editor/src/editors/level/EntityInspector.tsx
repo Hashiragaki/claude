@@ -22,7 +22,11 @@ const ENEMY_KIND_LABELS: Record<EnemyKind, string> = {
 const FACING_LABELS: Record<Facing, string> = { left: 'Gauche', right: 'Droite' };
 
 /** Propriétés d'une entité de niveau : champs selon le type (kind/speed/facing/range, power, text). */
-export function EntityInspector(props: { entity: PlatformerEntity; onChange(entity: PlatformerEntity): void; onDelete(): void }) {
+export function EntityInspector(props: {
+  entity: PlatformerEntity;
+  onChange(entity: PlatformerEntity): void;
+  onDelete(): void;
+}) {
   const { entity } = props;
   const project = useApp((s) => s.project);
   const sprites = (project?.assets ?? []).filter((a) => a.kind === 'charset' && a.alias);
@@ -95,7 +99,10 @@ export function EntityInspector(props: { entity: PlatformerEntity; onChange(enti
             onSelectionChange={(k) => props.onChange({ ...entity, sprite: k === 'none' ? undefined : String(k) })}
             width="size-3000"
           >
-            {[<Item key="none">Forme par défaut</Item>, ...sprites.map((s) => <Item key={s.alias!}>{`🧍 ${s.alias}`}</Item>)]}
+            {[
+              <Item key="none">Forme par défaut</Item>,
+              ...sprites.map((s) => <Item key={s.alias!}>{`🧍 ${s.alias}`}</Item>),
+            ]}
           </Picker>
         </>
       )}
@@ -111,14 +118,19 @@ export function EntityInspector(props: { entity: PlatformerEntity; onChange(enti
       )}
 
       {entity.type === 'sign' && (
-        <TextField label="Texte affiché" value={entity.text} onChange={(text) => props.onChange({ ...entity, text })} width="100%" />
+        <TextField
+          label="Texte affiché"
+          value={entity.text}
+          onChange={(text) => props.onChange({ ...entity, text })}
+          width="100%"
+        />
       )}
 
       {(entity.type === 'coin' || entity.type === 'checkpoint' || entity.type === 'goal') && (
         <p style={{ fontSize: 12, color: 'var(--fg-text-2)', margin: 0 }}>
           {entity.type === 'coin' && 'Ramassée une seule fois par partie.'}
           {entity.type === 'checkpoint' && 'Le joueur y réapparaît après une perte de vie.'}
-          {entity.type === 'goal' && 'Termine le niveau quand le joueur l\'atteint.'}
+          {entity.type === 'goal' && "Termine le niveau quand le joueur l'atteint."}
         </p>
       )}
     </Flex>

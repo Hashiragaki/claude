@@ -3,7 +3,8 @@ import path from 'node:path';
 import { defineConfig } from '@playwright/test';
 
 // Chromium préinstallé (environnements cloud) ; sinon Playwright utilise son propre navigateur.
-const chromium = process.env.FORGE_CHROMIUM ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
+const chromium =
+  process.env.FORGE_CHROMIUM ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 
 const dataDir = path.resolve('test-results/e2e-workspace');
 rmSync(dataDir, { recursive: true, force: true });

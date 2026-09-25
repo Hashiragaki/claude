@@ -104,7 +104,7 @@ class CoinVisual extends Graphics {
     const cx = view.w / 2;
     const cy = view.h / 2;
     this.ellipse(cx, cy, Math.max(1.5, (COIN_SIZE / 2) * squeeze), COIN_SIZE / 2).fill(0xffd23f);
-    this.ellipse(cx, cy, Math.max(1.5, (COIN_SIZE / 2) * squeeze) * 0.5, COIN_SIZE / 2 * 0.55).fill(0xffb000);
+    this.ellipse(cx, cy, Math.max(1.5, (COIN_SIZE / 2) * squeeze) * 0.5, (COIN_SIZE / 2) * 0.55).fill(0xffb000);
     this.position.set(view.x, view.y);
   }
 }
@@ -147,7 +147,9 @@ class SignVisual extends Graphics {
     this.visible = view.active;
     this.clear();
     this.rect(SIGN_SIZE / 2 - 1, SIGN_SIZE / 2, 2, SIGN_SIZE / 2).fill(0x6b4423);
-    this.roundRect(1, 0, SIGN_SIZE - 2, SIGN_SIZE / 2 + 2, 1).fill(0xb08850).stroke({ width: 1, color: 0x4a2f16 });
+    this.roundRect(1, 0, SIGN_SIZE - 2, SIGN_SIZE / 2 + 2, 1)
+      .fill(0xb08850)
+      .stroke({ width: 1, color: 0x4a2f16 });
     this.position.set(view.x, view.y);
   }
 }

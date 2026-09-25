@@ -2,15 +2,7 @@ import { execute, interpolate, type Rng } from '@forge/core';
 import { checkCondition, type ConditionContext } from './conditions';
 import type { Command, Direction, MoveStep } from './schema';
 import { RpgScope, scriptOptions } from './scope';
-import {
-  addGold,
-  addItem,
-  applyVariableOp,
-  healParty,
-  setSelfSwitch,
-  setSwitch,
-  type GameState,
-} from './state';
+import { addGold, addItem, applyVariableOp, healParty, setSelfSwitch, setSwitch, type GameState } from './state';
 
 /**
  * État d'attente de l'interpréteur : l'hôte (monde, vue) traite la demande puis appelle

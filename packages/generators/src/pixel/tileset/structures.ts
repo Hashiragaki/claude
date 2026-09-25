@@ -70,7 +70,8 @@ export function wallFace(t: Tile): void {
       break;
     case 'interior':
       for (let y = 0; y < 10; y++) {
-        for (let x = 0; x < T; x++) t.set(x, y, x % 4 === 0 ? mix(wall, wallDark, 0.3) : x % 4 === 2 ? shade(wall, 0.05) : wall);
+        for (let x = 0; x < T; x++)
+          t.set(x, y, x % 4 === 0 ? mix(wall, wallDark, 0.3) : x % 4 === 2 ? shade(wall, 0.05) : wall);
       }
       t.hline(0, 15, 10, shade(wood, 0.25));
       for (let y = 11; y < 15; y++) {
@@ -242,7 +243,8 @@ export function drawDoor(t: Tile): void {
       t.rect(4, 3, 8, 13, outline);
       t.rect(5, 2, 6, 1, outline);
       for (let y = 3; y < 12; y++) {
-        for (let x = 4; x < 12; x++) if ((x + Math.floor(y / 3)) % 3 !== 0) t.set(x, y, x < 8 ? accent : shade(accent, -0.2));
+        for (let x = 4; x < 12; x++)
+          if ((x + Math.floor(y / 3)) % 3 !== 0) t.set(x, y, x < 8 ? accent : shade(accent, -0.2));
       }
       t.hline(4, 11, 3, shade(accent, -0.4));
       break;
@@ -504,7 +506,8 @@ export function drawBridge(t: Tile): void {
     const ly = y % 4;
     if (rope && ly === 3) continue;
     for (let x = 2; x <= 13; x++) {
-      const tone = ly === 0 ? shade(wood, 0.2) : ly === 3 ? woodDark : (x + y * 3) % 7 === 0 ? mix(wood, woodDark, 0.5) : wood;
+      const tone =
+        ly === 0 ? shade(wood, 0.2) : ly === 3 ? woodDark : (x + y * 3) % 7 === 0 ? mix(wood, woodDark, 0.5) : wood;
       t.set(x, y, tone);
     }
   }

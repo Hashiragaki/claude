@@ -279,8 +279,8 @@ export function drawGround(t: Tile, variant: 0 | 1 | 2): void {
       }
       if (variant === 2) {
         t.scatter(16, 41, (x, y) => {
-          const cx = x % 12 + 2;
-          const cy = y % 10 + 4;
+          const cx = (x % 12) + 2;
+          const cy = (y % 10) + 4;
           t.set(cx, cy, '#efe4cc');
           t.set(cx, cy - 1, t.pal.accent);
           t.set(cx - 1, cy - 1, t.pal.accent);
@@ -376,7 +376,8 @@ export function drawPath(t: Tile, alt: boolean): void {
       cobbles(t, 4, [stone, mix(stone, stoneDark, 0.25), shade(stone, 0.1)], stoneDark);
       if (theme === 'snow') {
         for (let y = 0; y < T; y++) {
-          for (let x = 0; x < T; x++) if (t.rnd(x, y, 55) < 0.5 && y > 0 && t.get(x, y - 1)[0] < t.get(x, y)[0] - 20) t.set(x, y, '#f4f8fc');
+          for (let x = 0; x < T; x++)
+            if (t.rnd(x, y, 55) < 0.5 && y > 0 && t.get(x, y - 1)[0] < t.get(x, y)[0] - 20) t.set(x, y, '#f4f8fc');
         }
       }
       break;

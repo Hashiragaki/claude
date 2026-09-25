@@ -1,13 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import {
-  guessMime,
-  normalizeProjectPath,
-  parseManifest,
-  type ProjectFiles,
-  type ProjectManifest,
-} from '@forge/core';
+import { guessMime, normalizeProjectPath, parseManifest, type ProjectFiles, type ProjectManifest } from '@forge/core';
 
 /** Exécute les tâches asynchrones une par une (évite les écritures concurrentes). */
 export class Mutex {

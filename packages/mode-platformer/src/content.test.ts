@@ -42,7 +42,21 @@ const musicParamsSchemaLocal = z.object({
 const sfxParamsSchemaLocal = z.object({
   prompt: z.string().default(''),
   preset: z
-    .enum(['coin', 'laser', 'explosion', 'powerup', 'hit', 'jump', 'blip', 'select', 'cancel', 'door', 'step', 'magic', 'random'])
+    .enum([
+      'coin',
+      'laser',
+      'explosion',
+      'powerup',
+      'hit',
+      'jump',
+      'blip',
+      'select',
+      'cancel',
+      'door',
+      'step',
+      'magic',
+      'random',
+    ])
     .default('random'),
 });
 
@@ -82,19 +96,22 @@ describe('modèles de projet', () => {
     }
   });
 
-  it('les alias d\'assets sont en kebab-case et uniques', () => {
+  it("les alias d'assets sont en kebab-case et uniques", () => {
     for (const template of PLATFORMER_TEMPLATES) {
       const seen = new Set<string>();
       for (const asset of template.assets) {
         expect(asset.alias, `${template.id} : alias « ${asset.alias} »`).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
         expect(seen.has(asset.alias), `${template.id} : alias en double « ${asset.alias} »`).toBe(false);
         seen.add(asset.alias);
-        expect(GENERATOR_KINDS[asset.generator], `${template.id} : générateur inconnu « ${asset.generator} »`).toBeDefined();
+        expect(
+          GENERATOR_KINDS[asset.generator],
+          `${template.id} : générateur inconnu « ${asset.generator} »`,
+        ).toBeDefined();
       }
     }
   });
 
-  it('les paramètres des demandes d\'assets sont acceptés par le générateur correspondant', () => {
+  it("les paramètres des demandes d'assets sont acceptés par le générateur correspondant", () => {
     for (const template of PLATFORMER_TEMPLATES) {
       for (const asset of template.assets) {
         const schema = CHECKED_GENERATOR_SCHEMAS[asset.generator];

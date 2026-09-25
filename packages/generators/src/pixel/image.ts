@@ -38,7 +38,11 @@ export const imagePixelSpecSchema = z
   .superRefine((spec, ctx) => {
     const count = Object.keys(spec.palette).length;
     if (count > 32) {
-      ctx.addIssue({ code: 'custom', path: ['palette'], message: `Palette trop grande (${count} couleurs, maximum 32).` });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['palette'],
+        message: `Palette trop grande (${count} couleurs, maximum 32).`,
+      });
     }
     checkGrid(spec, spec.width, spec.height, ctx);
   });
@@ -56,7 +60,22 @@ const KEYWORDS = {
   shield: ['bouclier', 'shield', 'ecu'],
   key: ['cle', 'clef', 'key'],
   coin: ['piece', 'coin', 'monnaie', 'money', 'argent'],
-  gem: ['gemme', 'gem', 'cristal', 'crystal', 'diamant', 'diamond', 'rubis', 'ruby', 'emeraude', 'emerald', 'saphir', 'sapphire', 'joyau', 'jewel'],
+  gem: [
+    'gemme',
+    'gem',
+    'cristal',
+    'crystal',
+    'diamant',
+    'diamond',
+    'rubis',
+    'ruby',
+    'emeraude',
+    'emerald',
+    'saphir',
+    'sapphire',
+    'joyau',
+    'jewel',
+  ],
   heart: ['coeur', 'heart', 'vie', 'life', 'sante', 'health'],
   scroll: ['parchemin', 'scroll', 'rouleau', 'carte', 'map', 'lettre', 'letter'],
   mushroom: ['champignon', 'mushroom'],
@@ -80,7 +99,22 @@ type Motif = keyof typeof KEYWORDS;
 const DRAWERS: Record<Motif, Draw> = { ...ITEM_DRAWERS, ...PROP_DRAWERS, ...CREATURE_DRAWERS };
 
 const SUBJECT_MOTIFS: Record<Exclude<ImagePixelParams['subject'], 'character'>, readonly Motif[]> = {
-  item: ['potion', 'sword', 'shield', 'key', 'coin', 'gem', 'heart', 'scroll', 'mushroom', 'apple', 'bomb', 'ring', 'book', 'staff'],
+  item: [
+    'potion',
+    'sword',
+    'shield',
+    'key',
+    'coin',
+    'gem',
+    'heart',
+    'scroll',
+    'mushroom',
+    'apple',
+    'bomb',
+    'ring',
+    'book',
+    'staff',
+  ],
   icon: ['heart', 'coin', 'gem', 'potion', 'key', 'sword', 'shield', 'scroll', 'book'],
   prop: ['chest', 'barrel', 'crate', 'torch', 'plant'],
   creature: ['slime', 'ghost', 'bat'],
@@ -148,9 +182,12 @@ export const imagePixelGenerator: GeneratorDefinition<ImagePixelParams, ImagePix
   specSchema: imagePixelSpecSchema,
   systemPrompt: SYSTEM_PROMPT,
   buildPrompt(params) {
-    return requestMessage(`a ${params.width}x${params.height} pixel-art sprite (subject type: ${params.subject})`, params.prompt, params, [
-      `The grid must be exactly ${params.width} characters wide and ${params.height} rows tall.`,
-    ]);
+    return requestMessage(
+      `a ${params.width}x${params.height} pixel-art sprite (subject type: ${params.subject})`,
+      params.prompt,
+      params,
+      [`The grid must be exactly ${params.width} characters wide and ${params.height} rows tall.`],
+    );
   },
   buildEditPrompt(spec, instruction, params) {
     return editMessage(spec, instruction, params, [

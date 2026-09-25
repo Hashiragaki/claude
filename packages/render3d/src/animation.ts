@@ -1,11 +1,4 @@
-import {
-  AnimationMixer,
-  LoopOnce,
-  LoopRepeat,
-  type AnimationAction,
-  type AnimationClip,
-  type Object3D,
-} from 'three';
+import { AnimationMixer, LoopOnce, LoopRepeat, type AnimationAction, type AnimationClip, type Object3D } from 'three';
 
 export interface PlayAnimationOptions {
   /** Joue en boucle (par défaut) ou une seule fois, en gardant la dernière pose. */

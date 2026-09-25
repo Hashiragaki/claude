@@ -39,7 +39,12 @@ export interface TweenOptions {
 export class Tweens {
   private tweens: ActiveTween[] = [];
 
-  to<T extends object>(target: T, props: Partial<Record<keyof T, number>>, duration: number, options: TweenOptions = {}): Promise<void> {
+  to<T extends object>(
+    target: T,
+    props: Partial<Record<keyof T, number>>,
+    duration: number,
+    options: TweenOptions = {},
+  ): Promise<void> {
     const t = target as unknown as Record<string, number>;
     const from: Record<string, number> = {};
     const to: Record<string, number> = {};
@@ -51,14 +56,24 @@ export class Tweens {
     for (const existing of this.tweens) {
       if (existing.target === t) for (const key of Object.keys(to)) delete existing.to[key];
     }
-    const easing = typeof options.easing === 'string' ? Easings[options.easing] : (options.easing ?? Easings.easeInOutQuad);
+    const easing =
+      typeof options.easing === 'string' ? Easings[options.easing] : (options.easing ?? Easings.easeInOutQuad);
     return new Promise((resolve) => {
       if (duration <= 0 && !options.delay) {
         Object.assign(t, to);
         resolve();
         return;
       }
-      this.tweens.push({ target: t, from, to, duration: Math.max(duration, 1e-6), elapsed: 0, delay: options.delay ?? 0, easing, resolve });
+      this.tweens.push({
+        target: t,
+        from,
+        to,
+        duration: Math.max(duration, 1e-6),
+        elapsed: 0,
+        delay: options.delay ?? 0,
+        easing,
+        resolve,
+      });
     });
   }
 

@@ -94,7 +94,13 @@ export function AssetsPanel() {
           </ActionButton>
         </FileTrigger>
         <SearchField aria-label="Rechercher" isQuiet value={query} onChange={setQuery} width="size-2400" />
-        <Picker aria-label="Type" isQuiet selectedKey={kind} onSelectionChange={(k) => setKind(String(k))} width="size-2000">
+        <Picker
+          aria-label="Type"
+          isQuiet
+          selectedKey={kind}
+          onSelectionChange={(k) => setKind(String(k))}
+          width="size-2000"
+        >
           {[
             <Item key="all">Tous les types</Item>,
             ...Object.entries(KIND_LABELS).map(([k, label]) => <Item key={k}>{label}</Item>),
@@ -117,13 +123,20 @@ export function AssetsPanel() {
         {active.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 10px 0' }}>
             {active.map((job) => (
-              <div key={job.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-text-2)' }}>
+              <div
+                key={job.id}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-text-2)' }}
+              >
                 <ProgressCircle aria-label="En cours" isIndeterminate size="S" />
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   <strong>{job.label}</strong> — {job.progress}
                 </span>
                 <TooltipTrigger>
-                  <ActionButton isQuiet aria-label="Annuler" onPress={() => void api.cancelJob(job.id).catch(toastError)}>
+                  <ActionButton
+                    isQuiet
+                    aria-label="Annuler"
+                    onPress={() => void api.cancelJob(job.id).catch(toastError)}
+                  >
                     <Close size="S" />
                   </ActionButton>
                   <Tooltip>Annuler</Tooltip>

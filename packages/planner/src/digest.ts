@@ -7,7 +7,7 @@ export function describeTask(task: Task, planner?: Planner): string {
   if (task.milestoneId) parts.push(`jalon ${task.milestoneId}`);
   if (task.dueDate) parts.push(`échéance ${task.dueDate}`);
   if (task.estimateHours != null) parts.push(`${task.estimateHours} h`);
-  if (task.assignee === 'ai') parts.push('confiée à l\'IA');
+  if (task.assignee === 'ai') parts.push("confiée à l'IA");
   if (task.dependsOn.length) parts.push(`dépend de ${task.dependsOn.join(', ')}`);
   if (planner && task.status === 'todo' && planner.blockingTasks(task.id).length) parts.push('en attente');
   if (task.tags.length) parts.push(task.tags.map((t) => `#${t}`).join(' '));
@@ -59,7 +59,9 @@ export function plannerDigest(planner: Planner, options: { maxTasks?: number; ma
   if (notes.length) {
     lines.push('', 'Mémoire du projet :');
     for (const n of notes.slice(-maxNotes)) {
-      lines.push(`- [${n.id}] (${n.at.slice(0, 10)}) ${n.text}${n.tags.length ? ` ${n.tags.map((t) => `#${t}`).join(' ')}` : ''}`);
+      lines.push(
+        `- [${n.id}] (${n.at.slice(0, 10)}) ${n.text}${n.tags.length ? ` ${n.tags.map((t) => `#${t}`).join(' ')}` : ''}`,
+      );
     }
   }
   return lines.join('\n');

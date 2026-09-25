@@ -62,7 +62,11 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     options.llm !== undefined
       ? options.llm
       : config.ai.enabled
-        ? new ClaudeLlmClient({ model: config.ai.model, effort: config.ai.effort, refusalFallback: config.ai.refusalFallback })
+        ? new ClaudeLlmClient({
+            model: config.ai.model,
+            effort: config.ai.effort,
+            refusalFallback: config.ai.refusalFallback,
+          })
         : null;
   const llm: LlmClient | null = rawLlm
     ? new RoutedLlmClient(rawLlm, {
@@ -211,13 +215,18 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     const rel = request.params['*'];
     const data = await store.readFile(request.params.id, rel);
     const mime = guessMime(rel);
-    return reply
-      .header('Content-Type', mime.startsWith('text/') || mime.endsWith('json') ? `${mime}; charset=utf-8` : mime)
-      .header('Cache-Control', 'no-cache')
-      .header('X-Content-Type-Options', 'nosniff')
-      // Un fichier ouvert directement (ex. SVG importé) ne peut exécuter aucun script.
-      .header('Content-Security-Policy', "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self'; sandbox")
-      .send(data);
+    return (
+      reply
+        .header('Content-Type', mime.startsWith('text/') || mime.endsWith('json') ? `${mime}; charset=utf-8` : mime)
+        .header('Cache-Control', 'no-cache')
+        .header('X-Content-Type-Options', 'nosniff')
+        // Un fichier ouvert directement (ex. SVG importé) ne peut exécuter aucun script.
+        .header(
+          'Content-Security-Policy',
+          "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self'; sandbox",
+        )
+        .send(data)
+    );
   });
 
   app.put<{ Params: IdParams & { '*': string } }>('/api/projects/:id/files/*', async (request) => {
@@ -269,11 +278,18 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   // Assets et génération
   // ---------------------------------------------------------------------------
 
-  app.get<{ Params: IdParams }>('/api/projects/:id/assets', async (request) => (await store.readManifest(request.params.id)).assets);
+  app.get<{ Params: IdParams }>(
+    '/api/projects/:id/assets',
+    async (request) => (await store.readManifest(request.params.id)).assets,
+  );
 
   app.patch<{ Params: IdParams & { assetId: string } }>('/api/projects/:id/assets/:assetId', async (request) => {
     const patch = z
-      .object({ name: z.string().min(1).optional(), alias: z.string().nullable().optional(), tags: z.array(z.string()).optional() })
+      .object({
+        name: z.string().min(1).optional(),
+        alias: z.string().nullable().optional(),
+        tags: z.array(z.string()).optional(),
+      })
       .parse(request.body);
     let updated: AssetMeta | undefined;
     await store.updateManifest(request.params.id, (m) => {
@@ -349,7 +365,8 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
       createdAt: nowIso(),
     };
     await store.updateManifest(id, (m) => {
-      if (asset.alias) for (const a of m.assets) if (a.alias?.toLowerCase() === asset.alias.toLowerCase()) delete a.alias;
+      if (asset.alias)
+        for (const a of m.assets) if (a.alias?.toLowerCase() === asset.alias.toLowerCase()) delete a.alias;
       m.assets.push(asset);
     });
     hub.publish(id, { type: 'asset', data: { action: 'created', asset } });
@@ -433,17 +450,23 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     return plannerOp(() => p.updateTask(request.params.taskId, patch, 'user', note));
   });
 
-  app.post<{ Params: IdParams & { taskId: string } }>('/api/projects/:id/planner/tasks/:taskId/move', async (request) => {
-    const body = z.object({ status: TaskStatusSchema, index: z.number().int().min(0) }).parse(request.body);
-    const p = await planner(request.params.id);
-    return plannerOp(() => p.moveTask(request.params.taskId, body.status, body.index, 'user'));
-  });
+  app.post<{ Params: IdParams & { taskId: string } }>(
+    '/api/projects/:id/planner/tasks/:taskId/move',
+    async (request) => {
+      const body = z.object({ status: TaskStatusSchema, index: z.number().int().min(0) }).parse(request.body);
+      const p = await planner(request.params.id);
+      return plannerOp(() => p.moveTask(request.params.taskId, body.status, body.index, 'user'));
+    },
+  );
 
-  app.post<{ Params: IdParams & { taskId: string } }>('/api/projects/:id/planner/tasks/:taskId/log', async (request) => {
-    const body = z.object({ text: z.string().min(1) }).parse(request.body);
-    const p = await planner(request.params.id);
-    return plannerOp(() => p.addLog(request.params.taskId, body.text, 'user'));
-  });
+  app.post<{ Params: IdParams & { taskId: string } }>(
+    '/api/projects/:id/planner/tasks/:taskId/log',
+    async (request) => {
+      const body = z.object({ text: z.string().min(1) }).parse(request.body);
+      const p = await planner(request.params.id);
+      return plannerOp(() => p.addLog(request.params.taskId, body.text, 'user'));
+    },
+  );
 
   app.delete<{ Params: IdParams & { taskId: string } }>('/api/projects/:id/planner/tasks/:taskId', async (request) => {
     const p = await planner(request.params.id);
@@ -468,7 +491,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     '/api/projects/:id/planner/milestones/:milestoneId',
     async (request) => {
       const p = await planner(request.params.id);
-      await plannerOp(() => p.deleteMilestone(request.params.milestoneId, { deleteTasks: request.query.deleteTasks === 'true' }));
+      await plannerOp(() =>
+        p.deleteMilestone(request.params.milestoneId, { deleteTasks: request.query.deleteTasks === 'true' }),
+      );
       return { ok: true };
     },
   );
@@ -515,7 +540,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     return reply.status(202).send({ ok: true });
   });
 
-  app.post<{ Params: IdParams }>('/api/projects/:id/chat/stop', async (request) => ({ ok: chat.stop(request.params.id) }));
+  app.post<{ Params: IdParams }>('/api/projects/:id/chat/stop', async (request) => ({
+    ok: chat.stop(request.params.id),
+  }));
 
   app.delete<{ Params: IdParams }>('/api/projects/:id/chat', async (request) => {
     await chat.clear(request.params.id);
@@ -534,7 +561,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     return autopilot.start(request.params.id, body);
   });
 
-  app.post<{ Params: IdParams }>('/api/projects/:id/autopilot/stop', async (request) => autopilot.stop(request.params.id));
+  app.post<{ Params: IdParams }>('/api/projects/:id/autopilot/stop', async (request) =>
+    autopilot.stop(request.params.id),
+  );
 
   // ---------------------------------------------------------------------------
   // Éditeur (production)

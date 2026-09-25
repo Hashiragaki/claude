@@ -33,20 +33,32 @@ export function buildVillageMap(): RpgMap {
   // Sol, bordure et chemins
   b.scatter('ground', TILE.ground_alt, 70, 11)
     .border('decor', TILE.bush)
-    .path([[3, 11], [28, 11]])
-    .path([[7, 8], [7, 11]])
-    .path([[24, 7], [24, 11]])
-    .path([[15, 11], [15, 22]])
-    .path([[15, 16], [19, 16]]);
+    .path([
+      [3, 11],
+      [28, 11],
+    ])
+    .path([
+      [7, 8],
+      [7, 11],
+    ])
+    .path([
+      [24, 7],
+      [24, 11],
+    ])
+    .path([
+      [15, 11],
+      [15, 22],
+    ])
+    .path([
+      [15, 16],
+      [19, 16],
+    ]);
 
   // Bâtiments : auberge (entrable) et maison de l'Ancien
   b.house(4, 2, 7, 6).house(21, 2, 6, 5);
 
   // Étang traversé par un pont vers l'îlot clôturé du Roi Slime
-  b.pond(20, 14, 6, 5)
-    .bridge(20, 16, 6, 1)
-    .fence(26, 13, 30, 13)
-    .fence(26, 19, 30, 19);
+  b.pond(20, 14, 6, 5).bridge(20, 16, 6, 1).fence(26, 13, 30, 13).fence(26, 19, 30, 19);
 
   // Hautes herbes (rencontres) derrière une barrière avec une ouverture
   b.tallGrass(2, 14, 8, 8)
@@ -56,7 +68,17 @@ export function buildVillageMap(): RpgMap {
 
   // Végétation et accessoires
   b.trees([
-    [2, 4], [12, 4], [17, 4], [19, 7], [29, 5], [29, 9], [12, 15], [18, 20], [22, 21], [27, 21], [11, 21],
+    [2, 4],
+    [12, 4],
+    [17, 4],
+    [19, 7],
+    [29, 5],
+    [29, 9],
+    [12, 15],
+    [18, 20],
+    [22, 21],
+    [27, 21],
+    [11, 21],
   ])
     .scatter('decor', TILE.flowers, 14, 5, { area: { x: 1, y: 8, w: 30, h: 14 } })
     .set('decor', 3, 7, TILE.barrel)
@@ -81,7 +103,7 @@ export function buildVillageMap(): RpgMap {
           {
             type: 'text',
             speaker: 'Noah',
-            text: 'L\'Ancien du village a demandé de l\'aide… Il vit dans la maison au nord-est. Allons le voir !',
+            text: "L'Ancien du village a demandé de l'aide… Il vit dans la maison au nord-est. Allons le voir !",
           },
           { type: 'moveRoute', target: 'player', steps: ['up'], wait: true },
           { type: 'setSelfSwitch', letter: 'A' },
@@ -95,25 +117,31 @@ export function buildVillageMap(): RpgMap {
     'panneau',
     P.sign.x,
     P.sign.y,
-    'Village de Brume — Au nord-ouest : l\'auberge. Au sud-ouest : les hautes herbes (attention aux monstres !). ' +
-      'À l\'est : l\'étang et son pont.',
+    "Village de Brume — Au nord-ouest : l'auberge. Au sud-ouest : les hautes herbes (attention aux monstres !). " +
+      "À l'est : l'étang et son pont.",
   );
 
   const innEntry = { map: 'auberge', x: P.innEntry.x, y: P.innEntry.y, direction: 'up' } as const;
-  b.door('porte_auberge', P.innDoor.x, P.innDoor.y, innEntry, { sfx: 'son porte', name: 'Porte de l\'auberge' });
+  b.door('porte_auberge', P.innDoor.x, P.innDoor.y, innEntry, { sfx: 'son porte', name: "Porte de l'auberge" });
 
   b.event({
     id: 'porte_ancien',
-    name: 'Porte de l\'Ancien',
+    name: "Porte de l'Ancien",
     x: P.elderDoor.x,
     y: P.elderDoor.y,
-    pages: [{ graphic: null, commands: [{ type: 'text', text: 'Maison de l\'Ancien. La porte est fermée à clé.' }] }],
+    pages: [{ graphic: null, commands: [{ type: 'text', text: "Maison de l'Ancien. La porte est fermée à clé." }] }],
   });
 
-  b.chest('coffre', P.chest.x, P.chest.y, [
-    { type: 'giveItem', item: 'potion', count: 3 },
-    { type: 'text', text: 'Vous trouvez 3 Potions !' },
-  ], { sfx: 'son piece' });
+  b.chest(
+    'coffre',
+    P.chest.x,
+    P.chest.y,
+    [
+      { type: 'giveItem', item: 'potion', count: 3 },
+      { type: 'text', text: 'Vous trouvez 3 Potions !' },
+    ],
+    { sfx: 'son piece' },
+  );
 
   b.npc('mila', 'Mila', P.villager.x, P.villager.y, 'chara mila', villagerDialogue(), { movement: 'random', speed: 2 });
 
@@ -126,7 +154,7 @@ export function buildVillageMap(): RpgMap {
           {
             type: 'text',
             speaker: 'Ancien Aldo',
-            text: 'Le Roi Slime se cache sur l\'îlot, de l\'autre côté du pont à l\'est. Soyez prudents !',
+            text: "Le Roi Slime se cache sur l'îlot, de l'autre côté du pont à l'est. Soyez prudents !",
           },
         ],
       },
@@ -142,7 +170,7 @@ export function buildVillageMap(): RpgMap {
           {
             type: 'text',
             speaker: 'Ancien Aldo',
-            text: 'Grâce à vous, Brume retrouve sa sérénité. Cette clé ouvre le vieux coffre de l\'auberge !',
+            text: "Grâce à vous, Brume retrouve sa sérénité. Cette clé ouvre le vieux coffre de l'auberge !",
           },
         ],
       },
@@ -160,7 +188,7 @@ export function buildVillageMap(): RpgMap {
         commands: [
           {
             type: 'text',
-            text: 'Zzz… Une énorme créature gluante fait la sieste. Mieux vaut d\'abord parler à l\'Ancien.',
+            text: "Zzz… Une énorme créature gluante fait la sieste. Mieux vaut d'abord parler à l'Ancien.",
           },
         ],
       },
@@ -177,7 +205,7 @@ export function buildVillageMap(): RpgMap {
             onWin: [
               { type: 'setSwitch', name: 'roi_slime_vaincu' },
               { type: 'setVariable', name: 'quete', op: 'set', value: 2 },
-              { type: 'text', text: 'Le Roi Slime fond en une petite flaque inoffensive… Retournez voir l\'Ancien !' },
+              { type: 'text', text: "Le Roi Slime fond en une petite flaque inoffensive… Retournez voir l'Ancien !" },
             ],
           },
         ],
@@ -191,7 +219,7 @@ export function buildVillageMap(): RpgMap {
 
 function villagerDialogue(): Command[] {
   return [
-    { type: 'text', speaker: 'Mila', text: 'Bonjour ! Vous êtes nouveaux à Brume, n\'est-ce pas ?' },
+    { type: 'text', speaker: 'Mila', text: "Bonjour ! Vous êtes nouveaux à Brume, n'est-ce pas ?" },
     {
       type: 'choice',
       options: [
@@ -201,7 +229,7 @@ function villagerDialogue(): Command[] {
             {
               type: 'text',
               speaker: 'Mila',
-              text: 'Bienvenue ! L\'auberge est au nord-ouest, et l\'Ancien habite au nord-est.',
+              text: "Bienvenue ! L'auberge est au nord-ouest, et l'Ancien habite au nord-est.",
             },
           ],
         },
@@ -228,7 +256,7 @@ function elderQuest(): Command[] {
     {
       type: 'text',
       speaker: 'Ancien Aldo',
-      text: 'Ah, des voyageurs ! Le Roi Slime s\'est installé sur l\'îlot à l\'est de l\'étang…',
+      text: "Ah, des voyageurs ! Le Roi Slime s'est installé sur l'îlot à l'est de l'étang…",
     },
     {
       type: 'text',
@@ -246,7 +274,7 @@ function elderQuest(): Command[] {
             {
               type: 'text',
               speaker: 'Ancien Aldo',
-              text: 'Merci ! Traversez le pont à l\'est de l\'étang. Reposez-vous à l\'auberge avant le combat.',
+              text: "Merci ! Traversez le pont à l'est de l'étang. Reposez-vous à l'auberge avant le combat.",
             },
           ],
         },
@@ -266,7 +294,7 @@ function elderReward(): Command[] {
     { type: 'playSfx', ref: 'son piece' },
     { type: 'giveGold', amount: 100 },
     { type: 'giveItem', item: 'cle_coffre', count: 1 },
-    { type: 'text', speaker: 'Ancien Aldo', text: 'Acceptez ces 100 pièces d\'or, ainsi que cette vieille clé.' },
+    { type: 'text', speaker: 'Ancien Aldo', text: "Acceptez ces 100 pièces d'or, ainsi que cette vieille clé." },
     { type: 'setVariable', name: 'quete', op: 'set', value: 3 },
     { type: 'setSelfSwitch', letter: 'A' },
   ];
@@ -312,7 +340,7 @@ export function buildInnMap(): RpgMap {
     {
       type: 'text',
       speaker: 'Rosa',
-      text: 'Bienvenue à l\'auberge de Brume ! Une nuit coûte 10 pièces d\'or. (Vous avez [gold] PO.)',
+      text: "Bienvenue à l'auberge de Brume ! Une nuit coûte 10 pièces d'or. (Vous avez [gold] PO.)",
     },
     {
       type: 'choice',
@@ -329,9 +357,9 @@ export function buildInnMap(): RpgMap {
                 { type: 'playSfx', ref: 'son soin' },
                 { type: 'healParty' },
                 { type: 'setVariable', name: 'nuits_auberge', op: 'add', value: 1 },
-                { type: 'text', speaker: 'Rosa', text: 'Bonne nuit ! … Toute l\'équipe est en pleine forme !' },
+                { type: 'text', speaker: 'Rosa', text: "Bonne nuit ! … Toute l'équipe est en pleine forme !" },
               ],
-              else: [{ type: 'text', speaker: 'Rosa', text: 'Oh… Vous n\'avez pas assez d\'or, je suis désolée.' }],
+              else: [{ type: 'text', speaker: 'Rosa', text: "Oh… Vous n'avez pas assez d'or, je suis désolée." }],
             },
           ],
         },

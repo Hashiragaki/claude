@@ -27,7 +27,15 @@ export const SelfSwitchSchema = z.enum(SELF_SWITCHES);
 export type SelfSwitchLetter = z.infer<typeof SelfSwitchSchema>;
 
 export const MOVE_STEPS = [
-  'up', 'down', 'left', 'right', 'turnUp', 'turnDown', 'turnLeft', 'turnRight', 'wait',
+  'up',
+  'down',
+  'left',
+  'right',
+  'turnUp',
+  'turnDown',
+  'turnLeft',
+  'turnRight',
+  'wait',
 ] as const;
 export const MoveStepSchema = z.enum(MOVE_STEPS);
 export type MoveStep = z.infer<typeof MoveStepSchema>;
@@ -239,7 +247,7 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   setSelfSwitch: 'Interrupteur local A–D { letter, value?, event? (cet événement par défaut) }.',
   setVariable: 'Variable { name, op?: set|add|sub|mul|div|mod|random, value, max? (pour random) }.',
   giveItem: 'Donne des objets { item, count? (négatif = retire) }.',
-  giveGold: 'Donne de l\'or { amount (négatif = retire) }.',
+  giveGold: "Donne de l'or { amount (négatif = retire) }.",
   teleport: 'Transfère le joueur { map, x, y, direction? }.',
   battle: 'Combat { troop, canEscape?, canLose?, onWin?, onLose?, onEscape? } ; défaite sans canLose = game over.',
   wait: 'Pause { seconds }.',
@@ -247,11 +255,11 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   playMusic: 'Change la musique { ref }.',
   stopMusic: 'Arrête la musique.',
   moveRoute: 'Trajet { target: player|this|id, steps: [up, down, left, right, turnUp…, wait], wait? (défaut vrai) }.',
-  healParty: 'Soigne entièrement l\'équipe (PV, PM, K.O.).',
-  erase: 'Efface cet événement jusqu\'au prochain chargement de la carte.',
+  healParty: "Soigne entièrement l'équipe (PV, PM, K.O.).",
+  erase: "Efface cet événement jusqu'au prochain chargement de la carte.",
   setFlag: 'Drapeau de jeu { flag: encounters|menu|save|dash, value }.',
   gameOver: 'Fin de partie (écran de game over).',
-  returnToTitle: 'Retour à l\'écran titre.',
+  returnToTitle: "Retour à l'écran titre.",
   script: 'Instruction de script { code } (ex. `quete += 1`, `gold -= 10`).',
   comment: 'Commentaire sans effet { text }.',
 };

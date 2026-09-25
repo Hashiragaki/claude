@@ -165,7 +165,13 @@ function Kanban() {
           <Add />
           <Text>Nouvelle tâche</Text>
         </Button>
-        <Picker aria-label="Jalon" isQuiet selectedKey={milestone} onSelectionChange={(k) => setMilestone(String(k))} width="size-3600">
+        <Picker
+          aria-label="Jalon"
+          isQuiet
+          selectedKey={milestone}
+          onSelectionChange={(k) => setMilestone(String(k))}
+          width="size-3600"
+        >
           {[
             <Item key="all">Tous les jalons</Item>,
             <Item key="none">Sans jalon</Item>,
@@ -208,7 +214,9 @@ function Kanban() {
                     onKeyDown={(e) => e.key === 'Enter' && setEditing({ task })}
                   >
                     <div className="fg-card-title">
-                      {waiting(task) && <LockClosed size="XS" UNSAFE_style={{ marginRight: 4, verticalAlign: '-2px' }} />}
+                      {waiting(task) && (
+                        <LockClosed size="XS" UNSAFE_style={{ marginRight: 4, verticalAlign: '-2px' }} />
+                      )}
                       {task.title}
                     </div>
                     <div className="fg-card-meta">
@@ -272,7 +280,15 @@ function Gantt() {
   return (
     <div>
       <Flex gap="size-200" alignItems="end" marginX="size-150" marginY="size-100">
-        <NumberField label="Heures de travail par jour" value={hours} onChange={(v) => v > 0 && setHours(v)} minValue={0.5} maxValue={16} step={0.5} width="size-2400" />
+        <NumberField
+          label="Heures de travail par jour"
+          value={hours}
+          onChange={(v) => v > 0 && setHours(v)}
+          minValue={0.5}
+          maxValue={16}
+          step={0.5}
+          width="size-2400"
+        />
         <Switch isSelected={skipWeekends} onChange={setSkipWeekends}>
           Exclure les week-ends
         </Switch>
@@ -285,7 +301,13 @@ function Gantt() {
             const weekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
             return (
               <g key={i}>
-                <rect x={labelW + i * dayW} y={24} width={dayW} height={height - 24} fill={weekend ? '#1f1f1f' : 'transparent'} />
+                <rect
+                  x={labelW + i * dayW}
+                  y={24}
+                  width={dayW}
+                  height={height - 24}
+                  fill={weekend ? '#1f1f1f' : 'transparent'}
+                />
                 {(i % Math.ceil(28 / dayW) === 0 || dayW > 26) && (
                   <text x={labelW + i * dayW + 2} y={16}>
                     {d.getUTCDate()}/{d.getUTCMonth() + 1}
@@ -298,7 +320,14 @@ function Gantt() {
             .filter((m) => m.dueDate)
             .map((m) => (
               <g key={m.id}>
-                <line x1={x(m.dueDate!)} x2={x(m.dueDate!)} y1={24} y2={height} stroke="#ff7a3d" strokeDasharray="4 3" />
+                <line
+                  x1={x(m.dueDate!)}
+                  x2={x(m.dueDate!)}
+                  y1={24}
+                  y2={height}
+                  stroke="#ff7a3d"
+                  strokeDasharray="4 3"
+                />
                 <text x={x(m.dueDate!) + 3} y={height - 4} style={{ fill: '#ff7a3d' }}>
                   🏁 {m.title}
                 </text>
@@ -366,7 +395,9 @@ function Milestones() {
           Créer
         </Button>
       </Flex>
-      {planner.data.milestones.length === 0 && <div className="fg-empty">Aucun jalon. Demandez à l'assistant de planifier le projet !</div>}
+      {planner.data.milestones.length === 0 && (
+        <div className="fg-empty">Aucun jalon. Demandez à l'assistant de planifier le projet !</div>
+      )}
       {planner.data.milestones.map((m) => {
         const p = progress(m);
         return (
@@ -377,24 +408,35 @@ function Milestones() {
                 aria-label="Statut du jalon"
                 isQuiet
                 selectedKey={m.status}
-                onSelectionChange={(k) => void api.updateMilestone(requireProjectId(), m.id, { status: k as Milestone['status'] }).catch(toastError)}
+                onSelectionChange={(k) =>
+                  void api
+                    .updateMilestone(requireProjectId(), m.id, { status: k as Milestone['status'] })
+                    .catch(toastError)
+                }
                 width="size-1600"
               >
                 <Item key="planned">Prévu</Item>
                 <Item key="active">Actif</Item>
                 <Item key="done">Atteint</Item>
               </Picker>
-              <ActionButton isQuiet aria-label="Supprimer le jalon" onPress={() => void api.deleteMilestone(requireProjectId(), m.id).catch(toastError)}>
+              <ActionButton
+                isQuiet
+                aria-label="Supprimer le jalon"
+                onPress={() => void api.deleteMilestone(requireProjectId(), m.id).catch(toastError)}
+              >
                 <Delete />
               </ActionButton>
             </Flex>
-            {m.description && <p style={{ margin: '4px 0', fontSize: 12, color: 'var(--fg-text-2)' }}>{m.description}</p>}
+            {m.description && (
+              <p style={{ margin: '4px 0', fontSize: 12, color: 'var(--fg-text-2)' }}>{m.description}</p>
+            )}
             <Flex alignItems="center" gap="size-150" marginTop="size-50">
               <div className="fg-progress" style={{ flex: 1 }}>
                 <div style={{ width: `${Math.round((p?.ratio ?? 0) * 100)}%` }} />
               </div>
               <span style={{ fontSize: 12, color: 'var(--fg-text-2)', whiteSpace: 'nowrap' }}>
-                {p?.done ?? 0}/{p?.total ?? 0} tâches · {p?.remainingHours ?? 0} h restantes{m.dueDate ? ` · échéance ${m.dueDate}` : ''}
+                {p?.done ?? 0}/{p?.total ?? 0} tâches · {p?.remainingHours ?? 0} h restantes
+                {m.dueDate ? ` · échéance ${m.dueDate}` : ''}
               </span>
             </Flex>
           </div>
@@ -418,8 +460,8 @@ function Memory() {
   return (
     <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <p style={{ margin: 0, fontSize: 12, color: 'var(--fg-text-2)' }}>
-        La mémoire du projet réunit les décisions durables (univers, personnages, style, contraintes). L'assistant la relit à
-        chaque conversation et l'enrichit lui-même.
+        La mémoire du projet réunit les décisions durables (univers, personnages, style, contraintes). L'assistant la
+        relit à chaque conversation et l'enrichit lui-même.
       </p>
       <Flex gap="size-100" alignItems="end">
         <TextField label="Nouvelle note" value={text} onChange={setText} width="100%" />
@@ -428,14 +470,28 @@ function Memory() {
         </Button>
       </Flex>
       {[...planner.data.memory].reverse().map((note) => (
-        <div key={note.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: 'var(--fg-bg-3)', borderRadius: 6, padding: '8px 10px' }}>
+        <div
+          key={note.id}
+          style={{
+            display: 'flex',
+            gap: 10,
+            alignItems: 'flex-start',
+            background: 'var(--fg-bg-3)',
+            borderRadius: 6,
+            padding: '8px 10px',
+          }}
+        >
           <div style={{ flex: 1, fontSize: 13 }}>
             {note.text}
             <div style={{ fontSize: 11, color: 'var(--fg-text-3)', marginTop: 3 }}>
               {new Date(note.at).toLocaleDateString('fr-FR')} {note.tags.map((t) => `#${t}`).join(' ')}
             </div>
           </div>
-          <ActionButton isQuiet aria-label="Oublier" onPress={() => void api.forget(requireProjectId(), note.id).catch(toastError)}>
+          <ActionButton
+            isQuiet
+            aria-label="Oublier"
+            onPress={() => void api.forget(requireProjectId(), note.id).catch(toastError)}
+          >
             <Delete />
           </ActionButton>
         </div>

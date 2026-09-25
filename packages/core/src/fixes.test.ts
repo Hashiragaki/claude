@@ -322,7 +322,7 @@ describe('AudioManager — race pendant le chargement', () => {
     });
   });
 
-  it("un stopBgm reçu pendant le chargement empêche la piste de démarrer", async () => {
+  it('un stopBgm reçu pendant le chargement empêche la piste de démarrer', async () => {
     await withFakeAudioContext(async () => {
       const audio = new AudioManager();
       const pending = stubLoad(audio);

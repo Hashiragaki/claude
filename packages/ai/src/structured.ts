@@ -88,8 +88,7 @@ export class StructuredGenerationError extends Error {
 }
 
 type CritiqueContentBlock =
-  | { type: 'text'; text: string }
-  | { type: 'image'; source: { type: 'base64'; media_type: 'image/png'; data: string } };
+  { type: 'text'; text: string } | { type: 'image'; source: { type: 'base64'; media_type: 'image/png'; data: string } };
 
 /** Mots-clés JSON Schema non pris en charge par le mode strict des outils. */
 const UNSUPPORTED_STRICT_KEYWORDS = [
@@ -188,8 +187,7 @@ function isStrictSchemaError(error: unknown): boolean {
  */
 export async function generateStructured<T>(request: StructuredRequest<T>): Promise<StructuredResult<T>> {
   const toolName = request.toolName ?? 'submit_result';
-  const toolDescription =
-    request.toolDescription ?? 'Soumet le résultat final, au format JSON décrit par le schéma.';
+  const toolDescription = request.toolDescription ?? 'Soumet le résultat final, au format JSON décrit par le schéma.';
   const maxAttempts = request.maxAttempts ?? 3;
   const review = request.review;
   const maxRounds = review ? (review.maxRounds ?? 1) : 0;
@@ -254,7 +252,7 @@ export async function generateStructured<T>(request: StructuredRequest<T>): Prom
     } catch (error) {
       // Entrée d'outil JSON illisible pendant le streaming : on relance le tour.
       if (!isApiError(error) && !isCritiqueReply && attempt < maxAttempts) {
-        lastError = 'JSON invalide dans l\'appel d\'outil.';
+        lastError = "JSON invalide dans l'appel d'outil.";
         continue;
       }
       if (lastValid !== undefined) {
@@ -271,9 +269,7 @@ export async function generateStructured<T>(request: StructuredRequest<T>): Prom
       throw new AiRefusalError();
     }
 
-    const toolCall = response.content.find(
-      (b): b is BetaToolUseBlock => b.type === 'tool_use' && b.name === toolName,
-    );
+    const toolCall = response.content.find((b): b is BetaToolUseBlock => b.type === 'tool_use' && b.name === toolName);
     messages.push({ role: 'assistant', content: response.content });
 
     if (!toolCall) {
@@ -379,9 +375,7 @@ export async function generateStructured<T>(request: StructuredRequest<T>): Prom
     const response = await send(messages, { model: request.escalate.model, effort: request.escalate.effort });
     usage = addUsage(usage, usageOf(response));
     if (response.stop_reason === 'refusal') throw new AiRefusalError();
-    const toolCall = response.content.find(
-      (b): b is BetaToolUseBlock => b.type === 'tool_use' && b.name === toolName,
-    );
+    const toolCall = response.content.find((b): b is BetaToolUseBlock => b.type === 'tool_use' && b.name === toolName);
     messages.push({ role: 'assistant', content: response.content });
     if (toolCall && response.stop_reason !== 'max_tokens') {
       const parsed = request.schema.safeParse(toolCall.input);

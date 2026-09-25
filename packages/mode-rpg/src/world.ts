@@ -10,14 +10,7 @@ import {
 } from './character';
 import { activePageIndex } from './conditions';
 import { EventInterpreter, type InterpreterEffect, type WaitKind, type WaitState } from './interpreter';
-import {
-  DEFAULT_TILESET_INFO,
-  cellHasRole,
-  inBounds,
-  isCellPassable,
-  roleTable,
-  tileAt,
-} from './passability';
+import { DEFAULT_TILESET_INFO, cellHasRole, inBounds, isCellPassable, roleTable, tileAt } from './passability';
 import {
   DIRECTIONS,
   type Command,
@@ -48,7 +41,12 @@ export type WorldRequest = Extract<
 >;
 
 const HOST_KINDS: ReadonlySet<WaitKind> = new Set<WaitKind>([
-  'message', 'choice', 'battle', 'teleport', 'gameOver', 'returnToTitle',
+  'message',
+  'choice',
+  'battle',
+  'teleport',
+  'gameOver',
+  'returnToTitle',
 ]);
 
 export type WorldEvents = {
@@ -662,7 +660,7 @@ export class RpgWorld {
         prev.set(key, { from: cur, dir });
         if (isGoal(nx, ny)) {
           const path: Direction[] = [];
-          for (let k = key; k !== startKey; ) {
+          for (let k = key; k !== startKey;) {
             const step = prev.get(k) as { from: number; dir: Direction };
             path.unshift(step.dir);
             k = step.from;

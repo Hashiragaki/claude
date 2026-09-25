@@ -124,13 +124,21 @@ export function GamePanel() {
               <Tooltip>Relancer depuis le début</Tooltip>
             </TooltipTrigger>
             <TooltipTrigger>
-              <ActionButton onPress={togglePause} aria-label={paused ? 'Reprendre' : 'Pause'} isDisabled={status !== 'running'}>
+              <ActionButton
+                onPress={togglePause}
+                aria-label={paused ? 'Reprendre' : 'Pause'}
+                isDisabled={status !== 'running'}
+              >
                 {paused ? <Play /> : <Pause />}
               </ActionButton>
               <Tooltip>{paused ? 'Reprendre' : 'Pause'}</Tooltip>
             </TooltipTrigger>
             <TooltipTrigger>
-              <ActionButton onPress={() => void quickSave()} aria-label="Sauvegarde rapide" isDisabled={status !== 'running'}>
+              <ActionButton
+                onPress={() => void quickSave()}
+                aria-label="Sauvegarde rapide"
+                isDisabled={status !== 'running'}
+              >
                 <SaveFloppy />
               </ActionButton>
               <Tooltip>Sauvegarde rapide</Tooltip>
@@ -157,7 +165,8 @@ export function GamePanel() {
         <div className="fg-spacer" />
         <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
           {status === 'loading' && 'Chargement…'}
-          {status === 'running' && (paused ? 'En pause' : 'En cours — cliquez dans le jeu pour le contrôler au clavier')}
+          {status === 'running' &&
+            (paused ? 'En pause' : 'En cours — cliquez dans le jeu pour le contrôler au clavier')}
           {status === 'error' && 'Erreur (voir la console)'}
         </span>
       </div>

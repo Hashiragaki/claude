@@ -23,8 +23,16 @@ export function sanitizeSvg(input: string, size: { width?: number; height?: numb
 
   // Éléments dangereux (avec contenu) puis leurs formes auto-fermantes ou orphelines.
   const blocked = [
-    'script', 'foreignObject', 'iframe', 'object', 'embed', 'audio', 'video', 'canvas',
-    'handler', 'listener',
+    'script',
+    'foreignObject',
+    'iframe',
+    'object',
+    'embed',
+    'audio',
+    'video',
+    'canvas',
+    'handler',
+    'listener',
   ];
   for (const tag of blocked) {
     svg = svg.replace(new RegExp(`<${tag}\\b[\\s\\S]*?<\\/${tag}\\s*>`, 'gi'), '');
@@ -47,10 +55,11 @@ export function sanitizeSvg(input: string, size: { width?: number; height?: numb
     return /^data:image\/(png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(href) ? whole : '';
   });
 
-  svg = svg.replace(/<([a-zA-Z][\w:.-]*)(\s[^<>]*?)?(\/?)>/g,
+  svg = svg.replace(
+    /<([a-zA-Z][\w:.-]*)(\s[^<>]*?)?(\/?)>/g,
     (_m, tag: string, attrs: string | undefined, selfClose: string) => {
       return `<${tag}${cleanAttributes(tag, attrs ?? '')}${selfClose}>`;
-    }
+    },
   );
 
   return enforceRoot(svg, size);
@@ -68,7 +77,9 @@ function cleanAttributes(tag: string, attrs: string): string {
     if (lower.startsWith('on')) continue;
     let value = raw === undefined ? undefined : raw.replace(/^["']|["']$/g, '');
     if (value !== undefined) {
-      const decoded = decodeEntities(value).replace(/[\s\u0000-\u001f]+/g, '').toLowerCase();
+      const decoded = decodeEntities(value)
+        .replace(/[\s\u0000-\u001f]+/g, '')
+        .toLowerCase();
       if (/(javascript|vbscript|data:text|livescript):/.test(decoded)) continue;
       if (lower === 'href' || lower === 'xlink:href') {
         const ok = value.trim().startsWith('#') || (isImage && /^data:image\//i.test(value.trim()));

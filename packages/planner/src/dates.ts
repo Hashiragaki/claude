@@ -48,5 +48,8 @@ export function addWorkDays(value: string, days: number): string {
 }
 
 export function maxDate(...dates: (string | undefined)[]): string | undefined {
-  return dates.filter((d): d is string => Boolean(d)).sort().at(-1);
+  return dates
+    .filter((d): d is string => Boolean(d))
+    .sort()
+    .at(-1);
 }

@@ -224,7 +224,8 @@ export class Planner {
   }
 
   listTasks(filter: TaskFilter = {}): Task[] {
-    const statuses = filter.status === undefined ? null : Array.isArray(filter.status) ? filter.status : [filter.status];
+    const statuses =
+      filter.status === undefined ? null : Array.isArray(filter.status) ? filter.status : [filter.status];
     const search = filter.search?.toLowerCase();
     return this.state.tasks
       .filter((t) => !statuses || statuses.includes(t.status))
@@ -399,7 +400,7 @@ export class Planner {
   private checkDependencies(taskId: string, deps: string[]): string[] {
     const unique = [...new Set(deps)];
     for (const dep of unique) {
-      if (dep === taskId) throw new Error('Une tâche ne peut pas dépendre d\'elle-même.');
+      if (dep === taskId) throw new Error("Une tâche ne peut pas dépendre d'elle-même.");
       if (!this.getTask(dep)) throw new Error(`Dépendance introuvable : ${dep}`);
       if (this.dependsTransitively(dep, taskId)) {
         throw new Error(`Dépendance circulaire : ${dep} dépend déjà (indirectement) de ${taskId}.`);

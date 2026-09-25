@@ -35,7 +35,7 @@ export const imageSvgParamsSchema = z.object({
   height: size.optional().describe('Hauteur (défaut selon le sujet)'),
   style: z.enum(SVG_STYLES).default('soft').describe('Style graphique'),
   palette: z.array(hexColorSchema).max(8).optional().describe('Palette imposée'),
-  character: z.string().optional().describe("Personnage (portrait) : même nom = même apparence"),
+  character: z.string().optional().describe('Personnage (portrait) : même nom = même apparence'),
   expression: z.enum(EXPRESSIONS).optional().describe('Expression (portrait)'),
   hairColor: hexColorSchema.optional().describe('Couleur des cheveux (portrait)'),
   eyeColor: hexColorSchema.optional().describe('Couleur des yeux (portrait)'),
@@ -120,19 +120,18 @@ export function proceduralSvg(params: ImageSvgParams, rng: Rng): string {
       return background(
         params.scene ??
           sceneFromText(text) ??
-          rng.pick(['park', 'street', 'forest', 'beach', 'generic', 'castle'] as const)
+          rng.pick(['park', 'street', 'forest', 'beach', 'generic', 'castle'] as const),
       );
     case 'battler':
       return drawBattler(
         {
-          creature:
-            params.creature ?? matchKeyword(text, CREATURE_WORDS) ?? rng.pick(CREATURES),
+          creature: params.creature ?? matchKeyword(text, CREATURE_WORDS) ?? rng.pick(CREATURES),
           color,
           style,
           width,
           height,
         },
-        rng
+        rng,
       );
     case 'object':
     case 'icon':
@@ -217,12 +216,12 @@ export const imageSvgGenerator: GeneratorDefinition<ImageSvgParams, ImageSvgSpec
       [
         `The spec must use width ${width} and height ${height}.`,
         params.subject === 'portrait' ||
-          params.subject === 'battler' ||
-          params.subject === 'object' ||
-          params.subject === 'icon'
+        params.subject === 'battler' ||
+        params.subject === 'object' ||
+        params.subject === 'icon'
           ? 'The background must stay transparent.'
           : 'Paint the whole canvas.',
-      ]
+      ],
     );
   },
   buildEditPrompt(spec, instruction, params) {

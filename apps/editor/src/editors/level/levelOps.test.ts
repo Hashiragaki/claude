@@ -30,7 +30,7 @@ describe('niveau vide et couches', () => {
 });
 
 describe('édition de tuiles', () => {
-  it('peint et efface une seule case sans muter l\'original', () => {
+  it("peint et efface une seule case sans muter l'original", () => {
     const level = emptyLevel('l1', 'Test', 3, 3, 'tiles');
     const painted = paintCell(level, 'terrain', { x: 1, y: 1 }, 5);
     expect(layerArray(painted, 'terrain')[4]).toBe(5);
@@ -79,15 +79,38 @@ describe('entités', () => {
   it('crée les valeurs par défaut correctes pour chaque type', () => {
     expect(defaultEntity('coin', 'coin1', { x: 1, y: 2 })).toEqual({ id: 'coin1', x: 1, y: 2, type: 'coin' });
     expect(defaultEntity('enemy', 'enemy1', { x: 0, y: 0 })).toEqual({
-      id: 'enemy1', x: 0, y: 0, type: 'enemy', kind: 'walker', speed: 30, facing: 'left',
+      id: 'enemy1',
+      x: 0,
+      y: 0,
+      type: 'enemy',
+      kind: 'walker',
+      speed: 30,
+      facing: 'left',
     });
-    expect(defaultEntity('spring', 'spring1', { x: 0, y: 0 })).toEqual({ id: 'spring1', x: 0, y: 0, type: 'spring', power: 380 });
-    expect(defaultEntity('checkpoint', 'checkpoint1', { x: 0, y: 0 })).toEqual({ id: 'checkpoint1', x: 0, y: 0, type: 'checkpoint' });
+    expect(defaultEntity('spring', 'spring1', { x: 0, y: 0 })).toEqual({
+      id: 'spring1',
+      x: 0,
+      y: 0,
+      type: 'spring',
+      power: 380,
+    });
+    expect(defaultEntity('checkpoint', 'checkpoint1', { x: 0, y: 0 })).toEqual({
+      id: 'checkpoint1',
+      x: 0,
+      y: 0,
+      type: 'checkpoint',
+    });
     expect(defaultEntity('goal', 'goal1', { x: 0, y: 0 })).toEqual({ id: 'goal1', x: 0, y: 0, type: 'goal' });
-    expect(defaultEntity('sign', 'sign1', { x: 0, y: 0 })).toEqual({ id: 'sign1', x: 0, y: 0, type: 'sign', text: '…' });
+    expect(defaultEntity('sign', 'sign1', { x: 0, y: 0 })).toEqual({
+      id: 'sign1',
+      x: 0,
+      y: 0,
+      type: 'sign',
+      text: '…',
+    });
   });
 
-  it('ajoute, déplace, modifie et supprime une entité sans muter l\'original', () => {
+  it("ajoute, déplace, modifie et supprime une entité sans muter l'original", () => {
     const level = emptyLevel('l1', 'Test', 5, 5, 'tiles');
     const withCoin = addEntity(level, 'coin', { x: 1, y: 1 });
     expect(level.entities).toHaveLength(0);
@@ -107,7 +130,7 @@ describe('entités', () => {
     expect(updated.entities).toHaveLength(2);
   });
 
-  it('ne fait rien quand l\'identifiant est absent', () => {
+  it("ne fait rien quand l'identifiant est absent", () => {
     const level = addEntity(emptyLevel('l1', 'Test', 3, 3, 'tiles'), 'coin', { x: 0, y: 0 });
     expect(moveEntity(level, 'inconnu', { x: 1, y: 1 })).toEqual(level);
     expect(deleteEntity(level, 'inconnu')).toEqual(level);

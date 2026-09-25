@@ -37,7 +37,7 @@ describe('VNRuntime.destroy', () => {
 });
 
 describe('menu sans choix disponible', () => {
-  it("est ignoré (avec un avertissement) au lieu de bloquer le jeu", async () => {
+  it('est ignoré (avec un avertissement) au lieu de bloquer le jeu', async () => {
     const { compileSource } = await import('./compiler');
     const { VNInterpreter } = await import('./interpreter');
     const { program } = compileSource(

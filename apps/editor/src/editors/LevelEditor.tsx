@@ -169,22 +169,19 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
   useEffect(() => {
     if (!projectId || !path) return;
     let cancelled = false;
-    void api.readJson<unknown>(projectId, path).then(
-      (raw) => {
-        if (cancelled) return;
-        const parsed = PlatformerLevelSchema.safeParse(raw);
-        if (!parsed.success) {
-          toastError(new Error(`Niveau invalide (${path}) : ${parsed.error.issues[0]?.message ?? ''}`));
-          return;
-        }
-        setLevel(parsed.data);
-        setDirty(false);
-        setSelectedEntity(null);
-        undoStack.current = [];
-        redoStack.current = [];
-      },
-      toastError,
-    );
+    void api.readJson<unknown>(projectId, path).then((raw) => {
+      if (cancelled) return;
+      const parsed = PlatformerLevelSchema.safeParse(raw);
+      if (!parsed.success) {
+        toastError(new Error(`Niveau invalide (${path}) : ${parsed.error.issues[0]?.message ?? ''}`));
+        return;
+      }
+      setLevel(parsed.data);
+      setDirty(false);
+      setSelectedEntity(null);
+      undoStack.current = [];
+      redoStack.current = [];
+    }, toastError);
     return () => {
       cancelled = true;
     };
@@ -272,7 +269,17 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
         const x = (i % level.width) * ts;
         const y = Math.floor(i / level.width) * ts;
         if (tilesetImg) {
-          ctx.drawImage(tilesetImg, (v % columns) * TILE_PX, Math.floor(v / columns) * TILE_PX, TILE_PX, TILE_PX, x, y, ts, ts);
+          ctx.drawImage(
+            tilesetImg,
+            (v % columns) * TILE_PX,
+            Math.floor(v / columns) * TILE_PX,
+            TILE_PX,
+            TILE_PX,
+            x,
+            y,
+            ts,
+            ts,
+          );
         } else {
           ctx.fillStyle = `hsl(${(v * 47) % 360} 35% 35%)`;
           ctx.fillRect(x, y, ts, ts);
@@ -412,7 +419,8 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
     return x >= 0 && y >= 0 && x < level.width && y < level.height ? { x, y } : null;
   };
 
-  const entityToolType = (t: Tool): PlatformerEntityType | null => (t.startsWith('entity:') ? (t.slice(7) as PlatformerEntityType) : null);
+  const entityToolType = (t: Tool): PlatformerEntityType | null =>
+    t.startsWith('entity:') ? (t.slice(7) as PlatformerEntityType) : null;
 
   const onMouseDown = (e: React.MouseEvent) => {
     const cell = cellAt(e);
@@ -499,7 +507,11 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
     } else if (mod && e.key.toLowerCase() === 's') {
       e.preventDefault();
       void save();
-    } else if (!mod && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+    } else if (
+      !mod &&
+      (e.target as HTMLElement).tagName !== 'INPUT' &&
+      (e.target as HTMLElement).tagName !== 'TEXTAREA'
+    ) {
       const shortcuts: Record<string, Tool> = { b: 'pencil', r: 'rect', g: 'fill', e: 'eraser', i: 'picker' };
       const next = shortcuts[e.key.toLowerCase()];
       if (next) setTool(next);
@@ -562,7 +574,12 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
           <Tooltip>Nouveau niveau</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger>
-          <ActionButton isQuiet aria-label="Propriétés du niveau" onPress={() => setDialog('props')} isDisabled={!level}>
+          <ActionButton
+            isQuiet
+            aria-label="Propriétés du niveau"
+            onPress={() => setDialog('props')}
+            isDisabled={!level}
+          >
             <Properties />
           </ActionButton>
           <Tooltip>Propriétés du niveau</Tooltip>
@@ -579,20 +596,36 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
         <Divider orientation="vertical" size="S" />
         {ENTITY_TOOLS.map((t) => (
           <TooltipTrigger key={t.type}>
-            <ToggleButton isQuiet isSelected={tool === `entity:${t.type}`} onChange={() => setTool(`entity:${t.type}`)} aria-label={t.label}>
+            <ToggleButton
+              isQuiet
+              isSelected={tool === `entity:${t.type}`}
+              onChange={() => setTool(`entity:${t.type}`)}
+              aria-label={t.label}
+            >
               {t.icon}
             </ToggleButton>
             <Tooltip>{t.label}</Tooltip>
           </TooltipTrigger>
         ))}
         <TooltipTrigger>
-          <ToggleButton isQuiet isSelected={tool === 'start'} onChange={() => setTool('start')} aria-label="Départ du joueur">
+          <ToggleButton
+            isQuiet
+            isSelected={tool === 'start'}
+            onChange={() => setTool('start')}
+            aria-label="Départ du joueur"
+          >
             <Flag />
           </ToggleButton>
           <Tooltip>Départ du joueur</Tooltip>
         </TooltipTrigger>
         <Divider orientation="vertical" size="S" />
-        <Picker aria-label="Calque" isQuiet selectedKey={layer} onSelectionChange={(k) => setLayerKey(k as LevelLayerKey)} width="size-2000">
+        <Picker
+          aria-label="Calque"
+          isQuiet
+          selectedKey={layer}
+          onSelectionChange={(k) => setLayerKey(k as LevelLayerKey)}
+          width="size-2000"
+        >
           {(Object.keys(LAYER_LABELS) as LevelLayerKey[]).map((k) => (
             <Item key={k}>{`Calque : ${LAYER_LABELS[k]}`}</Item>
           ))}
@@ -600,7 +633,13 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
         <ToggleButton isQuiet isSelected={showCollisions} onChange={setShowCollisions}>
           Collisions
         </ToggleButton>
-        <Picker aria-label="Zoom" isQuiet selectedKey={String(zoom)} onSelectionChange={(k) => setZoom(Number(k))} width="size-1200">
+        <Picker
+          aria-label="Zoom"
+          isQuiet
+          selectedKey={String(zoom)}
+          onSelectionChange={(k) => setZoom(Number(k))}
+          width="size-1200"
+        >
           <Item key="1">×1</Item>
           <Item key="2">×2</Item>
           <Item key="3">×3</Item>
@@ -613,7 +652,9 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
           <Redo />
         </ActionButton>
         <div className="fg-spacer" />
-        <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{hover && level ? `(${hover.x}, ${hover.y})` : ''}</span>
+        <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
+          {hover && level ? `(${hover.x}, ${hover.y})` : ''}
+        </span>
         <ActionButton onPress={() => void save()} isDisabled={!dirty}>
           <SaveFloppy />
           <Text>Enregistrer{dirty ? ' •' : ''}</Text>
@@ -651,7 +692,15 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
             <div className="fg-empty">{levels.length ? 'Chargement…' : 'Aucun niveau. Créez-en un avec « + ».'}</div>
           )}
         </div>
-        <aside style={{ width: 330, borderLeft: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)', padding: 10 }}>
+        <aside
+          style={{
+            width: 330,
+            borderLeft: '1px solid var(--fg-bg-0)',
+            overflow: 'auto',
+            background: 'var(--fg-bg-1)',
+            padding: 10,
+          }}
+        >
           {entityToolType(tool) && selected ? (
             <EntityInspector
               key={selected.id}
@@ -678,7 +727,9 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
                   style={{ width: '100%' }}
                 />
               ) : (
-                <p style={{ fontSize: 12, color: 'var(--fg-warn)' }}>Tileset introuvable : vérifiez l'alias dans les propriétés du niveau.</p>
+                <p style={{ fontSize: 12, color: 'var(--fg-warn)' }}>
+                  Tileset introuvable : vérifiez l'alias dans les propriétés du niveau.
+                </p>
               )}
               {paletteHover && hoveredRole && (
                 <div
@@ -703,9 +754,9 @@ export function LevelEditor({ initialPath }: { initialPath?: string }) {
                 {tileName?.collision ? ` · ${COLLISION_LABELS[tileName.collision]}` : ''}
               </span>
               <p style={{ fontSize: 11, color: 'var(--fg-text-3)', margin: 0 }}>
-                Astuce : le calque « Décor » est purement visuel (dessiné derrière le joueur, sans collision). Les outils
-                d'entités placent pièces, ennemis, ressorts, points de contrôle, arrivée et panneaux ; glissez pour les
-                déplacer. L'option « Collisions » surligne les tuiles de terrain selon leur rôle.
+                Astuce : le calque « Décor » est purement visuel (dessiné derrière le joueur, sans collision). Les
+                outils d'entités placent pièces, ennemis, ressorts, points de contrôle, arrivée et panneaux ; glissez
+                pour les déplacer. L'option « Collisions » surligne les tuiles de terrain selon leur rôle.
               </p>
             </Flex>
           )}
@@ -811,14 +862,37 @@ function NewLevelDialog(props: {
       <Content>
         <Flex direction="column" gap="size-100">
           <Flex gap="size-100">
-            <TextField label="Identifiant" value={values.id} onChange={(id) => set({ id: id.replace(/[^a-z0-9_-]/gi, '') })} flex />
+            <TextField
+              label="Identifiant"
+              value={values.id}
+              onChange={(id) => set({ id: id.replace(/[^a-z0-9_-]/gi, '') })}
+              flex
+            />
             <TextField label="Nom" value={values.name} onChange={(name) => set({ name })} flex />
           </Flex>
           <Flex gap="size-100">
-            <NumberField label="Largeur (cases)" value={values.width} minValue={10} maxValue={1024} onChange={(width) => set({ width })} flex />
-            <NumberField label="Hauteur (cases)" value={values.height} minValue={6} maxValue={256} onChange={(height) => set({ height })} flex />
+            <NumberField
+              label="Largeur (cases)"
+              value={values.width}
+              minValue={10}
+              maxValue={1024}
+              onChange={(width) => set({ width })}
+              flex
+            />
+            <NumberField
+              label="Hauteur (cases)"
+              value={values.height}
+              minValue={6}
+              maxValue={256}
+              onChange={(height) => set({ height })}
+              flex
+            />
           </Flex>
-          <Picker label="Tileset (alias)" selectedKey={values.tileset} onSelectionChange={(k) => set({ tileset: String(k) })}>
+          <Picker
+            label="Tileset (alias)"
+            selectedKey={values.tileset}
+            onSelectionChange={(k) => set({ tileset: String(k) })}
+          >
             {options.map((t) => (
               <Item key={t.alias!}>{`${t.alias} — ${t.name}`}</Item>
             ))}
@@ -829,7 +903,11 @@ function NewLevelDialog(props: {
         <Button variant="secondary" onPress={props.onClose}>
           Annuler
         </Button>
-        <Button variant="accent" onPress={() => void props.onSubmit(values).catch(toastError)} isDisabled={!values.id || !values.tileset}>
+        <Button
+          variant="accent"
+          onPress={() => void props.onSubmit(values).catch(toastError)}
+          isDisabled={!values.id || !values.tileset}
+        >
           Valider
         </Button>
       </ButtonGroup>
@@ -871,23 +949,51 @@ function LevelPropsDialog(props: {
             <TextField label="Nom" value={values.name} onChange={(name) => set({ name })} flex />
           </Flex>
           <Flex gap="size-100">
-            <NumberField label="Largeur (cases)" value={values.width} minValue={10} maxValue={1024} onChange={(width) => set({ width })} flex />
-            <NumberField label="Hauteur (cases)" value={values.height} minValue={6} maxValue={256} onChange={(height) => set({ height })} flex />
+            <NumberField
+              label="Largeur (cases)"
+              value={values.width}
+              minValue={10}
+              maxValue={1024}
+              onChange={(width) => set({ width })}
+              flex
+            />
+            <NumberField
+              label="Hauteur (cases)"
+              value={values.height}
+              minValue={6}
+              maxValue={256}
+              onChange={(height) => set({ height })}
+              flex
+            />
           </Flex>
-          <Picker label="Tileset (alias)" selectedKey={values.tileset} onSelectionChange={(k) => set({ tileset: String(k) })}>
+          <Picker
+            label="Tileset (alias)"
+            selectedKey={values.tileset}
+            onSelectionChange={(k) => set({ tileset: String(k) })}
+          >
             {props.tilesets.map((t) => (
               <Item key={t.alias!}>{`${t.alias} — ${t.name}`}</Item>
             ))}
           </Picker>
-          <Picker label="Musique" selectedKey={values.music ?? 'none'} onSelectionChange={(k) => set({ music: k === 'none' ? undefined : String(k) })}>
-            {[<Item key="none">Musique par défaut</Item>, ...props.musics.map((m) => <Item key={m.alias!}>{m.alias!}</Item>)]}
+          <Picker
+            label="Musique"
+            selectedKey={values.music ?? 'none'}
+            onSelectionChange={(k) => set({ music: k === 'none' ? undefined : String(k) })}
+          >
+            {[
+              <Item key="none">Musique par défaut</Item>,
+              ...props.musics.map((m) => <Item key={m.alias!}>{m.alias!}</Item>),
+            ]}
           </Picker>
           <Picker
             label="Fond (parallaxe)"
             selectedKey={values.background ?? 'none'}
             onSelectionChange={(k) => set({ background: k === 'none' ? undefined : String(k) })}
           >
-            {[<Item key="none">Couleur unie</Item>, ...props.backgrounds.map((b) => <Item key={b.alias!}>{b.alias!}</Item>)]}
+            {[
+              <Item key="none">Couleur unie</Item>,
+              ...props.backgrounds.map((b) => <Item key={b.alias!}>{b.alias!}</Item>),
+            ]}
           </Picker>
           <TextField
             label="Couleur de fond (#RRGGBB)"
@@ -896,7 +1002,12 @@ function LevelPropsDialog(props: {
             validationState={colorValid ? undefined : 'invalid'}
           />
           <Flex gap="size-100">
-            <TextField label="Niveau suivant (id, optionnel)" value={values.next} onChange={(next) => set({ next })} flex />
+            <TextField
+              label="Niveau suivant (id, optionnel)"
+              value={values.next}
+              onChange={(next) => set({ next })}
+              flex
+            />
             <NumberField
               label="Temps limite (s, optionnel)"
               value={values.timeLimit ?? 0}
@@ -939,4 +1050,3 @@ function LevelPropsDialog(props: {
     </Dialog>
   );
 }
-

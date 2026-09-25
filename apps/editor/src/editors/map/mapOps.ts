@@ -17,7 +17,14 @@ export function setLayer(map: RpgMap, layer: LayerKey, values: number[]): RpgMap
 }
 
 /** Remplissage par diffusion (4 voisins) des cases de même valeur. */
-export function floodFill(values: number[], width: number, height: number, x: number, y: number, value: number): number[] {
+export function floodFill(
+  values: number[],
+  width: number,
+  height: number,
+  x: number,
+  y: number,
+  value: number,
+): number[] {
   const out = [...values];
   const target = out[y * width + x];
   if (target === value) return out;
@@ -33,7 +40,15 @@ export function floodFill(values: number[], width: number, height: number, x: nu
   return out;
 }
 
-export function fillRect(values: number[], width: number, x0: number, y0: number, x1: number, y1: number, value: number): number[] {
+export function fillRect(
+  values: number[],
+  width: number,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  value: number,
+): number[] {
   const out = [...values];
   for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) {
     for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) out[y * width + x] = value;
@@ -63,7 +78,14 @@ export function resizeMap(map: RpgMap, width: number, height: number, fillGround
   };
 }
 
-export function emptyMap(id: string, name: string, width: number, height: number, tileset: string, ground: number): RpgMap {
+export function emptyMap(
+  id: string,
+  name: string,
+  width: number,
+  height: number,
+  tileset: string,
+  ground: number,
+): RpgMap {
   return {
     id,
     name,
@@ -106,7 +128,8 @@ export function editList(root: Command[], path: ListPath, edit: (list: Command[]
   for (let i = 0; i < path.length; i++) {
     const key = path[i] as string | number;
     const container = parent as Record<string | number, unknown>;
-    if (container[key] === undefined) container[key] = typeof path[i + 1] === 'number' || i === path.length - 1 ? [] : {};
+    if (container[key] === undefined)
+      container[key] = typeof path[i + 1] === 'number' || i === path.length - 1 ? [] : {};
     parent = container[key];
   }
   edit(parent as Command[]);
@@ -117,7 +140,11 @@ export function editList(root: Command[], path: ListPath, edit: (list: Command[]
 export function childLists(command: Command): { key: ListPath; label: string; list: Command[] }[] {
   switch (command.type) {
     case 'choice':
-      return command.options.map((o, i) => ({ key: ['options', i, 'commands'], label: `Si « ${o.label} »`, list: o.commands }));
+      return command.options.map((o, i) => ({
+        key: ['options', i, 'commands'],
+        label: `Si « ${o.label} »`,
+        list: o.commands,
+      }));
     case 'if':
       return [
         { key: ['then'], label: 'Alors', list: command.then },
@@ -173,7 +200,15 @@ export function describeCommand(c: Command): string {
     case 'setSelfSwitch':
       return `Interrupteur local ${c.letter} = ${c.value === false ? 'OFF' : 'ON'}${c.event ? ` (${c.event})` : ''}`;
     case 'setVariable': {
-      const ops: Record<string, string> = { set: '=', add: '+=', sub: '-=', mul: '×=', div: '÷=', mod: '%=', random: '= hasard' };
+      const ops: Record<string, string> = {
+        set: '=',
+        add: '+=',
+        sub: '-=',
+        mul: '×=',
+        div: '÷=',
+        mod: '%=',
+        random: '= hasard',
+      };
       return `Variable ${c.name} ${ops[c.op ?? 'set']} ${c.value}${c.op === 'random' ? `..${c.max ?? c.value}` : ''}`;
     }
     case 'giveItem':
@@ -195,15 +230,15 @@ export function describeCommand(c: Command): string {
     case 'moveRoute':
       return `Déplacer ${c.target} : ${c.steps.map((s) => ARROWS[s] ?? s).join(' ')}${c.wait ? ' (attendre)' : ''}`;
     case 'healParty':
-      return 'Soigner l\'équipe';
+      return "Soigner l'équipe";
     case 'erase':
-      return 'Effacer l\'événement';
+      return "Effacer l'événement";
     case 'setFlag':
       return `Option ${c.flag} = ${c.value ? 'activée' : 'désactivée'}`;
     case 'gameOver':
       return 'Game over';
     case 'returnToTitle':
-      return 'Retour à l\'écran titre';
+      return "Retour à l'écran titre";
     case 'script':
       return `Script : ${c.code}`;
     case 'comment':
@@ -216,14 +251,21 @@ export const COMMAND_TEMPLATES: Record<Command['type'], { label: string; command
   text: { label: 'Afficher un texte', command: { type: 'text', speaker: '', text: 'Bonjour !' } },
   choice: {
     label: 'Proposer un choix',
-    command: { type: 'choice', options: [{ label: 'Oui', commands: [] }, { label: 'Non', commands: [] }], cancel: 1 },
+    command: {
+      type: 'choice',
+      options: [
+        { label: 'Oui', commands: [] },
+        { label: 'Non', commands: [] },
+      ],
+      cancel: 1,
+    },
   },
   if: { label: 'Condition', command: { type: 'if', condition: { switch: 'mon_interrupteur' }, then: [], else: [] } },
   setSwitch: { label: 'Interrupteur', command: { type: 'setSwitch', name: 'mon_interrupteur', value: true } },
   setSelfSwitch: { label: 'Interrupteur local', command: { type: 'setSelfSwitch', letter: 'A', value: true } },
   setVariable: { label: 'Variable', command: { type: 'setVariable', name: 'ma_variable', op: 'add', value: 1 } },
   giveItem: { label: 'Donner un objet', command: { type: 'giveItem', item: 'potion', count: 1 } },
-  giveGold: { label: 'Donner de l\'or', command: { type: 'giveGold', amount: 10 } },
+  giveGold: { label: "Donner de l'or", command: { type: 'giveGold', amount: 10 } },
   teleport: { label: 'Téléporter', command: { type: 'teleport', map: 'map001', x: 0, y: 0 } },
   battle: { label: 'Lancer un combat', command: { type: 'battle', troop: 'troupe', canEscape: true, onWin: [] } },
   wait: { label: 'Attendre', command: { type: 'wait', seconds: 1 } },
@@ -231,8 +273,8 @@ export const COMMAND_TEMPLATES: Record<Command['type'], { label: string; command
   playMusic: { label: 'Jouer une musique', command: { type: 'playMusic', ref: 'alias' } },
   stopMusic: { label: 'Arrêter la musique', command: { type: 'stopMusic' } },
   moveRoute: { label: 'Déplacer', command: { type: 'moveRoute', target: 'this', steps: ['left', 'left'], wait: true } },
-  healParty: { label: 'Soigner l\'équipe', command: { type: 'healParty' } },
-  erase: { label: 'Effacer l\'événement', command: { type: 'erase' } },
+  healParty: { label: "Soigner l'équipe", command: { type: 'healParty' } },
+  erase: { label: "Effacer l'événement", command: { type: 'erase' } },
   setFlag: { label: 'Option de jeu', command: { type: 'setFlag', flag: 'encounters', value: false } },
   gameOver: { label: 'Game over', command: { type: 'gameOver' } },
   returnToTitle: { label: 'Retour au titre', command: { type: 'returnToTitle' } },

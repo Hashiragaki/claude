@@ -13,7 +13,11 @@ function windowView(s: Scene, x: number, y: number, w: number, h: number, city: 
       y,
       width: w,
       height: h,
-      fill: s.b.lin([[0, top], [0.6, mid], [1, low]]),
+      fill: s.b.lin([
+        [0, top],
+        [0.6, mid],
+        [1, low],
+      ]),
     }),
   ];
   if (s.time === 'night') {
@@ -72,11 +76,21 @@ function windowView(s: Scene, x: number, y: number, w: number, h: number, city: 
     parts.push(
       el('path', {
         d: d(
-          'M', x, y + h * 0.8,
-          'Q', x + w * 0.3, y + h * 0.62, x + w * 0.6, y + h * 0.78,
-          'T', x + w, y + h * 0.7,
-          'V', y + h,
-          'H', x,
+          'M',
+          x,
+          y + h * 0.8,
+          'Q',
+          x + w * 0.3,
+          y + h * 0.62,
+          x + w * 0.6,
+          y + h * 0.78,
+          'T',
+          x + w,
+          y + h * 0.7,
+          'V',
+          y + h,
+          'H',
+          x,
           'Z',
         ),
         fill: s.L('#5a9a5a'),
@@ -107,7 +121,15 @@ function frame(s: Scene, x: number, y: number, w: number, h: number, color: stri
 
 function planks(s: Scene, top: number, color: string): void {
   const c = s.L(color);
-  s.b.e('rect', { y: top, width: W, height: H - top, fill: s.b.lin([[0, shade(c, -0.12)], [1, c]]) });
+  s.b.e('rect', {
+    y: top,
+    width: W,
+    height: H - top,
+    fill: s.b.lin([
+      [0, shade(c, -0.12)],
+      [1, c],
+    ]),
+  });
   const lines: string[] = [];
   for (let y = top + 24, k = 0; y < H; y += 20 + k * 6, k++) lines.push(d('M', 0, y, 'H', W));
   for (let i = 0; i < 24; i++) {
@@ -131,14 +153,7 @@ function pendant(s: Scene, x: number, len: number, color: string): void {
     ry: 7,
     fill: s.time === 'day' ? '#fff4d0' : '#ffe08a',
   });
-  halo(
-    s,
-    x,
-    len + 60,
-    s.time === 'day' ? 110 : 190,
-    '#ffd88a',
-    s.time === 'day' ? 0.25 : 0.5,
-  );
+  halo(s, x, len + 60, s.time === 'day' ? 110 : 190, '#ffd88a', s.time === 'day' ? 0.25 : 0.5);
 }
 
 function cup(s: Scene, x: number, y: number, color: string): void {
@@ -157,12 +172,16 @@ function cup(s: Scene, x: number, y: number, color: string): void {
 
 export function cafe(s: Scene): void {
   const wall = s.L('#d9a878');
-  s.b.e('rect', { width: W, height: 540, fill: s.b.lin([[0, shade(wall, -0.1)], [1, wall]]) });
+  s.b.e('rect', {
+    width: W,
+    height: 540,
+    fill: s.b.lin([
+      [0, shade(wall, -0.1)],
+      [1, wall],
+    ]),
+  });
   s.b.e('path', {
-    d: Array.from(
-      { length: 33 },
-      (_, i) => d('M', i * 40, 0, 'V', 400),
-    ).join(''),
+    d: Array.from({ length: 33 }, (_, i) => d('M', i * 40, 0, 'V', 400)).join(''),
     stroke: shade(wall, 0.08),
     'stroke-width': 12,
     opacity: 0.5,
@@ -170,10 +189,7 @@ export function cafe(s: Scene): void {
   const wood = s.L('#7a4a2e');
   s.b.e('rect', { y: 400, width: W, height: 140, fill: wood });
   s.b.e('path', {
-    d: Array.from(
-      { length: 16 },
-      (_, i) => d('M', 20 + i * 80, 420, 'h', 60, 'v', 100, 'h', -60, 'Z'),
-    ).join(''),
+    d: Array.from({ length: 16 }, (_, i) => d('M', 20 + i * 80, 420, 'h', 60, 'v', 100, 'h', -60, 'Z')).join(''),
     fill: 'none',
     stroke: shade(wood, -0.25),
     'stroke-width': 4,
@@ -207,8 +223,7 @@ export function cafe(s: Scene): void {
           rx: 6,
           fill: s.L(['#7a4a2a', '#e0b040', '#c04a3a'][i % 3] as string),
         });
-      } else if (i % 2 === 0)
-        cup(s, x, y, ['#f4f0e8', '#e87a6a', '#6ab0d0'][i % 3] as string);
+      } else if (i % 2 === 0) cup(s, x, y, ['#f4f0e8', '#e87a6a', '#6ab0d0'][i % 3] as string);
       else {
         s.b.e('rect', { x: x - 14, y: y - 30, width: 28, height: 30, rx: 4, fill: s.L('#b86a3a') });
         s.b.e('circle', { cx: x, cy: y - 44, r: 20, fill: s.L('#4f9a4a') });
@@ -222,10 +237,7 @@ export function cafe(s: Scene): void {
   const counter = s.L('#8a5634');
   s.b.e('rect', { x: 640, y: 420, width: 660, height: 200, fill: counter, ...s.b.line(1) });
   s.b.e('path', {
-    d: Array.from(
-      { length: 6 },
-      (_, i) => d('M', 670 + i * 104, 450, 'h', 80, 'v', 140, 'h', -80, 'Z'),
-    ).join(''),
+    d: Array.from({ length: 6 }, (_, i) => d('M', 670 + i * 104, 450, 'h', 80, 'v', 140, 'h', -80, 'Z')).join(''),
     fill: shade(counter, -0.12),
     stroke: shade(counter, -0.3),
     'stroke-width': 3,
@@ -256,17 +268,24 @@ export function cafe(s: Scene): void {
     [0, -30, 40],
     [-26, -10, 28],
     [26, -12, 28],
-  ] as const) s.b.e('circle', { cx: 590 + dx, cy: 540 + dy, r, fill: s.L('#4f9a4a'), ...s.b.line(0.6) });
+  ] as const)
+    s.b.e('circle', { cx: 590 + dx, cy: 540 + dy, r, fill: s.L('#4f9a4a'), ...s.b.line(0.6) });
   ambience(s);
 }
 
 export function bedroom(s: Scene): void {
   const wall = s.L(s.accent ? mix(s.accent, '#ffffff', 0.7) : '#e4d6ec');
-  s.b.e('rect', { width: W, height: 560, fill: s.b.lin([[0, shade(wall, -0.06)], [1, wall]]) });
+  s.b.e('rect', {
+    width: W,
+    height: 560,
+    fill: s.b.lin([
+      [0, shade(wall, -0.06)],
+      [1, wall],
+    ]),
+  });
   const dots: string[] = [];
   for (let y = 30; y < 540; y += 60)
-    for (let x = (y / 60) % 2 ? 30 : 0; x < W; x += 60)
-      dots.push(d('M', x, y, 'h', 0.1));
+    for (let x = (y / 60) % 2 ? 30 : 0; x < W; x += 60) dots.push(d('M', x, y, 'h', 0.1));
   s.b.e('path', { d: dots.join(''), stroke: shade(wall, -0.08), 'stroke-width': 10, 'stroke-linecap': 'round' });
   planks(s, 560, '#c89a6a');
   s.b.e('rect', { y: 548, width: W, height: 16, fill: s.L('#f4f0ec'), ...s.b.line(0.5) });
@@ -297,11 +316,21 @@ export function bedroom(s: Scene): void {
     s.b.e('rect', { x, y, width: w, height: h, fill: s.L(c), stroke: s.L('#5a3e2e'), 'stroke-width': 8 });
     s.b.e('path', {
       d: d(
-        'M', x + 10, y + h - 10,
-        'L', x + w * 0.4, y + h * 0.45,
-        'L', x + w * 0.6, y + h * 0.7,
-        'L', x + w * 0.75, y + h * 0.5,
-        'L', x + w - 10, y + h - 10,
+        'M',
+        x + 10,
+        y + h - 10,
+        'L',
+        x + w * 0.4,
+        y + h * 0.45,
+        'L',
+        x + w * 0.6,
+        y + h * 0.7,
+        'L',
+        x + w * 0.75,
+        y + h * 0.5,
+        'L',
+        x + w - 10,
+        y + h - 10,
         'Z',
       ),
       fill: s.L('#ffffff'),
@@ -334,8 +363,7 @@ export function bedroom(s: Scene): void {
   s.b.e('rect', { x: 300, y: 472, width: 120, height: 100, fill: shade(desk, -0.1), ...s.b.line(0.6) });
   s.b.e('path', { d: 'M100 450L104 380L90 330', fill: 'none', stroke: s.L('#3a3a48'), 'stroke-width': 6 });
   s.b.e('path', { d: 'M60 340L120 318L130 350Z', fill: s.L('#e8c040'), ...s.b.line(0.6) });
-  if (s.time !== 'day')
-    halo(s, 110, 380, 170, '#ffd27a', s.time === 'night' ? 0.55 : 0.3);
+  if (s.time !== 'day') halo(s, 110, 380, 170, '#ffd27a', s.time === 'night' ? 0.55 : 0.3);
   for (let i = 0; i < 4; i++)
     s.b.e('rect', {
       x: 180 + i * 18,
@@ -358,7 +386,14 @@ export function bedroom(s: Scene): void {
 
 export function classroom(s: Scene): void {
   const wall = s.L('#ece2c8');
-  s.b.e('rect', { width: W, height: 520, fill: s.b.lin([[0, shade(wall, -0.08)], [1, wall]]) });
+  s.b.e('rect', {
+    width: W,
+    height: 520,
+    fill: s.b.lin([
+      [0, shade(wall, -0.08)],
+      [1, wall],
+    ]),
+  });
   s.b.e('rect', { width: W, height: 26, fill: s.L('#f8f8f4') });
   for (const x of [200, 640, 1080])
     s.b.e('rect', {
@@ -447,12 +482,7 @@ export function classroom(s: Scene): void {
   const metal = s.L('#6a7080');
   const drawDesk = (x: number, y: number, k: number) => {
     s.b.e('path', {
-      d: d(
-        'M', x - 70 * k, y + 20 * k,
-        'V', y + 110 * k,
-        'M', x + 70 * k, y + 20 * k,
-        'V', y + 110 * k,
-      ),
+      d: d('M', x - 70 * k, y + 20 * k, 'V', y + 110 * k, 'M', x + 70 * k, y + 20 * k, 'V', y + 110 * k),
       stroke: metal,
       'stroke-width': 8 * k,
     });
@@ -478,4 +508,3 @@ export function classroom(s: Scene): void {
   ambience(s);
   if (s.time === 'night') s.b.e('rect', { width: W, height: H, fill: '#0a1030', opacity: 0.2 });
 }
-

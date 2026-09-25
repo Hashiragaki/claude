@@ -54,12 +54,15 @@ test('visual novel : création, lecture, planning et chat hors-ligne', async ({ 
   const before = await page.locator('.fg-asset-card').count();
   await page.getByRole('button', { name: 'Générer' }).first().click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByRole('textbox', { name: 'Description' }).fill('pièce d\'or');
+  await dialog.getByRole('textbox', { name: 'Description' }).fill("pièce d'or");
   await dialog.getByRole('button', { name: 'Générer' }).click();
   await expect.poll(async () => page.locator('.fg-asset-card').count(), { timeout: 60_000 }).toBeGreaterThan(before);
 
   // Éditeur de script.
-  await page.locator('.fg-rail').getByRole('button', { name: /Script/ }).click();
+  await page
+    .locator('.fg-rail')
+    .getByRole('button', { name: /Script/ })
+    .click();
   await expect(page.locator('.cm-editor')).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/06-script.png` });
 

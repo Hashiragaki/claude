@@ -19,7 +19,7 @@ const STARTER_PLANS: Record<string, { milestone: string; tasks: { title: string;
   rpg: {
     milestone: 'Prototype jouable',
     tasks: [
-      { title: 'Définir l\'univers, la quête principale et les héros', hours: 3 },
+      { title: "Définir l'univers, la quête principale et les héros", hours: 3 },
       { title: 'Dessiner la carte du premier village', hours: 4 },
       { title: 'Créer les PNJ et leurs dialogues', hours: 3 },
       { title: 'Équilibrer le premier combat et les monstres', hours: 3 },
@@ -31,7 +31,7 @@ const STARTER_PLANS: Record<string, { milestone: string; tasks: { title: string;
   sandbox3d: {
     milestone: 'Scène de démonstration',
     tasks: [
-      { title: 'Définir l\'ambiance et le style de la scène', hours: 1 },
+      { title: "Définir l'ambiance et le style de la scène", hours: 1 },
       { title: 'Générer les modèles 3D principaux', hours: 1, ai: true },
       { title: 'Composer la scène (placement des modèles)', hours: 2 },
       { title: 'Ajouter les animations et tester la navigation', hours: 2 },
@@ -115,7 +115,9 @@ export class PlannerService {
       mutex = new Mutex();
       this.writers.set(projectId, mutex);
     }
-    return mutex.run(() => this.store.writeFile(projectId, 'planner.json', JSON.stringify(planner.toJSON(), null, 2), true));
+    return mutex.run(() =>
+      this.store.writeFile(projectId, 'planner.json', JSON.stringify(planner.toJSON(), null, 2), true),
+    );
   }
 
   /** Initialise le planning d'un nouveau projet avec un plan de départ. */

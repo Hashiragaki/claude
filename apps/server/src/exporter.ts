@@ -32,7 +32,7 @@ export async function exportProject(store: ProjectStore, projectId: string, play
   try {
     await fs.access(path.join(playerDist, 'index.html'));
   } catch {
-    throw Object.assign(new Error('Le lecteur n\'est pas construit : lancez `pnpm build` puis réessayez.'), {
+    throw Object.assign(new Error("Le lecteur n'est pas construit : lancez `pnpm build` puis réessayez."), {
       statusCode: 409,
     });
   }

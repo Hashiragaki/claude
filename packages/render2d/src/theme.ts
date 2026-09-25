@@ -50,7 +50,13 @@ export function toColor(value: string | number | undefined, fallback: number): n
   if (!value) return fallback;
   const hex = value.trim().replace('#', '');
   if (/^[0-9a-fA-F]{3}$/.test(hex)) {
-    return parseInt(hex.split('').map((c) => c + c).join(''), 16);
+    return parseInt(
+      hex
+        .split('')
+        .map((c) => c + c)
+        .join(''),
+      16,
+    );
   }
   if (/^[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(hex)) return parseInt(hex.slice(0, 6), 16);
   return fallback;

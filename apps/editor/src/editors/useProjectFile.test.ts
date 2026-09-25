@@ -19,7 +19,7 @@ describe('isDirtyAfterSave', () => {
     expect(isDirtyAfterSave('B', 'C')).toBe(true);
   });
 
-  it("redevient propre quand le contenu enregistré est bien le contenu le plus récent", () => {
+  it('redevient propre quand le contenu enregistré est bien le contenu le plus récent', () => {
     expect(isDirtyAfterSave('B', 'B')).toBe(false);
   });
 

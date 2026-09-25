@@ -43,7 +43,8 @@ export class GameLoop {
   stop(): void {
     this._running = false;
     if (this.handle !== null) {
-      if (typeof cancelAnimationFrame === 'function' && typeof this.handle === 'number') cancelAnimationFrame(this.handle);
+      if (typeof cancelAnimationFrame === 'function' && typeof this.handle === 'number')
+        cancelAnimationFrame(this.handle);
       else clearTimeout(this.handle as ReturnType<typeof setTimeout>);
       this.handle = null;
     }

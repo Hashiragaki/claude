@@ -49,7 +49,7 @@ afterEach(async () => {
 });
 
 describe('pilote automatique', () => {
-  it('traite les tâches confiées à l\'IA dans l\'ordre du planning et ignore les tâches utilisateur', async () => {
+  it("traite les tâches confiées à l'IA dans l'ordre du planning et ignore les tâches utilisateur", async () => {
     const { server, dir, llm, project } = await setup();
     const planner = await server.planners.get(project.id);
     const taskA = planner.createTask({ title: 'Générer le décor', assignee: 'ai' }, 'user');
@@ -188,7 +188,7 @@ describe('pilote automatique', () => {
     expect(history).not.toContain('interrompue');
   });
 
-  it('stop pendant l\'exécution arrête le pilote avant la tâche suivante', async () => {
+  it("stop pendant l'exécution arrête le pilote avant la tâche suivante", async () => {
     const { server, llm, project } = await setup();
     const planner = await server.planners.get(project.id);
     const taskA = planner.createTask({ title: 'Tâche A', assignee: 'ai' }, 'user');

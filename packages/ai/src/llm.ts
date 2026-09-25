@@ -50,7 +50,12 @@ export interface LlmUsage {
   cacheWriteTokens: number;
 }
 
-export const ZERO_USAGE: Readonly<LlmUsage> = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+export const ZERO_USAGE: Readonly<LlmUsage> = {
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheReadTokens: 0,
+  cacheWriteTokens: 0,
+};
 
 /** Jetons d'une réponse (les compteurs de cache absents valent 0). */
 export function usageOf(message: Pick<BetaMessage, 'usage'>): LlmUsage {
@@ -201,10 +206,11 @@ export function isApiError(error: unknown): error is InstanceType<typeof Anthrop
 /** Message d'erreur lisible en français pour les erreurs d'API. */
 export function describeApiError(error: unknown): string {
   if (error instanceof Anthropic.AuthenticationError) return 'Clé API Claude invalide (ANTHROPIC_API_KEY).';
-  if (error instanceof Anthropic.PermissionDeniedError) return 'Accès refusé par l\'API Claude.';
-  if (error instanceof Anthropic.RateLimitError) return 'Limite de débit de l\'API Claude atteinte, réessayez plus tard.';
+  if (error instanceof Anthropic.PermissionDeniedError) return "Accès refusé par l'API Claude.";
+  if (error instanceof Anthropic.RateLimitError)
+    return "Limite de débit de l'API Claude atteinte, réessayez plus tard.";
   if (error instanceof Anthropic.BadRequestError) return `Requête refusée par l'API Claude : ${error.message}`;
-  if (error instanceof Anthropic.APIConnectionError) return 'Impossible de joindre l\'API Claude (réseau).';
+  if (error instanceof Anthropic.APIConnectionError) return "Impossible de joindre l'API Claude (réseau).";
   if (error instanceof Anthropic.APIError) return `Erreur de l'API Claude (${error.status ?? '?'}) : ${error.message}`;
   if (error instanceof Error) return error.message;
   return String(error);

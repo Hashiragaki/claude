@@ -33,8 +33,39 @@ interface Token {
 }
 
 const OPERATORS = [
-  '**=', '//=', '**', '//', '==', '!=', '<=', '>=', '+=', '-=', '*=', '/=', '%=', '&&', '||',
-  '+', '-', '*', '/', '%', '<', '>', '=', '(', ')', '[', ']', '{', '}', ',', '.', ':', '!',
+  '**=',
+  '//=',
+  '**',
+  '//',
+  '==',
+  '!=',
+  '<=',
+  '>=',
+  '+=',
+  '-=',
+  '*=',
+  '/=',
+  '%=',
+  '&&',
+  '||',
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+  '<',
+  '>',
+  '=',
+  '(',
+  ')',
+  '[',
+  ']',
+  '{',
+  '}',
+  ',',
+  '.',
+  ':',
+  '!',
 ];
 
 function tokenize(src: string): Token[] {
@@ -115,12 +146,15 @@ export type Node =
   | { kind: 'index'; object: Node; index: Node }
   | { kind: 'call'; callee: Node; args: Node[]; pos: number };
 
-export type Statement =
-  | { kind: 'assign'; op: string; target: Node; value: Node }
-  | { kind: 'expr'; expr: Node };
+export type Statement = { kind: 'assign'; op: string; target: Node; value: Node } | { kind: 'expr'; expr: Node };
 
 const KEYWORD_LITERALS: Record<string, Value> = {
-  True: true, False: false, None: null, true: true, false: false, null: null,
+  True: true,
+  False: false,
+  None: null,
+  true: true,
+  false: false,
+  null: null,
 };
 
 class Parser {
@@ -159,7 +193,7 @@ class Parser {
     const t = this.peek();
     if (t.type === 'op' && ['=', '+=', '-=', '*=', '/=', '//=', '%=', '**='].includes(t.value)) {
       if (expr.kind !== 'name' && expr.kind !== 'member' && expr.kind !== 'index') {
-        this.fail('Cible d\'affectation invalide');
+        this.fail("Cible d'affectation invalide");
       }
       this.next();
       const value = this.parseExpression();
@@ -185,7 +219,7 @@ class Parser {
     if (this.isName('if')) {
       this.next();
       const test = this.parseOr();
-      if (!this.isName('else')) this.fail('« else » attendu dans l\'expression conditionnelle');
+      if (!this.isName('else')) this.fail("« else » attendu dans l'expression conditionnelle");
       this.next();
       const otherwise = this.parseExpression();
       return { kind: 'cond', test, then: value, otherwise };
@@ -356,7 +390,7 @@ class Parser {
         }
         throw new ExprError(`Opérateur « ${t.value} » inattendu`, this.src, t.pos);
       default:
-        throw new ExprError('Fin d\'expression inattendue', this.src, t.pos);
+        throw new ExprError("Fin d'expression inattendue", this.src, t.pos);
     }
   }
 }
@@ -644,15 +678,32 @@ export function evaluate(node: Node, scope: Scope, options: EvalOptions = {}): V
         const op = node.ops[i];
         let ok: boolean;
         switch (op) {
-          case '==': ok = deepEqual(left, right); break;
-          case '!=': ok = !deepEqual(left, right); break;
-          case '<': ok = compareValues(left, right) < 0; break;
-          case '<=': ok = compareValues(left, right) <= 0; break;
-          case '>': ok = compareValues(left, right) > 0; break;
-          case '>=': ok = compareValues(left, right) >= 0; break;
-          case 'in': ok = containment(left, right); break;
-          case 'not in': ok = !containment(left, right); break;
-          default: throw new Error(`Opérateur inconnu ${op}`);
+          case '==':
+            ok = deepEqual(left, right);
+            break;
+          case '!=':
+            ok = !deepEqual(left, right);
+            break;
+          case '<':
+            ok = compareValues(left, right) < 0;
+            break;
+          case '<=':
+            ok = compareValues(left, right) <= 0;
+            break;
+          case '>':
+            ok = compareValues(left, right) > 0;
+            break;
+          case '>=':
+            ok = compareValues(left, right) >= 0;
+            break;
+          case 'in':
+            ok = containment(left, right);
+            break;
+          case 'not in':
+            ok = !containment(left, right);
+            break;
+          default:
+            throw new Error(`Opérateur inconnu ${op}`);
         }
         if (!ok) return false;
         left = right;
@@ -778,7 +829,7 @@ function resolveTarget(target: Node, scope: Scope, options: EvalOptions): Resolv
       index: evaluate(target.index, scope, options),
     };
   }
-  throw new Error('Cible d\'affectation invalide');
+  throw new Error("Cible d'affectation invalide");
 }
 
 function readTarget(t: ResolvedTarget, scope: Scope): Value {

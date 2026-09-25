@@ -59,7 +59,12 @@ export function sliceGrid(texture: Texture, frameWidth: number, frameHeight: num
       row.push(
         new Texture({
           source: texture.source,
-          frame: new Rectangle(texture.frame.x + c * frameWidth, texture.frame.y + r * frameHeight, frameWidth, frameHeight),
+          frame: new Rectangle(
+            texture.frame.x + c * frameWidth,
+            texture.frame.y + r * frameHeight,
+            frameWidth,
+            frameHeight,
+          ),
         }),
       );
     }

@@ -54,7 +54,12 @@ export class SvgBuilder {
   /** Dégradé radial affiché dans tous les styles (lueurs, halos). */
   glow(color: string, opacity = 0.8): string {
     const id = this.id('glow');
-    this.defs.push(radialGradient(id, [[0, color, opacity], [1, color, 0]]));
+    this.defs.push(
+      radialGradient(id, [
+        [0, color, opacity],
+        [1, color, 0],
+      ]),
+    );
     return `url(#${id})`;
   }
 
@@ -109,6 +114,10 @@ export class SvgBuilder {
       );
       body = el('g', { filter: `url(#${id})` }, body);
     }
-    return svgDocument(width, height, body, { viewBox, defs: this.defs, preserve: cover ? 'xMidYMid slice' : undefined });
+    return svgDocument(width, height, body, {
+      viewBox,
+      defs: this.defs,
+      preserve: cover ? 'xMidYMid slice' : undefined,
+    });
   }
 }

@@ -51,7 +51,7 @@ describe('parseScript : instructions', () => {
         '    mina "Salut !"',
         '    mina happy uniform "Youpi"',
         '    mina "Aïe !" with vpunch',
-        '    \'Il a dit \\\'oui\\\'\\nPuis « non ».\'',
+        "    'Il a dit \\'oui\\'\\nPuis « non ».'",
       ].join('\n'),
     );
     expect(nodes).toMatchObject([
@@ -60,7 +60,7 @@ describe('parseScript : instructions', () => {
       { kind: 'say', who: 'mina', attrs: [], text: 'Salut !' },
       { kind: 'say', who: 'mina', attrs: ['happy', 'uniform'], text: 'Youpi' },
       { kind: 'say', who: 'mina', text: 'Aïe !', transition: 'vpunch' },
-      { kind: 'say', text: 'Il a dit \'oui\'\nPuis « non ».' },
+      { kind: 'say', text: "Il a dit 'oui'\nPuis « non »." },
     ]);
   });
 
@@ -97,7 +97,7 @@ describe('parseScript : instructions', () => {
         '    pause',
         '    pause 1.5',
         '    play music "theme" fadein 2 loop',
-        '    play sound \'porte\' noloop',
+        "    play sound 'porte' noloop",
         '    voice "v001"',
         '    stop music fadeout 1.0',
         '    stop voice',
@@ -204,7 +204,11 @@ describe('parseScript : diagnostics', () => {
       '    "Vide []"',
     ].join('\n');
     const diags = parseScript(src).diagnostics;
-    const byLine = (line: number) => diags.filter((d) => d.line === line).map((d) => d.message).join(' | ');
+    const byLine = (line: number) =>
+      diags
+        .filter((d) => d.line === line)
+        .map((d) => d.message)
+        .join(' | ');
     expect(byLine(2)).toMatch(/Chaîne non terminée/);
     expect(byLine(3)).toMatch(/Expression invalide/);
     expect(byLine(4)).toMatch(/Expression invalide/);
@@ -216,7 +220,7 @@ describe('parseScript : diagnostics', () => {
     expect(byLine(10)).toMatch(/Interpolation vide/);
   });
 
-  it('signale les erreurs d\'indentation', () => {
+  it("signale les erreurs d'indentation", () => {
     const inconsistent = errors('label start:\n    "a"\n  "b"\n');
     expect(inconsistent).toMatchObject([{ line: 3, message: expect.stringMatching(/Indentation incohérente/) }]);
     const unexpected = errors('label start:\n    "a"\n        "b"\n');
@@ -276,12 +280,51 @@ describe('parseScript : diagnostics', () => {
     ]);
   });
 
-  it('ne lève jamais d\'exception sur une entrée aléatoire', () => {
+  it("ne lève jamais d'exception sur une entrée aléatoire", () => {
     const rng = new Rng(1234);
     const pieces = [
-      'label ', 'menu', ':', '"', '\'', '\\', ' ', '    ', '\t', '\n', '\n    ', 'if ', 'elif', 'else', '$ ', '[',
-      ']', '{', '}', '(', ')', 'Character(', 'show ', 'scene ', 'with ', 'at ', '=', '#', 'jump ', 'x', 'mina',
-      '1.5', 'play ', 'music', 'é', '\u0000', '\r', 'define ', 'image ', 'include ', 'pause ', '__proto__',
+      'label ',
+      'menu',
+      ':',
+      '"',
+      "'",
+      '\\',
+      ' ',
+      '    ',
+      '\t',
+      '\n',
+      '\n    ',
+      'if ',
+      'elif',
+      'else',
+      '$ ',
+      '[',
+      ']',
+      '{',
+      '}',
+      '(',
+      ')',
+      'Character(',
+      'show ',
+      'scene ',
+      'with ',
+      'at ',
+      '=',
+      '#',
+      'jump ',
+      'x',
+      'mina',
+      '1.5',
+      'play ',
+      'music',
+      'é',
+      '\u0000',
+      '\r',
+      'define ',
+      'image ',
+      'include ',
+      'pause ',
+      '__proto__',
       'constructor',
     ];
     for (let n = 0; n < 400; n++) {

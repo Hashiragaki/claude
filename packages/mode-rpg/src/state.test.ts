@@ -85,7 +85,7 @@ describe('GameState', () => {
     expect(addGold(state, 40)).toBe(40);
   });
 
-  it('suit la courbe d\'expérience et fait monter de niveau', () => {
+  it("suit la courbe d'expérience et fait monter de niveau", () => {
     expect(expForLevel(1)).toBe(0);
     expect(expForLevel(2)).toBe(20);
     expect(expForLevel(3)).toBe(61);

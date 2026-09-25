@@ -36,15 +36,7 @@ function body(ctx: Ctx, cx = 0.38, cy = 0.3): string {
 }
 
 /** Grands yeux brillants. */
-function eyes(
-  ctx: Ctx,
-  x1: number,
-  x2: number,
-  y: number,
-  r: number,
-  iris = '#2a1a2a',
-  angry = false,
-): string {
+function eyes(ctx: Ctx, x1: number, x2: number, y: number, r: number, iris = '#2a1a2a', angry = false): string {
   const one = (x: number, dir: number) =>
     el('ellipse', { cx: x, cy: y, rx: r * 0.8, ry: r, fill: iris }) +
     el('circle', { cx: x - r * 0.3, cy: y - r * 0.4, r: r * 0.32, fill: '#ffffff' }) +
@@ -110,9 +102,45 @@ function bat(ctx: Ctx): string {
     const x = (v: number) => 128 + dir * v;
     return el('path', {
       d: d(
-        'M', x(30), 110, 'C', x(60), 70, x(100), 50, x(118), 56, 'C', x(112), 80, x(116), 100,
-        x(124), 120, 'C', x(108), 116, x(98), 124, x(96), 138, 'C', x(84), 128, x(70), 130,
-        x(64), 146, 'C', x(54), 134, x(42), 134, x(34), 142, 'Z'
+        'M',
+        x(30),
+        110,
+        'C',
+        x(60),
+        70,
+        x(100),
+        50,
+        x(118),
+        56,
+        'C',
+        x(112),
+        80,
+        x(116),
+        100,
+        x(124),
+        120,
+        'C',
+        x(108),
+        116,
+        x(98),
+        124,
+        x(96),
+        138,
+        'C',
+        x(84),
+        128,
+        x(70),
+        130,
+        x(64),
+        146,
+        'C',
+        x(54),
+        134,
+        x(42),
+        134,
+        x(34),
+        142,
+        'Z',
       ),
       fill: shade(ctx.c, -0.15),
       ...ctx.line,
@@ -121,8 +149,24 @@ function bat(ctx: Ctx): string {
   const membrane = (dir: number) =>
     el('path', {
       d: d(
-        'M', 128 + dir * 40, 116, 'L', 128 + dir * 110, 64, 'M', 128 + dir * 44, 124, 'L',
-        128 + dir * 96, 136, 'M', 128 + dir * 42, 132, 'L', 128 + dir * 64, 144
+        'M',
+        128 + dir * 40,
+        116,
+        'L',
+        128 + dir * 110,
+        64,
+        'M',
+        128 + dir * 44,
+        124,
+        'L',
+        128 + dir * 96,
+        136,
+        'M',
+        128 + dir * 42,
+        132,
+        'L',
+        128 + dir * 64,
+        144,
       ),
       stroke: ctx.dark,
       'stroke-width': 3,
@@ -143,9 +187,20 @@ function bat(ctx: Ctx): string {
     eyes(ctx, 108, 148, 114, 11, '#e8b020'),
     el('ellipse', { cx: 108, cy: 115, rx: 3.5, ry: 8, fill: '#2a1a2a' }),
     el('ellipse', { cx: 148, cy: 115, rx: 3.5, ry: 8, fill: '#2a1a2a' }),
-    el('path', { d: 'M114 138Q128 146 142 138', fill: 'none', stroke: '#2a1a2a', 'stroke-width': 4, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M114 138Q128 146 142 138',
+      fill: 'none',
+      stroke: '#2a1a2a',
+      'stroke-width': 4,
+      'stroke-linecap': 'round',
+    }),
     el('path', { d: 'M118 140L121 150L124 141ZM132 141L135 150L138 140Z', fill: '#ffffff' }),
-    el('path', { d: 'M112 172L108 186M144 172L148 186', stroke: ctx.dark, 'stroke-width': 6, 'stroke-linecap': 'round' }),
+    el('path', {
+      d: 'M112 172L108 186M144 172L148 186',
+      stroke: ctx.dark,
+      'stroke-width': 6,
+      'stroke-linecap': 'round',
+    }),
   ].join('');
 }
 
@@ -253,7 +308,14 @@ function ghost(ctx: Ctx): string {
     }),
     el('path', { d: 'M54 130C34 132 26 150 36 162C44 150 52 146 58 148Z', fill: ctx.c, ...ctx.line }),
     el('path', { d: 'M202 130C222 132 230 150 220 162C212 150 204 146 198 148Z', fill: ctx.c, ...ctx.line }),
-    el('path', { d: 'M78 76C86 58 100 48 114 44', fill: 'none', stroke: '#ffffff', 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85 }),
+    el('path', {
+      d: 'M78 76C86 58 100 48 114 44',
+      fill: 'none',
+      stroke: '#ffffff',
+      'stroke-width': 9,
+      'stroke-linecap': 'round',
+      opacity: 0.85,
+    }),
     eyes(ctx, 104, 152, 104, 14, '#2a2a4a'),
     el('path', { d: 'M114 136Q128 124 142 136Q142 158 128 160Q114 158 114 136Z', fill: '#3a2a4a' }),
     el('ellipse', { cx: 128, cy: 152, rx: 8, ry: 5, fill: '#e87a9a' }),
@@ -265,18 +327,30 @@ function plant(ctx: Ctx): string {
   const leaf = (dir: number, k: number) =>
     el('path', {
       d: d(
-        'M', 128, 216, 'C', 128 + dir * 30, 190 - k * 20, 128 + dir * 70, 170 - k * 30,
-        128 + dir * (104 - k * 24), 150 - k * 34, 'C', 128 + dir * 96, 190 - k * 20,
-        128 + dir * 60, 214, 128, 218, 'Z'
+        'M',
+        128,
+        216,
+        'C',
+        128 + dir * 30,
+        190 - k * 20,
+        128 + dir * 70,
+        170 - k * 30,
+        128 + dir * (104 - k * 24),
+        150 - k * 34,
+        'C',
+        128 + dir * 96,
+        190 - k * 20,
+        128 + dir * 60,
+        214,
+        128,
+        218,
+        'Z',
       ),
       fill: k ? shade(ctx.c, -0.2) : ctx.c,
       ...ctx.line,
     }) +
     el('path', {
-      d: d(
-        'M', 128 + dir * 10, 212, 'Q', 128 + dir * 60, 190 - k * 20,
-        128 + dir * (98 - k * 24), 154 - k * 34
-      ),
+      d: d('M', 128 + dir * 10, 212, 'Q', 128 + dir * 60, 190 - k * 20, 128 + dir * (98 - k * 24), 154 - k * 34),
       fill: 'none',
       stroke: shade(ctx.c, 0.25),
       'stroke-width': 3,

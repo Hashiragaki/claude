@@ -103,7 +103,14 @@ export function SceneEditor({ path }: { path: string }) {
         </Button>
       </div>
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        <div style={{ width: 260, borderRight: '1px solid var(--fg-bg-0)', overflow: 'auto', background: 'var(--fg-bg-1)' }}>
+        <div
+          style={{
+            width: 260,
+            borderRight: '1px solid var(--fg-bg-0)',
+            overflow: 'auto',
+            background: 'var(--fg-bg-1)',
+          }}
+        >
           <Flex margin="size-100" gap="size-100">
             <ActionButton onPress={addObject} isDisabled={models.length === 0}>
               <Add />
@@ -141,7 +148,16 @@ export function SceneEditor({ path }: { path: string }) {
                   aria-label="Dupliquer"
                   onPress={() => {
                     const id = uniqueId(object.id.replace(/\d+$/, ''));
-                    update({ objects: [...scene.objects, { ...structuredClone(object), id, position: [object.position[0] + 2, object.position[1], object.position[2]] }] });
+                    update({
+                      objects: [
+                        ...scene.objects,
+                        {
+                          ...structuredClone(object),
+                          id,
+                          position: [object.position[0] + 2, object.position[1], object.position[2]],
+                        },
+                      ],
+                    });
                     setSelected(id);
                   }}
                 >
@@ -157,16 +173,33 @@ export function SceneEditor({ path }: { path: string }) {
                   <Delete />
                 </ActionButton>
               </Flex>
-              <Picker label="Modèle 3D (alias)" selectedKey={object.model} onSelectionChange={(k) => updateObject(object.id, { model: String(k) })} width="100%">
+              <Picker
+                label="Modèle 3D (alias)"
+                selectedKey={object.model}
+                onSelectionChange={(k) => updateObject(object.id, { model: String(k) })}
+                width="100%"
+              >
                 {models.map((m) => (
                   <Item key={m.alias!}>{`${m.alias} — ${m.name}`}</Item>
                 ))}
               </Picker>
-              <VecField label="Position (x, y, z)" value={object.position} onChange={(position) => updateObject(object.id, { position })} step={0.5} />
-              <VecField label="Rotation (degrés)" value={object.rotation ?? [0, 0, 0]} onChange={(rotation) => updateObject(object.id, { rotation })} step={15} />
+              <VecField
+                label="Position (x, y, z)"
+                value={object.position}
+                onChange={(position) => updateObject(object.id, { position })}
+                step={0.5}
+              />
+              <VecField
+                label="Rotation (degrés)"
+                value={object.rotation ?? [0, 0, 0]}
+                onChange={(rotation) => updateObject(object.id, { rotation })}
+                step={15}
+              />
               <NumberField
                 label="Échelle"
-                value={typeof object.scale === 'number' ? object.scale : Array.isArray(object.scale) ? object.scale[0] : 1}
+                value={
+                  typeof object.scale === 'number' ? object.scale : Array.isArray(object.scale) ? object.scale[0] : 1
+                }
                 onChange={(scale) => !Number.isNaN(scale) && updateObject(object.id, { scale })}
                 minValue={0.05}
                 step={0.1}
@@ -201,7 +234,9 @@ export function SceneEditor({ path }: { path: string }) {
                   <TextField
                     label="Animation jouée à l'interaction"
                     value={object.interact.animation ?? ''}
-                    onChange={(animation) => updateObject(object.id, { interact: { ...object.interact!, animation: animation || undefined } })}
+                    onChange={(animation) =>
+                      updateObject(object.id, { interact: { ...object.interact!, animation: animation || undefined } })
+                    }
                     placeholder="ex. open, wave"
                   />
                 </>
@@ -210,25 +245,55 @@ export function SceneEditor({ path }: { path: string }) {
           ) : (
             <Flex direction="column" gap="size-100" maxWidth="size-6000">
               <TextField label="Nom de la scène" value={scene.name ?? ''} onChange={(name) => update({ name })} />
-              <Picker label="Moment de la journée" selectedKey={scene.timeOfDay ?? 'day'} onSelectionChange={(k) => update({ timeOfDay: String(k) })}>
+              <Picker
+                label="Moment de la journée"
+                selectedKey={scene.timeOfDay ?? 'day'}
+                onSelectionChange={(k) => update({ timeOfDay: String(k) })}
+              >
                 <Item key="day">Jour</Item>
                 <Item key="sunset">Coucher de soleil</Item>
                 <Item key="night">Nuit</Item>
               </Picker>
               <Flex gap="size-100">
-                <TextField label="Ciel (haut)" value={scene.sky?.top ?? ''} onChange={(top) => update({ sky: { top, bottom: scene.sky?.bottom ?? '#ffffff' } })} flex />
-                <TextField label="Ciel (horizon)" value={scene.sky?.bottom ?? ''} onChange={(bottom) => update({ sky: { top: scene.sky?.top ?? '#88bbff', bottom } })} flex />
+                <TextField
+                  label="Ciel (haut)"
+                  value={scene.sky?.top ?? ''}
+                  onChange={(top) => update({ sky: { top, bottom: scene.sky?.bottom ?? '#ffffff' } })}
+                  flex
+                />
+                <TextField
+                  label="Ciel (horizon)"
+                  value={scene.sky?.bottom ?? ''}
+                  onChange={(bottom) => update({ sky: { top: scene.sky?.top ?? '#88bbff', bottom } })}
+                  flex
+                />
               </Flex>
               <Flex gap="size-100">
-                <NumberField label="Taille du sol (m)" value={scene.ground?.size ?? 60} minValue={10} onChange={(size) => update({ ground: { color: scene.ground?.color ?? '#6a9a4a', size } })} flex />
-                <TextField label="Couleur du sol" value={scene.ground?.color ?? ''} onChange={(color) => update({ ground: { size: scene.ground?.size ?? 60, color } })} flex />
+                <NumberField
+                  label="Taille du sol (m)"
+                  value={scene.ground?.size ?? 60}
+                  minValue={10}
+                  onChange={(size) => update({ ground: { color: scene.ground?.color ?? '#6a9a4a', size } })}
+                  flex
+                />
+                <TextField
+                  label="Couleur du sol"
+                  value={scene.ground?.color ?? ''}
+                  onChange={(color) => update({ ground: { size: scene.ground?.size ?? 60, color } })}
+                  flex
+                />
               </Flex>
               <Picker
                 label="Modèle du joueur"
                 selectedKey={scene.player?.model ?? 'none'}
-                onSelectionChange={(k) => update({ player: { ...(scene.player ?? {}), model: k === 'none' ? undefined : String(k) } })}
+                onSelectionChange={(k) =>
+                  update({ player: { ...(scene.player ?? {}), model: k === 'none' ? undefined : String(k) } })
+                }
               >
-                {[<Item key="none">Capsule par défaut</Item>, ...models.map((m) => <Item key={m.alias!}>{m.alias!}</Item>)]}
+                {[
+                  <Item key="none">Capsule par défaut</Item>,
+                  ...models.map((m) => <Item key={m.alias!}>{m.alias!}</Item>),
+                ]}
               </Picker>
               <NumberField
                 label="Vitesse du joueur (m/s)"
@@ -237,12 +302,16 @@ export function SceneEditor({ path }: { path: string }) {
                 step={0.5}
                 onChange={(speed) => update({ player: { ...(scene.player ?? {}), speed } })}
               />
-              <Picker label="Musique" selectedKey={scene.music ?? 'none'} onSelectionChange={(k) => update({ music: k === 'none' ? undefined : String(k) })}>
+              <Picker
+                label="Musique"
+                selectedKey={scene.music ?? 'none'}
+                onSelectionChange={(k) => update({ music: k === 'none' ? undefined : String(k) })}
+              >
                 {[<Item key="none">Aucune</Item>, ...music.map((m) => <Item key={m.alias!}>{m.alias!}</Item>)]}
               </Picker>
               <p style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
-                {scene.objects.length} objets. Générez de nouveaux modèles 3D dans le panneau Assets (donnez-leur un alias) puis
-                ajoutez-les à la scène.
+                {scene.objects.length} objets. Générez de nouveaux modèles 3D dans le panneau Assets (donnez-leur un
+                alias) puis ajoutez-les à la scène.
               </p>
             </Flex>
           )}

@@ -256,7 +256,7 @@ export function validateMap(map: RpgMap, ctx: ValidationContext, file = mapPath(
   checkAsset(report, ctx, map.music, 'music', 'Musique');
 
   if (map.encounters) {
-    if (map.encounters.troops.length === 0) report.warn('Rencontres : aucun groupe d\'ennemis.');
+    if (map.encounters.troops.length === 0) report.warn("Rencontres : aucun groupe d'ennemis.");
     for (const troop of map.encounters.troops) {
       if (!ctx.database.troops.some((t) => t.id === troop)) report.error(`Rencontres : groupe inconnu « ${troop} ».`);
     }
@@ -351,7 +351,7 @@ export function validateSystem(system: RpgSystem, ctx: ValidationContext, file =
       report.error(`Position de départ (${system.startX}, ${system.startY}) infranchissable sur « ${map.id} ».`);
     }
   }
-  if (system.party.length === 0) report.error('L\'équipe de départ est vide.');
+  if (system.party.length === 0) report.error("L'équipe de départ est vide.");
   for (const id of system.party) {
     if (!ctx.database.actors.some((a) => a.id === id)) report.error(`Équipe : acteur inconnu « ${id} ».`);
   }

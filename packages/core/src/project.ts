@@ -193,7 +193,12 @@ export class MemoryProjectFiles implements ProjectFiles {
     const cached = this.objectUrls.get(key);
     if (cached) return cached;
     const raw = this.files.get(key);
-    if (raw !== undefined && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function' && typeof Blob !== 'undefined') {
+    if (
+      raw !== undefined &&
+      typeof URL !== 'undefined' &&
+      typeof URL.createObjectURL === 'function' &&
+      typeof Blob !== 'undefined'
+    ) {
       const blob = new Blob([typeof raw === 'string' ? raw : new Uint8Array(raw)], { type: guessMime(key) });
       const url = URL.createObjectURL(blob);
       this.objectUrls.set(key, url);

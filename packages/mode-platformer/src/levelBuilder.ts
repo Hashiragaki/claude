@@ -1,10 +1,5 @@
 import { EMPTY_TILE, PLATFORM_TILE } from '@forge/core';
-import {
-  type EnemyKind,
-  type Facing,
-  type PlatformerEntityInput,
-  type PlatformerLevelInput,
-} from './schema';
+import { type EnemyKind, type Facing, type PlatformerEntityInput, type PlatformerLevelInput } from './schema';
 
 /** Identifiant (ou index) d'un rôle de tuile `PLATFORM_TILE_ROLES` (ex. `'brick'`, `'spikes'`). */
 export type PlatformTileName = keyof typeof PLATFORM_TILE;

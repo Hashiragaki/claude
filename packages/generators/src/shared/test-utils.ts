@@ -12,7 +12,9 @@ import type { RenderContext } from '../types';
 
 export const resvgContext: RenderContext = {
   async rasterizeSvg(svg, width) {
-    return new Resvg(svg, { fitTo: { mode: 'width', value: width }, font: { loadSystemFonts: false } }).render().asPng();
+    return new Resvg(svg, { fitTo: { mode: 'width', value: width }, font: { loadSystemFonts: false } })
+      .render()
+      .asPng();
   },
 };
 

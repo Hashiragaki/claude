@@ -25,7 +25,7 @@ describe('math', () => {
     expect(angleDelta(Math.PI - 0.1, -Math.PI + 0.1)).toBeCloseTo(0.2);
   });
 
-  it("damp converge sans dépasser et ne dépend pas du découpage du temps", () => {
+  it('damp converge sans dépasser et ne dépend pas du découpage du temps', () => {
     let a = 0;
     for (let i = 0; i < 10; i++) a = damp(a, 10, 5, 0.01);
     const b = damp(0, 10, 5, 0.1);

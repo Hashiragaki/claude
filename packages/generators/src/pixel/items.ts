@@ -81,7 +81,12 @@ const key: Draw = (s) => {
 const coin: Draw = (s, main) => {
   const gold = main === '#f0bd3c' ? MATERIALS.gold : tones(main);
   s.fill(sphere(0.5, 0.5, 0.42, 0.44), gold);
-  s.fill(ring(0.5, 0.5, 0.33, 0.27, 1.05), [gold[1] as string, gold[1] as string, gold[2] as string, gold[2] as string]);
+  s.fill(ring(0.5, 0.5, 0.33, 0.27, 1.05), [
+    gold[1] as string,
+    gold[1] as string,
+    gold[2] as string,
+    gold[2] as string,
+  ]);
   s.fill(box(0.45, 0.3, 0.55, 0.7, 0, true), [gold[1] as string, gold[1] as string, gold[3] as string]);
   s.dot(0.3, 0.26, '#ffffff').dot(0.26, 0.32, gold[3] as string);
 };
@@ -137,7 +142,9 @@ const mushroom: Draw = (s, main) => {
   );
   s.fill(cap, tones(main), { outlined: true });
   const spot = MATERIALS.cream[3];
-  s.fill(sphere(0.32, 0.36, 0.07), [spot]).fill(sphere(0.6, 0.26, 0.06), [spot]).fill(sphere(0.72, 0.44, 0.05), [spot]);
+  s.fill(sphere(0.32, 0.36, 0.07), [spot])
+    .fill(sphere(0.6, 0.26, 0.06), [spot])
+    .fill(sphere(0.72, 0.44, 0.05), [spot]);
 };
 
 const apple: Draw = (s, main) => {
@@ -161,13 +168,17 @@ const bomb: Draw = (s) => {
 
 const ringItem: Draw = (s, main) => {
   s.fill(ring(0.5, 0.62, 0.3, 0.18, 0.9), MATERIALS.gold);
-  s.fill(polygon([
-    [0.36, 0.3],
-    [0.44, 0.16],
-    [0.56, 0.16],
-    [0.64, 0.3],
-    [0.5, 0.44],
-  ]), tones(main), { outlined: true });
+  s.fill(
+    polygon([
+      [0.36, 0.3],
+      [0.44, 0.16],
+      [0.56, 0.16],
+      [0.64, 0.3],
+      [0.5, 0.44],
+    ]),
+    tones(main),
+    { outlined: true },
+  );
   s.dot(0.45, 0.22, '#ffffff');
 };
 
@@ -202,7 +213,13 @@ const barrel: Draw = (s) => {
   );
   s.fill(body, MATERIALS.wood);
   for (const v of [0.24, 0.72]) {
-    s.fill(custom((u, vv) => body.contains(u, vv) && Math.abs(vv - v) < 0.045, (u) => 0.9 - u * 0.8), MATERIALS.steel);
+    s.fill(
+      custom(
+        (u, vv) => body.contains(u, vv) && Math.abs(vv - v) < 0.045,
+        (u) => 0.9 - u * 0.8,
+      ),
+      MATERIALS.steel,
+    );
   }
   s.fill(sphere(0.5, 0.12, 0.3, 0.05), [MATERIALS.wood[1], MATERIALS.wood[2]]);
 };
@@ -226,12 +243,15 @@ const torch: Draw = (s) => {
 };
 
 const plant: Draw = (s) => {
-  s.fill(polygon([
-    [0.28, 0.6],
-    [0.72, 0.6],
-    [0.64, 0.92],
-    [0.36, 0.92],
-  ]), ['#6e3222', '#a4502e', '#cc7446', '#e89c6a']);
+  s.fill(
+    polygon([
+      [0.28, 0.6],
+      [0.72, 0.6],
+      [0.64, 0.92],
+      [0.36, 0.92],
+    ]),
+    ['#6e3222', '#a4502e', '#cc7446', '#e89c6a'],
+  );
   s.fill(sphere(0.5, 0.38, 0.3, 0.26), MATERIALS.leaf, { outlined: true });
   s.fill(sphere(0.3, 0.5, 0.14), MATERIALS.leaf).fill(sphere(0.7, 0.48, 0.14), MATERIALS.leaf);
 };
@@ -277,7 +297,21 @@ const bat: Draw = (s, main) => {
       (u, v) => 0.75 - Math.abs(u - 0.5) * 0.6 - (v - 0.3) * 0.6,
     );
   s.fill(wing(-1), c).fill(wing(1), c);
-  s.fill(polygon([[0.37, 0.4], [0.38, 0.22], [0.47, 0.34]]), c).fill(polygon([[0.63, 0.4], [0.62, 0.22], [0.53, 0.34]]), c);
+  s.fill(
+    polygon([
+      [0.37, 0.4],
+      [0.38, 0.22],
+      [0.47, 0.34],
+    ]),
+    c,
+  ).fill(
+    polygon([
+      [0.63, 0.4],
+      [0.62, 0.22],
+      [0.53, 0.34],
+    ]),
+    c,
+  );
   s.fill(sphere(0.5, 0.48, 0.17, 0.18), c, { outlined: true });
   s.dot(0.44, 0.46, '#ffe066').dot(0.56, 0.46, '#ffe066');
   s.dot(0.46, 0.58, '#ffffff').dot(0.54, 0.58, '#ffffff');

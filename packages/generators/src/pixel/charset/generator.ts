@@ -75,8 +75,11 @@ export function resolveCharsetLook(params: CharsetParams, rng: Rng): CharsetSpec
   const hairStyle =
     params.hairStyle ??
     base.hairStyle ??
-    (feminine ? rng.pick(['long', 'ponytail'] as const) : rng.pick(['short', 'short', 'spiky', 'ponytail', 'long'] as const));
-  const outfitStyle = params.outfitStyle ?? base.outfitStyle ?? (feminine ? 'dress' : rng.pick(['tunic', 'tunic', 'robe'] as const));
+    (feminine
+      ? rng.pick(['long', 'ponytail'] as const)
+      : rng.pick(['short', 'short', 'spiky', 'ponytail', 'long'] as const));
+  const outfitStyle =
+    params.outfitStyle ?? base.outfitStyle ?? (feminine ? 'dress' : rng.pick(['tunic', 'tunic', 'robe'] as const));
   const spec: CharsetSpec = {
     skinTone: params.skinTone ?? rng.pick(SKIN_TONES),
     hairColor: params.hairColor ?? hairColorFromText(text) ?? rng.pick(HAIR_COLORS),

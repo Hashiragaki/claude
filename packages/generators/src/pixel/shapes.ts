@@ -74,7 +74,10 @@ export function capsule(ax: number, ay: number, bx: number, by: number, r: numbe
 }
 
 /** Polygone quelconque ; l'éclairage suit un dégradé haut-gauche → bas-droite. */
-export function polygon(pts: readonly (readonly [number, number])[], lightFn?: (u: number, v: number) => number): Shape {
+export function polygon(
+  pts: readonly (readonly [number, number])[],
+  lightFn?: (u: number, v: number) => number,
+): Shape {
   const xs = pts.map((p) => p[0]);
   const ys = pts.map((p) => p[1]);
   const minX = Math.min(...xs);
@@ -107,7 +110,7 @@ export function ring(cx: number, cy: number, rOut: number, rIn: number, ry = 1):
       const mid = (rOut + rIn) / 2;
       const across = (d - mid) / ((rOut - rIn) / 2);
       const nx = ((u - cx) / d) * across;
-      const ny = (((v - cy) / ry) / d) * across;
+      const ny = ((v - cy) / ry / d) * across;
       const nz = Math.sqrt(Math.max(0, 1 - across * across));
       return clamp01(0.45 + 0.6 * (nx * L[0] + ny * L[1] + nz * L[2]) - 0.1);
     },
@@ -115,7 +118,10 @@ export function ring(cx: number, cy: number, rOut: number, rIn: number, ry = 1):
 }
 
 /** Forme définie par une fonction d'appartenance et un éclairage constant ou calculé. */
-export function custom(contains: (u: number, v: number) => boolean, light: number | ((u: number, v: number) => number)): Shape {
+export function custom(
+  contains: (u: number, v: number) => boolean,
+  light: number | ((u: number, v: number) => number),
+): Shape {
   return { contains, light: typeof light === 'number' ? () => light : light };
 }
 

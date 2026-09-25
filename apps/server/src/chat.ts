@@ -40,24 +40,24 @@ const DISPLAY_LOG = 'chat/display.jsonl';
 
 const TOOL_LABELS: Record<string, string> = {
   list_tasks: 'Consultation des tâches',
-  get_task: 'Lecture d\'une tâche',
-  create_task: 'Création d\'une tâche',
-  update_task: 'Mise à jour d\'une tâche',
-  delete_task: 'Suppression d\'une tâche',
-  create_milestone: 'Création d\'un jalon',
-  update_milestone: 'Mise à jour d\'un jalon',
+  get_task: "Lecture d'une tâche",
+  create_task: "Création d'une tâche",
+  update_task: "Mise à jour d'une tâche",
+  delete_task: "Suppression d'une tâche",
+  create_milestone: "Création d'un jalon",
+  update_milestone: "Mise à jour d'un jalon",
   plan_project: 'Création du plan',
-  review_progress: 'Revue de l\'avancement',
+  review_progress: "Revue de l'avancement",
   remember: 'Mémorisation',
-  forget: 'Oubli d\'une note',
+  forget: "Oubli d'une note",
   get_project_summary: 'Lecture du projet',
   list_assets: 'Liste des assets',
   list_files: 'Liste des fichiers',
-  read_file: 'Lecture d\'un fichier',
-  write_file: 'Écriture d\'un fichier',
+  read_file: "Lecture d'un fichier",
+  write_file: "Écriture d'un fichier",
   validate_project: 'Vérification du projet',
   list_generators: 'Liste des générateurs',
-  generate_asset: 'Génération d\'un asset',
+  generate_asset: "Génération d'un asset",
 };
 
 export interface ChatDeps {
@@ -167,7 +167,12 @@ export class ChatService {
     for (const action of reply.actions) {
       try {
         const asset = await tools.generate({ generator: action.generator, prompt: action.prompt, mode: 'procedural' });
-        await this.display(projectId, { id: shortId('msg'), role: 'assistant', text: `✅ ${describeAsset(asset)}`, at: nowIso() });
+        await this.display(projectId, {
+          id: shortId('msg'),
+          role: 'assistant',
+          text: `✅ ${describeAsset(asset)}`,
+          at: nowIso(),
+        });
       } catch (error) {
         await this.display(projectId, {
           id: shortId('msg'),
@@ -188,7 +193,10 @@ export class ChatService {
     const userMessage: BetaMessageParam = {
       role: 'user',
       content: [
-        { type: 'text', text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }) },
+        {
+          type: 'text',
+          text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }),
+        },
         { type: 'text', text },
       ],
     };
@@ -309,7 +317,8 @@ export class ChatService {
   /** Enregistre (et diffuse) un message affiché. */
   private async display(projectId: string, message: DisplayMessage, publish = true): Promise<void> {
     await this.appendLine(projectId, DISPLAY_LOG, message);
-    if (publish) this.emit(projectId, { kind: 'message', message: { ...message, tool: message.tool && { ...message.tool } } });
+    if (publish)
+      this.emit(projectId, { kind: 'message', message: { ...message, tool: message.tool && { ...message.tool } } });
   }
 
   private emit(projectId: string, event: ChatEvent): void {
@@ -321,7 +330,10 @@ export class ChatService {
  * Rend l'historique valide sans le réécrire : si le dernier message de l'assistant contient des
  * appels d'outils sans résultat (réponse interrompue), on ajoute des résultats d'erreur.
  */
-export function repairHistory(messages: BetaMessageParam[]): { messages: BetaMessageParam[]; appended: BetaMessageParam[] } {
+export function repairHistory(messages: BetaMessageParam[]): {
+  messages: BetaMessageParam[];
+  appended: BetaMessageParam[];
+} {
   const last = messages.at(-1);
   if (!last || last.role !== 'assistant' || !Array.isArray(last.content)) return { messages, appended: [] };
   const calls = last.content.filter((b) => b.type === 'tool_use') as { id: string }[];
@@ -332,7 +344,7 @@ export function repairHistory(messages: BetaMessageParam[]): { messages: BetaMes
       type: 'tool_result' as const,
       tool_use_id: c.id,
       is_error: true,
-      content: 'Interrompu avant la fin de l\'exécution.',
+      content: "Interrompu avant la fin de l'exécution.",
     })),
   };
   return { messages: [...messages, fix], appended: [fix] };

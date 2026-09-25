@@ -29,7 +29,10 @@ describe('MapBuilder', () => {
       .tree(8, 3)
       .pond(6, 5, 5, 4)
       .bridge(6, 7, 5, 1)
-      .path([[0, 9], [5, 9]])
+      .path([
+        [0, 9],
+        [5, 9],
+      ])
       .fence(0, 0, 3, 0)
       .tallGrass(0, 6, 2, 2);
     const door = MapBuilder.houseDoor(1, 1, 5, 4);

@@ -20,7 +20,7 @@ export interface CharsetParams {
 export type BattlerCreature = 'slime' | 'bat' | 'golem' | 'wolf' | 'ghost' | 'plant';
 export type MusicMood = 'village' | 'battle' | 'calm' | 'epic' | 'happy' | 'tense' | 'sad' | 'mysterious';
 export type SfxPreset =
-  | 'blip' | 'select' | 'cancel' | 'hit' | 'coin' | 'door' | 'magic' | 'powerup' | 'jump' | 'explosion';
+  'blip' | 'select' | 'cancel' | 'hit' | 'coin' | 'door' | 'magic' | 'powerup' | 'jump' | 'explosion';
 
 export function tilesetAsset(alias: string, name: string, theme: TilesetTheme, seed: number, prompt: string) {
   return {
@@ -63,7 +63,7 @@ export function battlerAsset(
 }
 
 export type BackgroundScene =
-  | 'cafe' | 'street' | 'park' | 'bedroom' | 'classroom' | 'forest' | 'beach' | 'castle' | 'space' | 'generic';
+  'cafe' | 'street' | 'park' | 'bedroom' | 'classroom' | 'forest' | 'beach' | 'castle' | 'space' | 'generic';
 
 /** Décor plein écran (fond de combat, écran titre…). */
 export function backgroundAsset(

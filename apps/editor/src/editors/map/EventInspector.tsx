@@ -33,7 +33,7 @@ const PRIORITIES: Record<EventPage['priority'], string> = {
 const MOVEMENTS: Record<EventPage['movement'], string> = {
   fixed: 'Fixe',
   random: 'Aléatoire',
-  approach: 'S\'approche du joueur',
+  approach: "S'approche du joueur",
 };
 
 export function newPage(): EventPage {
@@ -71,7 +71,13 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
         {event.id} · case ({event.x}, {event.y}) · la page active est la dernière dont les conditions sont remplies
       </span>
       <Flex alignItems="center" gap="size-50">
-        <Tabs aria-label="Pages" selectedKey={String(pageIndex)} onSelectionChange={(k) => setPageIndex(Number(k))} density="compact" isQuiet>
+        <Tabs
+          aria-label="Pages"
+          selectedKey={String(pageIndex)}
+          onSelectionChange={(k) => setPageIndex(Number(k))}
+          density="compact"
+          isQuiet
+        >
           <TabList>
             {event.pages.map((_, i) => (
               <Item key={String(i)}>{`Page ${i + 1}`}</Item>
@@ -111,7 +117,12 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
         Conditions
       </div>
       <Flex gap="size-100" wrap>
-        <TextField label="Interrupteur ON" value={conditions.switch ?? ''} onChange={(v) => setCondition('switch', v)} width="size-2000" />
+        <TextField
+          label="Interrupteur ON"
+          value={conditions.switch ?? ''}
+          onChange={(v) => setCondition('switch', v)}
+          width="size-2000"
+        />
         <Picker
           label="Interrupteur local"
           selectedKey={conditions.selfSwitch ?? 'none'}
@@ -124,7 +135,12 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
           <Item key="C">C</Item>
           <Item key="D">D</Item>
         </Picker>
-        <TextField label="Objet possédé" value={conditions.item ?? ''} onChange={(v) => setCondition('item', v)} width="size-2000" />
+        <TextField
+          label="Objet possédé"
+          value={conditions.item ?? ''}
+          onChange={(v) => setCondition('item', v)}
+          width="size-2000"
+        />
       </Flex>
 
       <div className="fg-section-title" style={{ margin: '4px 0 0' }}>
@@ -152,7 +168,9 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
           <Picker
             label="Direction"
             selectedKey={graphic.direction ?? 'down'}
-            onSelectionChange={(k) => setPage({ graphic: { ...graphic, direction: k as 'down' | 'left' | 'right' | 'up' } })}
+            onSelectionChange={(k) =>
+              setPage({ graphic: { ...graphic, direction: k as 'down' | 'left' | 'right' | 'up' } })
+            }
             width="size-1600"
           >
             <Item key="down">Bas</Item>
@@ -162,21 +180,42 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
           </Picker>
         )}
         {graphic && 'tile' in graphic && (
-          <NumberField label="Index de tuile" value={graphic.tile} minValue={0} onChange={(tile) => setPage({ graphic: { tile } })} width="size-1600" />
+          <NumberField
+            label="Index de tuile"
+            value={graphic.tile}
+            minValue={0}
+            onChange={(tile) => setPage({ graphic: { tile } })}
+            width="size-1600"
+          />
         )}
       </Flex>
       <Flex gap="size-100" wrap>
-        <Picker label="Déclencheur" selectedKey={page.trigger} onSelectionChange={(k) => setPage({ trigger: k as EventPage['trigger'] })} width="size-2400">
+        <Picker
+          label="Déclencheur"
+          selectedKey={page.trigger}
+          onSelectionChange={(k) => setPage({ trigger: k as EventPage['trigger'] })}
+          width="size-2400"
+        >
           {Object.entries(TRIGGERS).map(([k, v]) => (
             <Item key={k}>{v}</Item>
           ))}
         </Picker>
-        <Picker label="Priorité" selectedKey={page.priority} onSelectionChange={(k) => setPage({ priority: k as EventPage['priority'] })} width="size-2400">
+        <Picker
+          label="Priorité"
+          selectedKey={page.priority}
+          onSelectionChange={(k) => setPage({ priority: k as EventPage['priority'] })}
+          width="size-2400"
+        >
           {Object.entries(PRIORITIES).map(([k, v]) => (
             <Item key={k}>{v}</Item>
           ))}
         </Picker>
-        <Picker label="Déplacement" selectedKey={page.movement} onSelectionChange={(k) => setPage({ movement: k as EventPage['movement'] })} width="size-2000">
+        <Picker
+          label="Déplacement"
+          selectedKey={page.movement}
+          onSelectionChange={(k) => setPage({ movement: k as EventPage['movement'] })}
+          width="size-2000"
+        >
           {Object.entries(MOVEMENTS).map(([k, v]) => (
             <Item key={k}>{v}</Item>
           ))}
@@ -186,7 +225,11 @@ export function EventInspector(props: { event: RpgEvent; onChange(event: RpgEven
       <div className="fg-section-title" style={{ margin: '4px 0 0' }}>
         <Text>Commandes</Text>
       </div>
-      <CommandList key={`${event.id}:${pageIndex}`} commands={page.commands} onChange={(commands) => setPage({ commands })} />
+      <CommandList
+        key={`${event.id}:${pageIndex}`}
+        commands={page.commands}
+        onChange={(commands) => setPage({ commands })}
+      />
     </Flex>
   );
 }

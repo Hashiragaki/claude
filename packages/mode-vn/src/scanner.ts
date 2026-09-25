@@ -122,7 +122,7 @@ export class Scanner {
   }
 
   /** Vérifie qu'il ne reste rien sur la ligne. */
-  end(context = 'l\'instruction'): void {
+  end(context = "l'instruction"): void {
     if (this.eof()) return;
     throw new ParseError(`Texte inattendu après ${context} : « ${this.text.slice(this.pos).trim()} »`, this.column);
   }

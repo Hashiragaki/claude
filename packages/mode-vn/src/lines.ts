@@ -47,7 +47,7 @@ export function splitLines(source: string, report: Reporter): RawLine[] {
     }
     const text = stripComment(raw.slice(k)).trimEnd();
     if (!text) return;
-    if (tab) report(i + 1, 1, 'Tabulation dans l\'indentation : utilisez des espaces', 'warning');
+    if (tab) report(i + 1, 1, "Tabulation dans l'indentation : utilisez des espaces", 'warning');
     out.push({ line: i + 1, indent, text, children: [] });
   });
   return out;

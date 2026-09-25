@@ -9,12 +9,37 @@ import { THEME_PALETTES, TILESET_THEMES } from './palettes';
 import { drawTile } from './render';
 
 const OPAQUE = [
-  'ground', 'ground_alt', 'ground_detail', 'path', 'path_alt', 'water', 'deep_water',
-  'wall', 'wall_window', 'door', 'roof', 'stairs', 'void',
+  'ground',
+  'ground_alt',
+  'ground_detail',
+  'path',
+  'path_alt',
+  'water',
+  'deep_water',
+  'wall',
+  'wall_window',
+  'door',
+  'roof',
+  'stairs',
+  'void',
 ];
 const DECOR = [
-  'fence', 'tree_top', 'tree_trunk', 'bush', 'rock', 'flowers', 'log', 'sign',
-  'crate', 'table', 'chair', 'bed', 'shelf', 'barrel', 'torch', 'rug',
+  'fence',
+  'tree_top',
+  'tree_trunk',
+  'bush',
+  'rock',
+  'flowers',
+  'log',
+  'sign',
+  'crate',
+  'table',
+  'chair',
+  'bed',
+  'shelf',
+  'barrel',
+  'torch',
+  'rug',
 ];
 const SEAMLESS = ['ground', 'ground_alt', 'ground_detail', 'path', 'path_alt', 'water', 'deep_water'];
 

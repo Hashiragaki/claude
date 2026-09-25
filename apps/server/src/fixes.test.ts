@@ -83,7 +83,7 @@ describe('generation.ts — alias et parentId relus au moment de la sauvegarde',
     expect(variant.alias).toBeUndefined();
   });
 
-  it("ne garde pas de parentId vers un asset supprimé pendant la génération", async () => {
+  it('ne garde pas de parentId vers un asset supprimé pendant la génération', async () => {
     ({ server, dir } = await makeServer(null));
     const project = await server.projects.create({ name: 'Parent deleted', mode: 'vn', template: 'vn-blank' });
 
