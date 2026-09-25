@@ -1,6 +1,6 @@
 import type { Rng } from '@forge/core';
 import { mix, outlineOf, shade } from '../shared/color';
-import { d, el } from '../shared/svg';
+import { d, el, type Attrs } from '../shared/svg';
 import { SvgBuilder, type SvgStyle } from './builder';
 
 export const CREATURES = ['slime', 'bat', 'golem', 'wolf', 'ghost', 'plant'] as const;
@@ -20,7 +20,7 @@ interface Ctx {
   c: string;
   dark: string;
   light: string;
-  line: Record<string, string | number | undefined>;
+  line: Attrs;
   rng: Rng;
 }
 

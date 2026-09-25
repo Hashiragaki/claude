@@ -1,6 +1,6 @@
 import { mix, outlineOf, shade } from '../shared/color';
 import { regularPolygon, starPoints } from '../shared/geometry';
-import { d, el, points } from '../shared/svg';
+import { d, el, points, type Attrs } from '../shared/svg';
 import { SvgBuilder, type SvgStyle } from './builder';
 
 export const OBJECTS = [
@@ -62,7 +62,7 @@ const WOOD = ['#5a3420', '#9a6238', '#c89058'] as const;
 interface Ctx {
   b: SvgBuilder;
   c: string;
-  line: Record<string, string | number | undefined>;
+  line: Attrs;
 }
 
 const tri = (b: SvgBuilder, [dark, mid, light]: readonly string[], dir: [number, number, number, number] = [0, 0, 1, 1]) =>
