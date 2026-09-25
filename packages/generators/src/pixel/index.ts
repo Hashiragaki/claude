@@ -27,3 +27,21 @@ export {
 } from './tileset/generator';
 export { THEME_PALETTES, TILESET_THEMES, type TilesetPalette, type TilesetTheme } from './tileset/palettes';
 export { drawTile, drawTileset } from './tileset/render';
+export {
+  sideTilesetGenerator,
+  sideTilesetInfo,
+  sideTilesetParamsSchema,
+  sideTilesetSpecSchema,
+  type SideTilesetParams,
+  type SideTilesetSpec,
+} from './side/generator';
+export {
+  SIDE_PALETTE_KEYS,
+  SIDE_THEME_PALETTES,
+  SIDE_TILESET_THEMES,
+  sideTilesetPaletteSchema,
+  type SidePaletteKey,
+  type SideTilesetPalette,
+  type SideTilesetTheme,
+} from './side/palette';
+export { drawTile as drawSideTile, drawSideTileset } from './side/tiles';

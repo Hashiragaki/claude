@@ -208,6 +208,7 @@ export class ChatService {
       tools,
       compaction: true,
       signal,
+      meta: { role: 'chat', projectId },
       onEvent: (event) => {
         switch (event.type) {
           case 'thinking':

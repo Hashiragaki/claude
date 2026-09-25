@@ -1,7 +1,7 @@
 import { anim2dGenerator } from './anim2d';
 import { musicGenerator, sfxGenerator } from './audio';
 import { model3dGenerator } from './model3d';
-import { charsetGenerator, imagePixelGenerator, tilesetGenerator } from './pixel';
+import { charsetGenerator, imagePixelGenerator, sideTilesetGenerator, tilesetGenerator } from './pixel';
 import { imageSvgGenerator } from './svg';
 import type { GeneratorDefinition } from './types';
 
@@ -11,6 +11,7 @@ export const GENERATORS: readonly GeneratorDefinition[] = [
   imagePixelGenerator,
   charsetGenerator,
   tilesetGenerator,
+  sideTilesetGenerator,
   anim2dGenerator,
   sfxGenerator,
   musicGenerator,

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { ClaudeLlmClient, DEFAULT_MODEL, type LlmClient } from '@forge/ai';
+import { ClaudeLlmClient, DEFAULT_MODEL, RoutedLlmClient, type LlmClient } from '@forge/ai';
 import { AssetKindSchema, guessMime, nowIso, shortId, slugify, type AssetMeta, type ModeRegistry } from '@forge/core';
 import { STATUS_LABELS, TaskStatusSchema, scheduleTasks, type PlanInput, type TaskInput } from '@forge/planner';
 import fastifyStatic from '@fastify/static';
@@ -17,6 +17,7 @@ import { createModeRegistry } from './modes';
 import { PlannerService } from './plannerService';
 import { ProjectService } from './projects';
 import { ProjectStore } from './storage';
+import { UsageLedger } from './usage';
 
 export interface AppOptions {
   config: ServerConfig;
@@ -56,15 +57,29 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   const store = new ProjectStore(config.dataDir);
   await store.init();
   const hub = new EventHub();
-  const llm =
+  const ledger = new UsageLedger(store, hub, { defaultBudgetUsd: config.budgetUsd });
+  const rawLlm =
     options.llm !== undefined
       ? options.llm
       : config.ai.enabled
         ? new ClaudeLlmClient({ model: config.ai.model, effort: config.ai.effort, refusalFallback: config.ai.refusalFallback })
         : null;
+  const llm: LlmClient | null = rawLlm
+    ? new RoutedLlmClient(rawLlm, {
+        routing: config.routing,
+        prices: config.prices,
+        beforeSend: ledger.checkBudget,
+        onUsage: (event) => {
+          void ledger.record(event).catch((error) => {
+            // eslint-disable-next-line no-console
+            console.error('Échec de journalisation de la consommation IA :', error);
+          });
+        },
+      })
+    : null;
   const modes = options.modes ?? createModeRegistry();
   const jobs = new JobQueue(config.jobConcurrency, (job) => hub.publish(job.projectId, { type: 'job', data: job }));
-  const generation = new GenerationService(store, llm);
+  const generation = new GenerationService(store, llm, { prices: config.prices });
   const planners = new PlannerService(store, hub);
   const projects = new ProjectService(store, modes, generation, planners, hub);
   const lock = new AgentLock();
@@ -308,6 +323,18 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
 
   app.get<{ Params: IdParams }>('/api/projects/:id/jobs', async (request) => jobs.list(request.params.id));
 
+  app.get<{ Params: IdParams }>('/api/projects/:id/usage', async (request) => {
+    await store.readManifest(request.params.id);
+    return ledger.summary(request.params.id);
+  });
+
+  app.put<{ Params: IdParams }>('/api/projects/:id/usage/budget', async (request) => {
+    const body = z.object({ budgetUsd: z.number().min(0).nullable() }).parse(request.body);
+    await store.readManifest(request.params.id);
+    await ledger.setBudget(request.params.id, body.budgetUsd);
+    return ledger.summary(request.params.id);
+  });
+
   app.get<{ Params: { jobId: string } }>('/api/jobs/:jobId', async (request) => {
     const job = jobs.get(request.params.jobId);
     if (!job) throw Object.assign(new Error('Tâche de fond introuvable'), { statusCode: 404 });
@@ -441,6 +468,7 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
       throw Object.assign(new Error('Une réponse est déjà en cours.'), { statusCode: 409 });
     }
     await store.readManifest(request.params.id);
+    ledger.checkBudget({ role: 'chat', projectId: request.params.id });
     // La réponse est diffusée par SSE ; on ne bloque pas la requête.
     void chat.send(request.params.id, body.message).catch((error) => app.log.error(error));
     return reply.status(202).send({ ok: true });

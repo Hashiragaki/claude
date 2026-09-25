@@ -1,4 +1,16 @@
-import { StructuredGenerationError, generateStructured, type LlmClient, type StructuredReview } from '@forge/ai';
+import {
+  BudgetExceededError,
+  DEFAULT_PRICES,
+  RoutedLlmClient,
+  StructuredGenerationError,
+  escalate,
+  estimateCost,
+  generateStructured,
+  type LlmClient,
+  type LlmUsage,
+  type ModelPrice,
+  type StructuredReview,
+} from '@forge/ai';
 import { Rng, nowIso, shortId, slugify, type AssetKind, type AssetMeta, type AssetOrigin } from '@forge/core';
 import {
   GENERATORS,
@@ -67,6 +79,8 @@ export interface GenerationServiceOptions {
    * lit la variable d'environnement `FORGE_VISION_REVIEW` (désactivée seulement si elle vaut `off`).
    */
   visionReview?: boolean;
+  /** Prix par modèle ($/M jetons), pour le coût enregistré dans `asset.info`. */
+  prices?: Record<string, ModelPrice>;
 }
 
 /** Rendu mis en cache pendant la critique visuelle, réutilisé s'il correspond à la spec finale. */
@@ -95,6 +109,7 @@ function buildReviewRender(result: GeneratorResult): { image?: { data: Uint8Arra
  */
 export class GenerationService {
   private readonly visionReview: boolean;
+  private readonly prices: Record<string, ModelPrice>;
 
   constructor(
     private readonly store: ProjectStore,
@@ -102,6 +117,7 @@ export class GenerationService {
     options: GenerationServiceOptions = {},
   ) {
     this.visionReview = options.visionReview ?? process.env.FORGE_VISION_REVIEW !== 'off';
+    this.prices = options.prices ?? DEFAULT_PRICES;
   }
 
   get aiAvailable(): boolean {
@@ -139,21 +155,52 @@ export class GenerationService {
     let origin: AssetOrigin;
     let reviews = 0;
     let cache: RenderCache | undefined;
+    let aiUsage: LlmUsage | undefined;
+    let aiCostUsd = 0;
+    let budgetNote: string | undefined;
     if (req.instruction && parent) {
       report('Retouche par l\'IA…');
       const current = await this.loadSpec(projectId, parent);
-      const ai = await this.askAi(generator, generator.buildEditPrompt(current, req.instruction, params), params, reviewEnabled, report, signal);
+      const ai = await this.askAi(
+        generator,
+        generator.buildEditPrompt(current, req.instruction, params),
+        params,
+        reviewEnabled,
+        report,
+        projectId,
+        signal,
+      );
       spec = ai.value;
       reviews = ai.reviews;
       cache = ai.cache;
+      aiUsage = ai.usage;
+      aiCostUsd = ai.costUsd;
       origin = 'ai';
     } else if (useAi) {
       report('Génération par l\'IA…');
-      const ai = await this.askAi(generator, generator.buildPrompt(params), params, reviewEnabled, report, signal);
-      spec = ai.value;
-      reviews = ai.reviews;
-      cache = ai.cache;
-      origin = 'ai';
+      try {
+        const ai = await this.askAi(
+          generator,
+          generator.buildPrompt(params),
+          params,
+          reviewEnabled,
+          report,
+          projectId,
+          signal,
+        );
+        spec = ai.value;
+        reviews = ai.reviews;
+        cache = ai.cache;
+        aiUsage = ai.usage;
+        aiCostUsd = ai.costUsd;
+        origin = 'ai';
+      } catch (error) {
+        if (!(error instanceof BudgetExceededError)) throw error;
+        budgetNote = 'Budget IA atteint : génération procédurale';
+        report(budgetNote);
+        spec = generator.procedural(params, new Rng(seed));
+        origin = 'procedural';
+      }
     } else {
       report('Génération procédurale…');
       spec = generator.procedural(params, new Rng(seed));
@@ -191,6 +238,18 @@ export class GenerationService {
     extra.spec = `${base}.spec.json`;
     await this.store.writeFile(projectId, extra.spec, JSON.stringify(spec));
 
+    // `info` est validé par le schéma projet (valeurs scalaires seulement) : l'usage est aplati.
+    const info: Record<string, string | number | boolean> = { ...result.info };
+    if (reviews > 0) info.reviewRounds = reviews;
+    if (aiUsage) {
+      info.inputTokens = aiUsage.inputTokens;
+      info.outputTokens = aiUsage.outputTokens;
+      info.cacheReadTokens = aiUsage.cacheReadTokens;
+      info.cacheWriteTokens = aiUsage.cacheWriteTokens;
+      info.costUsd = Math.round(aiCostUsd * 1_000_000) / 1_000_000;
+    }
+    if (budgetNote) info.note = budgetNote;
+
     const alias = req.alias ?? parent?.alias;
     const asset: AssetMeta = {
       id,
@@ -209,7 +268,7 @@ export class GenerationService {
       seed,
       ...(parent ? { parentId: parent.id } : {}),
       version: parent ? parent.version + 1 : 1,
-      info: reviews > 0 ? { ...result.info, reviewRounds: reviews } : result.info,
+      info,
       createdAt: nowIso(),
     };
     await this.store.updateManifest(projectId, (m) => {
@@ -232,8 +291,9 @@ export class GenerationService {
     params: unknown,
     reviewEnabled: boolean,
     report: (progress: string) => void,
+    projectId: string,
     signal?: AbortSignal,
-  ): Promise<{ value: unknown; reviews: number; cache?: RenderCache }> {
+  ): Promise<{ value: unknown; reviews: number; cache?: RenderCache; usage: LlmUsage; costUsd: number }> {
     let cache: RenderCache | undefined;
     const review: StructuredReview<unknown> | undefined = reviewEnabled
       ? {
@@ -246,21 +306,32 @@ export class GenerationService {
           },
         }
       : undefined;
+    const llm = this.llm as LlmClient;
+    const routed = llm instanceof RoutedLlmClient ? llm : undefined;
+    const routeSetting = routed?.settingFor('generate') ?? {};
+    const escalateSetting = routed ? escalate(routeSetting, routed.model) : null;
     try {
       const result = await generateStructured({
-        llm: this.llm as LlmClient,
+        llm,
         system: generator.systemPrompt,
         prompt,
         schema: generator.specSchema,
         signal,
+        meta: { role: 'generate', projectId, label: generator.id },
+        escalate: escalateSetting ?? undefined,
         onAttempt: (attempt, error) => {
           if (attempt > 1) report(`Correction par l'IA (essai ${attempt})… ${error ? error.split('\n')[0] : ''}`);
         },
         review,
         onReview: () => report('Critique du rendu par l\'IA…'),
       });
-      return { value: result.value, reviews: result.reviews, cache };
+      const model = result.escalated
+        ? (escalateSetting?.model ?? routed?.model ?? llm.model)
+        : (routeSetting.model ?? llm.model);
+      const costUsd = estimateCost(model, result.usage, this.prices);
+      return { value: result.value, reviews: result.reviews, cache, usage: result.usage, costUsd };
     } catch (error) {
+      if (error instanceof BudgetExceededError) throw error;
       if (error instanceof StructuredGenerationError) throw new Error(`L'IA n'a pas produit un résultat valide : ${error.lastError}`);
       throw error;
     }

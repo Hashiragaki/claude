@@ -48,7 +48,7 @@ export class ConflictError extends Error {
 }
 
 /** Fichiers internes d'un projet, gérés par le serveur (non modifiables par l'API fichiers). */
-const INTERNAL = new Set(['project.json', 'planner.json']);
+const INTERNAL = new Set(['project.json', 'planner.json', 'usage.jsonl', 'ai.json']);
 const INTERNAL_DIRS = ['.forge/', 'chat/'];
 
 export interface ProjectSummary {

@@ -19,9 +19,12 @@ function eventsOfType(events: WorldEvent[], type: WorldEvent['type']): WorldEven
 
 describe('PlatformerWorld — joueur', () => {
   it('saute et retombe (coyote time après avoir quitté un rebord)', () => {
-    const level = levelFromAscii(['............', '............', '............', '............', '###.........', '............']);
+    const level = levelFromAscii(
+      ['............', '............', '............', '............', '###.........', '............'],
+      { playerStart: { x: 1, y: 3 } },
+    );
     const system = makeSystem({
-      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.1, jumpBuffer: 0, jumpCutFactor: 1 },
+      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.1, jumpBuffer: 0.05, jumpCutFactor: 1 },
     });
     const world = new PlatformerWorld(level, system);
     run(world, 2); // stabilise onGround
@@ -42,12 +45,16 @@ describe('PlatformerWorld — joueur', () => {
   });
 
   it('refuse le saut une fois le coyote time expiré', () => {
-    const level = levelFromAscii(['............', '............', '............', '............', '###.........', '............']);
+    const level = levelFromAscii(
+      ['............', '............', '............', '............', '###.........', '............'],
+      { playerStart: { x: 1, y: 3 } },
+    );
     const system = makeSystem({
-      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.05, jumpBuffer: 0, jumpCutFactor: 1 },
+      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.05, jumpBuffer: 0.05, jumpCutFactor: 1 },
     });
     const world = new PlatformerWorld(level, system);
     run(world, 2);
+    expect(world.player().onGround).toBe(true);
     for (let i = 0; i < 30 && world.player().onGround; i++) run(world, 1, input({ right: true }));
     expect(world.player().onGround).toBe(false);
 
@@ -59,24 +66,38 @@ describe('PlatformerWorld — joueur', () => {
   });
 
   it('mémorise un appui sur saut juste avant l’atterrissage (jump buffer)', () => {
+    // Niveau où le joueur démarre en l'air (départ par défaut, au-dessus du sol) et tombe.
     const level = levelFromAscii(['....', '....', '....', '####']);
     const system = makeSystem({
       physics: { jumpBuffer: 0.5, coyoteTime: 0.1, jumpSpeed: 220, jumpCutFactor: 1, gravity: 640 },
     });
-    // Le joueur démarre en l'air (une case au-dessus du sol) et tombe.
-    const world = new PlatformerWorld(level, system, { collected: [] });
-    void world; // playerStart par défaut (0,0) ; on le laisse tomber depuis là.
-    const events = run(world, 40, input({ jumpPressed: true, jumpHeld: true }));
-    expect(eventsOfType(events, 'jump')).toHaveLength(1);
+    const world = new PlatformerWorld(level, system);
+    // Un appui bref sur saut, très tôt pendant la chute (encore en l'air).
+    const early = run(world, 1, input({ jumpPressed: true }));
+    expect(eventsOfType(early, 'jump')).toHaveLength(0);
     expect(world.player().onGround).toBe(false);
-    expect(world.player().vy).toBeLessThan(0);
+
+    // Le joueur continue de tomber sans autre appui ; le saut mémorisé doit se déclencher à l'atterrissage.
+    let jumped = false;
+    for (let i = 0; i < 40 && !jumped; i++) {
+      const stepEvents = world.step(DT, NO_INPUT);
+      if (eventsOfType(stepEvents, 'jump').length > 0) {
+        jumped = true;
+        expect(world.player().vy).toBeLessThan(0);
+      }
+    }
+    expect(jumped).toBe(true);
   });
 
   it('saut court : relâcher le saut tôt réduit la vitesse ascendante', () => {
-    const level = levelFromAscii(['............', '............', '............', '............', '###.........', '............']);
+    const level = levelFromAscii(
+      ['............', '............', '............', '............', '###.........', '............'],
+      { playerStart: { x: 1, y: 3 } },
+    );
     const system = makeSystem({ physics: { jumpSpeed: 200, gravity: 600, jumpCutFactor: 0.5, coyoteTime: 0.1, jumpBuffer: 0.12 } });
     const world = new PlatformerWorld(level, system);
     run(world, 2); // stabilise onGround
+    expect(world.player().onGround).toBe(true);
     run(world, 1, input({ jumpPressed: true, jumpHeld: true }));
     const vyHeld = world.player().vy;
     expect(vyHeld).toBeLessThan(0);
@@ -159,9 +180,10 @@ describe('PlatformerWorld — dangers et mort', () => {
 describe('PlatformerWorld — checkpoint et réapparition', () => {
   it('active un point de contrôle puis y fait réapparaître le joueur après une mort', () => {
     const level = levelFromAscii(['.....', '.....', '.....', '#####'], {
+      playerStart: { x: 0, y: 2 },
       entities: [
-        { id: 'cp1', type: 'checkpoint', x: 2, y: 2 },
-        { id: 'c1', type: 'coin', x: 0, y: 2 },
+        { id: 'cp1', type: 'checkpoint', x: 3, y: 2 },
+        { id: 'c1', type: 'coin', x: 1, y: 2 },
       ],
     });
     const system = makeSystem({ physics: { runSpeed: 200, acceleration: 100000 } });
@@ -201,13 +223,14 @@ describe('PlatformerWorld — ressort', () => {
 
 describe('PlatformerWorld — ennemis', () => {
   it('stomp : sauter sur un ennemi l’élimine et fait rebondir le joueur', () => {
+    // Le joueur démarre directement au-dessus de l'ennemi et tombe dessus (pas d'approche latérale).
     const level = levelFromAscii(['......', '......', '......', '......', '######'], {
-      playerStart: { x: 0, y: 1 },
-      entities: [{ id: 'e1', type: 'enemy', kind: 'walker', x: 2, y: 3, speed: 0 }],
+      playerStart: { x: 2, y: 0 },
+      entities: [{ id: 'e1', type: 'enemy', kind: 'walker', x: 2, y: 3, speed: 1 }],
     });
-    const system = makeSystem({ physics: { runSpeed: 60, acceleration: 100000, jumpSpeed: 220 } });
+    const system = makeSystem({ physics: { jumpSpeed: 220 } });
     const world = new PlatformerWorld(level, system);
-    const events = run(world, 90, input({ right: true }));
+    const events = run(world, 60, NO_INPUT);
     const stomps = eventsOfType(events, 'stomp');
     expect(stomps).toHaveLength(1);
     expect(world.entities().find((e) => e.id === 'e1')?.active).toBe(false);
@@ -217,7 +240,7 @@ describe('PlatformerWorld — ennemis', () => {
   it('mort au contact latéral d’un ennemi (pas un stomp)', () => {
     const level = levelFromAscii(['......', '......', '......', '######'], {
       playerStart: { x: 0, y: 1 },
-      entities: [{ id: 'e1', type: 'enemy', kind: 'walker', x: 3, y: 1, speed: 0 }],
+      entities: [{ id: 'e1', type: 'enemy', kind: 'walker', x: 3, y: 1, speed: 1 }],
     });
     const system = makeSystem({ physics: { runSpeed: 300, acceleration: 100000 } });
     const world = new PlatformerWorld(level, system);
@@ -241,7 +264,7 @@ describe('PlatformerWorld — ennemis', () => {
 
   it('patrouille (walker) : demi-tour au bord du vide', () => {
     const level = levelFromAscii(['........', '........', '........', '..######'], {
-      playerStart: { x: 0, y: 0 },
+      playerStart: { x: 7, y: 2 }, // sur le sol, hors du chemin de l'ennemi
       entities: [{ id: 'e1', type: 'enemy', kind: 'walker', x: 4, y: 2, speed: 40, facing: 'left' }],
     });
     const system = makeSystem();

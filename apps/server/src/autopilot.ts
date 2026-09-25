@@ -269,6 +269,7 @@ export class AutopilotService {
       tools,
       maxIterations: 20,
       signal,
+      meta: { role: 'autopilot', projectId, label: task.id },
       onEvent: (event) => {
         if (event.type === 'message') writes.push(this.appendTaskLog(projectId, task.id, event.message));
       },
