@@ -2,6 +2,16 @@ import { Assets, Rectangle, Texture } from 'pixi.js';
 
 const cache = new Map<string, Promise<Texture>>();
 
+const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif']);
+
+function parserHint(url: string): { parser?: 'texture' | 'svg' } {
+  const path = url.split(/[?#]/)[0] ?? '';
+  const ext = /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase();
+  if (ext === 'svg') return { parser: 'svg' };
+  if (ext && IMAGE_EXTENSIONS.has(ext)) return {};
+  return { parser: 'texture' };
+}
+
 /**
  * Charge une texture depuis une URL (PNG, SVG…). Le filtrage « nearest » est appliqué pour le
  * pixel-art. Les textures sont mises en cache par URL.
@@ -13,6 +23,8 @@ export function loadTexture(url: string, options: { pixelArt?: boolean } = {}): 
     promise = Assets.load<Texture>({
       src: url,
       data: { scaleMode: options.pixelArt ? 'nearest' : 'linear' },
+      // URL sans extension reconnue (blob:, données en mémoire) : on indique le parser explicitement.
+      ...parserHint(url),
     }).then((texture) => {
       if (options.pixelArt) texture.source.scaleMode = 'nearest';
       return texture;
