@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "start": "pnpm --filter @forge/server start"
+    "start": "pnpm --filter @forge/server start",
+    "check": "node scripts/check.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
