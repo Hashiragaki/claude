@@ -81,28 +81,39 @@ try {
   const { createServer } = await import(requireFromEditor.resolve('vite'));
   viteServer = await createServer({
     configFile: path.join(EDITOR, 'vite.player.config.ts'),
-    root: path.join(EDITOR, 'player'),
+    // Racine = apps/editor : player/index.html importe ../src/player/main.ts (hors de player/).
+    root: EDITOR,
     logLevel: 'error',
     server: {
       port: vitePort,
       strictPort: true,
-      proxy: { '/project/': { target: api, rewrite: (p) => p.replace(/^\/project\//, `/api/projects/${project.id}/files/`) } },
+      proxy: {
+        '/player/project/': {
+          target: api,
+          rewrite: (p) => p.replace(/^\/player\/project\//, `/api/projects/${project.id}/files/`),
+        },
+      },
     },
   });
   await viteServer.listen();
 
   const requireFromRoot = createRequire(path.join(ROOT, 'package.json'));
-  const { chromium } = await import(requireFromRoot.resolve('@playwright/test'));
+  const playwright = await import(requireFromRoot.resolve('@playwright/test'));
+  const chromium = playwright.chromium ?? playwright.default.chromium;
   const executablePath = process.env.FORGE_CHROMIUM ?? '/opt/pw-browsers/chromium';
   browser = await chromium.launch({ executablePath, args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width, height } });
   page.on('console', (msg) => {
     const line = `[${msg.type()}] ${msg.text()}`;
-    if (msg.type() === 'error') report.errors.push(line);
+    // Les réponses HTTP en erreur sont déjà signalées avec leur URL (événement « response »).
+    if (msg.type() === 'error' && !msg.text().startsWith('Failed to load resource')) report.errors.push(line);
     else if (report.logs.length < 200) report.logs.push(line);
   });
   page.on('pageerror', (err) => report.errors.push(`[exception] ${err.message}`));
-  await page.goto(`http://127.0.0.1:${vitePort}/`, { waitUntil: 'load' });
+  page.on('response', (res) => {
+    if (res.status() >= 400 && !res.url().endsWith('/favicon.ico')) report.errors.push(`[http ${res.status()}] ${res.url()}`);
+  });
+  await page.goto(`http://127.0.0.1:${vitePort}/player/index.html`, { waitUntil: 'load' });
   await page.locator('#game').click({ position: { x: 5, y: 5 } }).catch(() => undefined);
 
   for (const step of steps) {
