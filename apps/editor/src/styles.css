@@ -711,3 +711,7 @@ body,
 .fg-code .cm-editor.cm-focused {
   outline: none;
 }
+.fg-game-mount:focus,
+.fg-game-mount canvas:focus {
+  outline: none;
+}

@@ -65,7 +65,7 @@ export function GamePanel() {
       await engine.start();
       if (!cancelled) {
         setStatus('running');
-        (mount.querySelector('canvas') as HTMLCanvasElement | null)?.focus();
+        mount.focus({ preventScroll: true });
       }
     })().catch((error: unknown) => {
       if (cancelled) return;
@@ -157,7 +157,7 @@ export function GamePanel() {
         <div className="fg-spacer" />
         <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
           {status === 'loading' && 'Chargement…'}
-          {status === 'running' && (paused ? 'En pause' : 'En cours — cliquez dans le jeu pour lui donner le focus')}
+          {status === 'running' && (paused ? 'En pause' : 'En cours — cliquez dans le jeu pour le contrôler au clavier')}
           {status === 'error' && 'Erreur (voir la console)'}
         </span>
       </div>

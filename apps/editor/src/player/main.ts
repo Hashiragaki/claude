@@ -17,6 +17,7 @@ async function main(): Promise<void> {
     mount,
     saveStorage: new LocalSaveStorage(),
     locale: navigator.language.startsWith('fr') ? 'fr' : bundle.manifest.locale,
+    keyboard: 'window',
   });
   engine.events.on('error', ({ error }) => showError(error.message));
   await engine.start();

@@ -19,6 +19,11 @@ export interface EngineOptions {
   seed?: number;
   /** Démarre la boucle `requestAnimationFrame` (désactiver pour les tests : utiliser `step`). */
   autoLoop?: boolean;
+  /**
+   * Où écouter le clavier : `mount` (défaut, le jeu doit avoir le focus — adapté à l'éditeur) ou
+   * `window` (jeu autonome en plein écran).
+   */
+  keyboard?: 'mount' | 'window';
 }
 
 /**
@@ -76,10 +81,15 @@ export class Engine {
     const mode = this.options.modes.get(this.options.bundle.manifest.mode);
     this.runtime = await mode.createRuntime(this.context);
     if (typeof window !== 'undefined' && this.options.mount) {
-      this.detachInput = this.input.attach(window, this.options.mount);
+      const mount = this.options.mount;
+      if (!mount.hasAttribute('tabindex')) mount.tabIndex = 0;
+      const keyTarget = this.options.keyboard === 'window' ? window : mount;
+      this.detachInput = this.input.attach(keyTarget, mount);
       const unlock = () => void this.audio.unlock();
-      this.options.mount.addEventListener('pointerdown', unlock, { once: true });
-      window.addEventListener('keydown', unlock, { once: true });
+      mount.addEventListener('pointerdown', unlock, { once: true });
+      keyTarget.addEventListener('keydown', unlock, { once: true });
+      // Un clic dans le jeu lui donne le focus clavier.
+      mount.addEventListener('pointerdown', () => mount.focus({ preventScroll: true }));
     }
     await this.runtime.start();
     if (this.autoLoop) this.loop.start();

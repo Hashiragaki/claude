@@ -101,13 +101,15 @@ export class InputManager {
       for (const a of this.keyToActions.get(ev.code) ?? []) this.events.emit('action', { action: a, pressed: false });
     };
     const onBlur = () => this.downKeys.clear();
+    // `blur` ne remonte pas depuis les éléments enfants : on utilise `focusout` sur un élément.
+    const blurEvent = typeof window !== 'undefined' && keyTarget === window ? 'blur' : 'focusout';
     keyTarget.addEventListener('keydown', onKeyDown);
     keyTarget.addEventListener('keyup', onKeyUp);
-    keyTarget.addEventListener('blur', onBlur);
+    keyTarget.addEventListener(blurEvent, onBlur);
     this.detachers.push(() => {
       keyTarget.removeEventListener('keydown', onKeyDown);
       keyTarget.removeEventListener('keyup', onKeyUp);
-      keyTarget.removeEventListener('blur', onBlur);
+      keyTarget.removeEventListener(blurEvent, onBlur);
     });
 
     if (pointerTarget) {

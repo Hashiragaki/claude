@@ -164,6 +164,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     return reply
       .header('Content-Type', mime.startsWith('text/') || mime.endsWith('json') ? `${mime}; charset=utf-8` : mime)
       .header('Cache-Control', 'no-cache')
+      .header('X-Content-Type-Options', 'nosniff')
+      // Un fichier ouvert directement (ex. SVG importé) ne peut exécuter aucun script.
+      .header('Content-Security-Policy', "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self'; sandbox")
       .send(data);
   });
 

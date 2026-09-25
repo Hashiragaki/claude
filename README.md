@@ -87,7 +87,49 @@ Sans clé API, le chat accepte : `/tache Titre !haute @2026-10-01 ~3h #art`, `/t
 
 ## Les modes de jeu
 
-<!-- MODES -->
+### Visual Novel (inspiré de Ren'Py)
+
+Le jeu est écrit dans un script `.vn` indenté, très proche de Ren'Py :
+
+```
+define m = Character("Mina", color="#f6a5c0")
+default affection = 0
+
+label start:
+    scene bg cafe with fade
+    play music "musique cafe" fadein 1.0
+    show mina happy at left with dissolve
+    m "Bienvenue au Café des Étoiles, [nom] !"
+    menu:
+        "Que commandez-vous ?"
+        "Un chocolat chaud":
+            $ affection += 1
+            m "Excellent choix."
+        "Rien, merci" if affection < 0:
+            jump depart
+    if affection >= 1:
+        call confidences
+    return
+```
+
+Instructions : `define`, `default`, `image`, `include`, `label`, `scene`, `show … at … with …`, `hide`, `with`, dialogues (`perso "texte"`, `"texte"`, `"Nom" "texte"`), `menu` (choix conditionnels), `if / elif / else`, `$ instruction`, `jump`, `call`, `return`, `pause`, `play / stop music|sound|voice`, `window show|hide`, `centered`, `pass`. Positions : `left`, `right`, `center`, `farleft`, `farright`. Transitions : `fade`, `dissolve`, `moveinleft`, `moveinright`, `vpunch`, `hpunch`. Interpolation `[expression]` dans les textes.
+
+Les images sont désignées par l'alias de leurs assets (`show mina happy` utilise l'alias « mina happy », sinon « mina »). Le lecteur gère l'écran titre, l'avance automatique, le passage rapide, l'historique, le **retour arrière** (molette), et 6 emplacements de sauvegarde. L'éditeur de script signale les erreurs en direct et permet de **jouer depuis n'importe quel label**.
+
+Les expressions (`$`, `if`, interpolation) utilisent un langage sûr de type Python, sans `eval` : `score >= 10 and not vu`, `inventaire.append("clé")`, `"oui" if x else "non"`, `randint(1, 6)`…
+
+### RPG (inspiré de RPG Maker)
+
+- **Cartes** en tuiles 16×16 sur trois calques (sol, décor, au-dessus du personnage), collisions automatiques d'après le rôle des tuiles et surchargeables case par case, rencontres aléatoires.
+- **Tilesets standardisés** : tous les tilesets (village, forêt, donjon, intérieur, désert, neige, grotte) placent les mêmes rôles aux mêmes index (sol, chemin, eau, murs, toits, arbres, meubles…). Une carte reste valide quand on régénère ou change de tileset.
+- **Événements** à pages (conditions : interrupteurs, variables, objets, interrupteurs locaux ; déclencheurs : action, contact, automatique, parallèle) et **commandes** : textes, choix, conditions, interrupteurs, variables, objets, or, téléportation, combats, attentes, sons, musiques, trajets, soins, effacement, script…
+- **Combats** au tour par tour (attaque, compétences, objets, défense, fuite), expérience, niveaux, butin.
+- **Base de données** : héros, objets, compétences, ennemis, troupes, réglages système (équipe, départ, musiques, sons).
+- **Éditeur de cartes** : crayon, rectangle, remplissage, gomme, pipette, calque de collisions, placement et édition des événements, point de départ, annuler/rétablir, « Jouer ici ».
+
+### Bac à sable 3D
+
+Une scène (`scenes/main.json`) décrit le ciel, le sol, le joueur et des objets (modèles glTF générés, position, rotation, échelle, animation en boucle, collision, texte et animation d'interaction). Le joueur se déplace en vue à la troisième personne (ZQSD / flèches, Maj pour courir, souris pour orbiter, Entrée pour interagir). L'éditeur de scène permet de placer et régler les objets.
 
 ---
 
