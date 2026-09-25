@@ -24,7 +24,15 @@ describe('PlatformerWorld — joueur', () => {
       { playerStart: { x: 1, y: 3 } },
     );
     const system = makeSystem({
-      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.1, jumpBuffer: 0.05, jumpCutFactor: 1 },
+      physics: {
+        runSpeed: 300,
+        acceleration: 100000,
+        airControl: 1,
+        jumpSpeed: 200,
+        coyoteTime: 0.1,
+        jumpBuffer: 0.05,
+        jumpCutFactor: 1,
+      },
     });
     const world = new PlatformerWorld(level, system);
     run(world, 2); // stabilise onGround
@@ -50,7 +58,15 @@ describe('PlatformerWorld — joueur', () => {
       { playerStart: { x: 1, y: 3 } },
     );
     const system = makeSystem({
-      physics: { runSpeed: 300, acceleration: 100000, airControl: 1, jumpSpeed: 200, coyoteTime: 0.05, jumpBuffer: 0.05, jumpCutFactor: 1 },
+      physics: {
+        runSpeed: 300,
+        acceleration: 100000,
+        airControl: 1,
+        jumpSpeed: 200,
+        coyoteTime: 0.05,
+        jumpBuffer: 0.05,
+        jumpCutFactor: 1,
+      },
     });
     const world = new PlatformerWorld(level, system);
     run(world, 2);
@@ -94,7 +110,9 @@ describe('PlatformerWorld — joueur', () => {
       ['............', '............', '............', '............', '###.........', '............'],
       { playerStart: { x: 1, y: 3 } },
     );
-    const system = makeSystem({ physics: { jumpSpeed: 200, gravity: 600, jumpCutFactor: 0.5, coyoteTime: 0.1, jumpBuffer: 0.12 } });
+    const system = makeSystem({
+      physics: { jumpSpeed: 200, gravity: 600, jumpCutFactor: 0.5, coyoteTime: 0.1, jumpBuffer: 0.12 },
+    });
     const world = new PlatformerWorld(level, system);
     run(world, 2); // stabilise onGround
     expect(world.player().onGround).toBe(true);
@@ -110,7 +128,9 @@ describe('PlatformerWorld — joueur', () => {
 
 describe('PlatformerWorld — pièces et arrivée', () => {
   it('ramasse une pièce une seule fois', () => {
-    const level = levelFromAscii(['....', '....', '....', '####'], { entities: [{ id: 'c1', type: 'coin', x: 1, y: 2 }] });
+    const level = levelFromAscii(['....', '....', '....', '####'], {
+      entities: [{ id: 'c1', type: 'coin', x: 1, y: 2 }],
+    });
     const system = makeSystem();
     const world = new PlatformerWorld(level, system, { checkpoint: undefined });
     // Place le joueur directement sur la pièce.
@@ -125,7 +145,9 @@ describe('PlatformerWorld — pièces et arrivée', () => {
   });
 
   it('reprend une pièce déjà ramassée via `collected`', () => {
-    const level = levelFromAscii(['....', '....', '....', '####'], { entities: [{ id: 'c1', type: 'coin', x: 0, y: 2 }] });
+    const level = levelFromAscii(['....', '....', '....', '####'], {
+      entities: [{ id: 'c1', type: 'coin', x: 0, y: 2 }],
+    });
     const system = makeSystem();
     const world = new PlatformerWorld(level, system, { collected: ['c1'] });
     expect(world.collectedIds()).toEqual(['c1']);
@@ -151,7 +173,8 @@ describe('PlatformerWorld — dangers et mort', () => {
     const system = makeSystem();
     const world = new PlatformerWorld(level, system);
     const events = run(world, 120);
-    expect(eventsOfType(events, 'death').map((e) => (e as Extract<WorldEvent, { type: 'death' }>).cause)).toContain('fall');
+    const causes = eventsOfType(events, 'death').map((e) => (e as Extract<WorldEvent, { type: 'death' }>).cause);
+    expect(causes).toContain('fall');
     expect(world.dead).toBe(true);
   });
 

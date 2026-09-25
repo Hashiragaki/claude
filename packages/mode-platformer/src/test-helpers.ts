@@ -80,7 +80,13 @@ export function makeSystem(overrides: Partial<PlatformerSystemInput> = {}): Plat
 }
 
 /** Commande joueur « neutre » (rien d'appuyé). */
-export const NO_INPUT: PlatformerInput = { left: false, right: false, jumpHeld: false, jumpPressed: false, down: false };
+export const NO_INPUT: PlatformerInput = {
+  left: false,
+  right: false,
+  jumpHeld: false,
+  jumpPressed: false,
+  down: false,
+};
 
 /** Construit une commande joueur pour les tests (tout à `false` sauf les surcharges). */
 export function input(overrides: Partial<PlatformerInput> = {}): PlatformerInput {

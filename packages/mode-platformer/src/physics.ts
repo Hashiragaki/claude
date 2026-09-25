@@ -81,7 +81,12 @@ function moveX(body: Body, dx: number, grid: LevelGrid): boolean {
   return hitWall;
 }
 
-function moveY(body: Body, dy: number, grid: LevelGrid, dropThrough: boolean): { landed: boolean; hitCeiling: boolean } {
+function moveY(
+  body: Body,
+  dy: number,
+  grid: LevelGrid,
+  dropThrough: boolean,
+): { landed: boolean; hitCeiling: boolean } {
   let remaining = dy;
   let landed = false;
   let hitCeiling = false;

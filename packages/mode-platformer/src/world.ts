@@ -185,7 +185,10 @@ export class PlatformerWorld {
     const checkpoint = this.checkpointId ? this.checkpoints.find((c) => c.id === this.checkpointId) : undefined;
     if (checkpoint) {
       // Position au sol sous le point de contrôle (dont la boîte peut dépasser vers le haut).
-      return { x: checkpoint.x + CHECKPOINT_WIDTH / 2 - PLAYER_WIDTH / 2, y: checkpoint.y + CHECKPOINT_HEIGHT - PLAYER_HEIGHT };
+      return {
+        x: checkpoint.x + CHECKPOINT_WIDTH / 2 - PLAYER_WIDTH / 2,
+        y: checkpoint.y + CHECKPOINT_HEIGHT - PLAYER_HEIGHT,
+      };
     }
     const start = this.level.playerStart;
     return {
@@ -286,7 +289,9 @@ export class PlatformerWorld {
       return events;
     }
 
-    if (this.playerState.invincibleTimer > 0) this.playerState.invincibleTimer = Math.max(0, this.playerState.invincibleTimer - dt);
+    if (this.playerState.invincibleTimer > 0) {
+      this.playerState.invincibleTimer = Math.max(0, this.playerState.invincibleTimer - dt);
+    }
 
     for (const enemy of this.enemies) this.stepEnemy(enemy, dt);
 
@@ -365,7 +370,8 @@ export class PlatformerWorld {
     const wallRow = Math.floor((enemy.y + enemy.h / 2) / TILE_SIZE);
     const wallAhead = this.grid.collisionAt(wallCol, wallRow) === 'solid';
     const nextX = enemy.x + (enemy.facing === 'right' ? enemy.source.speed : -enemy.source.speed) * dt;
-    const atRangeLimit = enemy.source.range !== undefined && Math.abs(nextX - enemy.baseX) > enemy.source.range * TILE_SIZE;
+    const atRangeLimit =
+      enemy.source.range !== undefined && Math.abs(nextX - enemy.baseX) > enemy.source.range * TILE_SIZE;
 
     if (wallAhead || !hasGroundAhead || atRangeLimit) enemy.facing = enemy.facing === 'right' ? 'left' : 'right';
 
@@ -383,9 +389,14 @@ export class PlatformerWorld {
     moveBody(enemy, dt, this.grid);
   }
 
+  /** Boîte englobante courante du joueur (utilisée par les tests de chevauchement ci-dessous). */
+  private playerBox(): Rect {
+    return { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+  }
+
   /** Renvoie `true` si le joueur vient de mourir au contact d'un ennemi (arrête le pas). */
   private resolveEnemyContacts(prevPlayerBottom: number, events: WorldEvent[]): boolean {
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+    const playerRect = this.playerBox();
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
       if (!rectsOverlap(playerRect, enemy)) continue;
@@ -403,7 +414,7 @@ export class PlatformerWorld {
   }
 
   private resolveCoins(events: WorldEvent[]): void {
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+    const playerRect = this.playerBox();
     for (const coin of this.coins) {
       if (coin.collected) continue;
       if (!rectsOverlap(playerRect, { x: coin.x, y: coin.y, w: COIN_SIZE, h: COIN_SIZE })) continue;
@@ -413,7 +424,7 @@ export class PlatformerWorld {
   }
 
   private resolveSprings(events: WorldEvent[]): void {
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+    const playerRect = this.playerBox();
     for (const spring of this.springs) {
       spring.triggered = false;
       if (this.playerState.vy < 0) continue;
@@ -425,10 +436,11 @@ export class PlatformerWorld {
   }
 
   private resolveCheckpoints(events: WorldEvent[]): void {
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+    const playerRect = this.playerBox();
     for (const checkpoint of this.checkpoints) {
       if (checkpoint.activated) continue;
-      if (!rectsOverlap(playerRect, { x: checkpoint.x, y: checkpoint.y, w: CHECKPOINT_WIDTH, h: CHECKPOINT_HEIGHT })) continue;
+      const box = { x: checkpoint.x, y: checkpoint.y, w: CHECKPOINT_WIDTH, h: CHECKPOINT_HEIGHT };
+      if (!rectsOverlap(playerRect, box)) continue;
       checkpoint.activated = true;
       this.checkpointId = checkpoint.id;
       events.push({ type: 'checkpoint', id: checkpoint.id });
@@ -438,8 +450,13 @@ export class PlatformerWorld {
   /** Renvoie `true` si l'arrivée vient d'être atteinte (arrête le pas). */
   private resolveGoal(events: WorldEvent[]): boolean {
     if (!this.goal || this._finished) return false;
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
-    const goalRect: Rect = { x: this.goal.x * TILE_SIZE, y: this.goal.y * TILE_SIZE + TILE_SIZE - GOAL_HEIGHT, w: GOAL_WIDTH, h: GOAL_HEIGHT };
+    const playerRect = this.playerBox();
+    const goalRect: Rect = {
+      x: this.goal.x * TILE_SIZE,
+      y: this.goal.y * TILE_SIZE + TILE_SIZE - GOAL_HEIGHT,
+      w: GOAL_WIDTH,
+      h: GOAL_HEIGHT,
+    };
     if (!rectsOverlap(playerRect, goalRect)) return false;
     this._finished = true;
     events.push({ type: 'goal' });
@@ -447,7 +464,7 @@ export class PlatformerWorld {
   }
 
   private resolveSigns(events: WorldEvent[]): void {
-    const playerRect: Rect = { x: this.playerState.x, y: this.playerState.y, w: this.playerState.w, h: this.playerState.h };
+    const playerRect = this.playerBox();
     for (const sign of this.signs) {
       const overlapping = rectsOverlap(playerRect, { x: sign.x, y: sign.y, w: SIGN_SIZE, h: SIGN_SIZE });
       if (overlapping && !sign.overlapping) events.push({ type: 'sign', id: sign.id, text: sign.source.text });
@@ -518,7 +535,16 @@ export class PlatformerWorld {
       });
     }
     for (const s of this.signs) {
-      views.push({ id: s.id, type: 'sign', x: s.x, y: s.y, w: SIGN_SIZE, h: SIGN_SIZE, active: true, triggered: s.overlapping });
+      views.push({
+        id: s.id,
+        type: 'sign',
+        x: s.x,
+        y: s.y,
+        w: SIGN_SIZE,
+        h: SIGN_SIZE,
+        active: true,
+        triggered: s.overlapping,
+      });
     }
     return views;
   }

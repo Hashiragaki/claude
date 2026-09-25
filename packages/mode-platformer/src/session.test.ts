@@ -109,7 +109,12 @@ describe('PlatformerSession — score et pièces', () => {
       ],
     });
     const levels = new Map([['a', level]]);
-    const system = makeSystem({ levels: ['a'], lives: 1, coinsPerLife: 2, physics: { runSpeed: 200, acceleration: 100000 } });
+    const system = makeSystem({
+      levels: ['a'],
+      lives: 1,
+      coinsPerLife: 2,
+      physics: { runSpeed: 200, acceleration: 100000 },
+    });
     const session = new PlatformerSession(system, makeLoader(levels));
 
     run(session, 90, input({ right: true }));
