@@ -26,8 +26,12 @@ if (targets.length === 0) {
   );
 }
 
+// Sous Windows, npx est un .cmd : il faut passer par le shell (et citer les arguments à espaces).
+const WIN = process.platform === 'win32';
+
 function run(cmd, cmdArgs, cwd) {
-  const res = spawnSync(cmd, cmdArgs, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const argv = WIN ? cmdArgs.map((a) => (/\s/.test(a) ? `"${a}"` : a)) : cmdArgs;
+  const res = spawnSync(cmd, argv, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, shell: WIN });
   return { code: res.status ?? 1, out: `${res.stdout ?? ''}${res.stderr ?? ''}` };
 }
 
