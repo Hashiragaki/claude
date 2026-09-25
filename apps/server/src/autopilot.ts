@@ -1,5 +1,12 @@
 import { promises as fs } from 'node:fs';
-import { defineTool, describeApiError, runAgent, type AgentTool, type BetaMessageParam, type LlmClient } from '@forge/ai';
+import {
+  defineTool,
+  describeApiError,
+  runAgent,
+  type AgentTool,
+  type BetaMessageParam,
+  type LlmClient,
+} from '@forge/ai';
 import { nowIso } from '@forge/core';
 import {
   AUTOPILOT_SYSTEM_PROMPT,
@@ -14,7 +21,7 @@ import type { ChatService } from './chat';
 import type { EventHub } from './events';
 import type { PlannerService } from './plannerService';
 import { createProjectTools, projectSummary, type ProjectToolDeps } from './projectTools';
-import type { ProjectStore } from './storage';
+import { Mutex, type ProjectStore } from './storage';
 
 /** Journal (en ajout seul) de la conversation du pilote automatique pour une tâche donnée. */
 const taskLogPath = (taskId: string) => `chat/autopilot/${taskId}.jsonl`;
@@ -79,6 +86,11 @@ function cloneStatus(status: AutopilotStatus): AutopilotStatus {
  */
 export class AutopilotService {
   private readonly statuses = new Map<string, AutopilotStatus>();
+  /** Sérialise les écritures du journal d'une tâche : `runAgent` peut émettre plusieurs
+   * messages consécutifs sans attendre l'écriture précédente, et deux ajouts concurrents au
+   * même fichier peuvent se marcher dessus (le repli non atomique de `fs.appendFile` recrée le
+   * fichier via un nom temporaire qui peut entrer en collision entre deux écritures simultanées). */
+  private readonly logMutexes = new Map<string, Mutex>();
 
   constructor(private readonly deps: AutopilotDeps) {}
 
@@ -96,7 +108,8 @@ export class AutopilotService {
   }
 
   stop(projectId: string): AutopilotStatus {
-    this.deps.lock.abort(projectId);
+    // N'interrompt que le pilote : si le chat détient le verrou, on ne touche pas à sa réponse.
+    if (this.deps.lock.holder(projectId) === 'autopilot') this.deps.lock.abort(projectId);
     return this.status(projectId);
   }
 
@@ -214,7 +227,10 @@ export class AutopilotService {
     const userMessage: BetaMessageParam = {
       role: 'user',
       content: [
-        { type: 'text', text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }) },
+        {
+          type: 'text',
+          text: buildContextBlock({ project: projectSummary(manifest), planner: plannerDigest(planner) }),
+        },
         { type: 'text', text: instruction },
       ],
     };
@@ -258,14 +274,23 @@ export class AutopilotService {
       },
     });
     await Promise.all(writes);
+    this.logMutexes.delete(`${projectId}/${task.id}`);
     return outcome;
   }
 
   private appendTaskLog(projectId: string, taskId: string, value: unknown): Promise<void> {
+    const key = `${projectId}/${taskId}`;
+    let mutex = this.logMutexes.get(key);
+    if (!mutex) {
+      mutex = new Mutex();
+      this.logMutexes.set(key, mutex);
+    }
     const file = taskLogPath(taskId);
-    return fs.appendFile(this.deps.store.resolve(projectId, file), `${JSON.stringify(value)}\n`).catch(async () => {
-      await this.deps.store.writeFile(projectId, file, `${JSON.stringify(value)}\n`, true);
-    });
+    return mutex.run(() =>
+      fs.appendFile(this.deps.store.resolve(projectId, file), `${JSON.stringify(value)}\n`).catch(async () => {
+        await this.deps.store.writeFile(projectId, file, `${JSON.stringify(value)}\n`, true);
+      }),
+    );
   }
 
   private publish(projectId: string, status: AutopilotStatus): void {

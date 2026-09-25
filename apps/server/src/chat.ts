@@ -95,7 +95,9 @@ export class ChatService {
   }
 
   async clear(projectId: string): Promise<void> {
-    if (this.isRunning(projectId)) throw Object.assign(new Error('Une réponse est en cours.'), { statusCode: 409 });
+    if (this.deps.lock.holder(projectId) !== null) {
+      throw Object.assign(new Error('Une réponse est en cours.'), { statusCode: 409 });
+    }
     const stamp = nowIso().replace(/[:.]/g, '-');
     for (const file of [API_LOG, DISPLAY_LOG]) {
       try {
