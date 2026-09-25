@@ -97,13 +97,30 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   const toolDeps = (projectId: string) => ({
     store,
     projects,
-    generate: (request: GenerateRequest) => enqueueGeneration(projectId, request).done,
+    generate: (request: GenerateRequest, signal?: AbortSignal) => {
+      const { job, done } = enqueueGeneration(projectId, request);
+      // Le chat n'a annulé que sa propre boucle d'agent ; sans ce relais, le job de génération
+      // continue de tourner (et de dépenser des jetons IA) après un Stop.
+      if (signal) {
+        if (signal.aborted) jobs.cancel(job.id);
+        else signal.addEventListener('abort', () => jobs.cancel(job.id), { once: true });
+      }
+      return done;
+    },
+    onFileWritten: (path: string) => hub.publish(projectId, { type: 'file', data: { action: 'written', path } }),
   });
 
   const chat = new ChatService({ store, planners, hub, llm, lock, toolDeps });
   const autopilot = new AutopilotService({ store, planners, hub, chat, lock, llm, toolDeps });
 
-  const app = Fastify({ logger: options.logger ?? false, bodyLimit: 32 * 1024 * 1024 });
+  const app = Fastify({
+    logger: options.logger ?? false,
+    bodyLimit: 32 * 1024 * 1024,
+    // Le flux SSE de /events (voir plus bas) « hijack » sa réponse et ne se termine jamais tout
+    // seul : le comportement par défaut ('idle') laisse ces connexions actives indéfiniment, et
+    // `app.close()` n'aboutit jamais tant qu'un onglet éditeur est ouvert (voir main.ts).
+    forceCloseConnections: true,
+  });
   app.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, (_req, body, done) => done(null, body));
 
   app.setErrorHandler((error, _request, reply) => {
@@ -156,7 +173,23 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   );
 
   app.delete<{ Params: IdParams }>('/api/projects/:id', async (request) => {
-    await projects.delete(request.params.id);
+    const { id } = request.params;
+    // Le chat et le pilote automatique écrivent encore dans le dossier du projet (logs, planner…)
+    // pendant qu'ils tournent : les laisser continuer recréerait un dossier orphelin juste après
+    // sa suppression (writeFileAtomic fait un mkdir -p). On refuse plutôt que de les arrêter, pour
+    // ne pas perdre silencieusement une réponse en cours.
+    if (lock.holder(id) === 'autopilot') {
+      const msg = 'Le pilote automatique travaille sur ce projet : arrêtez-le avant de supprimer.';
+      throw Object.assign(new Error(msg), { statusCode: 409 });
+    }
+    if (chat.isRunning(id)) {
+      const msg = 'Une réponse de chat est en cours sur ce projet : arrêtez-la avant de supprimer.';
+      throw Object.assign(new Error(msg), { statusCode: 409 });
+    }
+    // Annule les jobs de génération en attente ou en cours pour ce projet, pour qu'ils ne
+    // recréent pas le dossier après coup (une fois `store.delete` terminé).
+    for (const job of jobs.list(id)) jobs.cancel(job.id);
+    await projects.delete(id);
     return { ok: true };
   });
 
@@ -191,11 +224,19 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     const { id } = request.params;
     const rel = request.params['*'];
     const body = request.body;
-    const data =
-      typeof body === 'string' || Buffer.isBuffer(body)
-        ? body
-        : body && typeof body === 'object'
-          ? `${JSON.stringify(body, null, 2)}\n`
+    // `text/plain` et `application/octet-stream` (les content-types envoyés par l'éditeur) donnent
+    // déjà les octets exacts (chaîne ou Buffer) : on les écrit tels quels. Un corps
+    // `application/json`, lui, est déjà décodé par Fastify (objet, tableau, mais aussi chaîne,
+    // nombre, booléen ou `null` selon ce qui a été envoyé) : il faut le resérialiser dans tous les
+    // cas, sinon un nombre/booléen/`null` tronque le fichier à vide et une chaîne JSON perd ses
+    // guillemets (fichier .json invalide).
+    const contentType = (request.headers['content-type'] ?? '').split(';')[0]?.trim();
+    const data = Buffer.isBuffer(body)
+      ? body
+      : contentType === 'application/json'
+        ? `${JSON.stringify(body, null, 2)}\n`
+        : typeof body === 'string'
+          ? body
           : '';
     await store.writeFile(id, rel, data);
     await store.updateManifest(id, () => undefined);

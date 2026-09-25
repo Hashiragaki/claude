@@ -13,9 +13,8 @@ import { loadPlatformTilesetInfo } from './textures';
 /**
  * Chargement du projet plateformer pour le rendu (système + niveaux atteignables + métadonnées
  * de tileset). Contrepartie de `validatePlatformerProject` (`../validate.ts`), qui ne renvoie que
- * des diagnostics : ce module conserve les données chargées pour les servir à la session de jeu.
- * (Un `loader.ts` séparé, listé comme fichier de référence, n'existe pas encore dans le paquet au
- * moment où ce module a été écrit ; cette fonction en tient lieu, localement au rendu.)
+ * des diagnostics : ce module conserve les données chargées pour les servir à `../runtime.ts`.
+ * Voir aussi `../loader.ts`, plus simple (système + niveaux), utilisé par le runtime sans affichage.
  */
 
 export interface PlatformerProjectData {

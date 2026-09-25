@@ -128,20 +128,18 @@ describe('PlatformerWorld — joueur', () => {
 
 describe('PlatformerWorld — pièces et arrivée', () => {
   it('ramasse une pièce une seule fois', () => {
-    const level = levelFromAscii(['....', '....', '....', '####'], {
-      entities: [{ id: 'c1', type: 'coin', x: 1, y: 2 }],
+    // Le joueur part de la case 0 et court vers la droite : il traverse la pièce en case 2.
+    const level = levelFromAscii(['......', '......', 'P.....', '######'], {
+      entities: [{ id: 'c1', type: 'coin', x: 2, y: 2 }],
     });
-    const system = makeSystem();
-    const world = new PlatformerWorld(level, system, { checkpoint: undefined });
-    // Place le joueur directement sur la pièce.
-    const events = run(world, 30, input({ right: true }));
-    const coinEvents = eventsOfType(events, 'coin');
-    expect(coinEvents.length).toBeLessThanOrEqual(1);
-    if (coinEvents.length === 1) {
-      expect(world.collectedIds()).toContain('c1');
-      const view = world.entities().find((e) => e.id === 'c1');
-      expect(view?.active).toBe(false);
-    }
+    const world = new PlatformerWorld(level, makeSystem());
+    const events = run(world, 60, input({ right: true }));
+    expect(eventsOfType(events, 'coin')).toHaveLength(1);
+    expect(world.collectedIds()).toEqual(['c1']);
+    expect(world.entities().find((e) => e.id === 'c1')?.active).toBe(false);
+    // Repasser dessus ne la ramasse pas une seconde fois.
+    const back = run(world, 60, input({ left: true }));
+    expect(eventsOfType(back, 'coin')).toHaveLength(0);
   });
 
   it('reprend une pièce déjà ramassée via `collected`', () => {

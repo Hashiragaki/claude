@@ -19,7 +19,7 @@ import type { AgentLock } from './agentLock';
 import type { EventHub } from './events';
 import type { PlannerService } from './plannerService';
 import { createProjectTools, describeAsset, projectSummary, type ProjectToolDeps } from './projectTools';
-import type { ProjectStore } from './storage';
+import { Mutex, type ProjectStore } from './storage';
 
 export interface DisplayMessage {
   id: string;
@@ -78,6 +78,12 @@ export interface ChatDeps {
  * jamais en même temps sur un même projet.
  */
 export class ChatService {
+  // Une ligne à la fois par fichier de log et par projet : `appendLine` peut être appelé pour
+  // plusieurs événements consécutifs sans attendre le précédent (ex. `writes.push(...)` dans
+  // `runAi`), et deux `fs.appendFile` concurrents sur le même fichier peuvent s'entrelacer côté OS.
+  // Le mutex garantit que les lignes sont écrites dans l'ordre où les événements sont survenus.
+  private readonly writeLocks = new Map<string, Mutex>();
+
   constructor(private readonly deps: ChatDeps) {}
 
   isRunning(projectId: string): boolean {
@@ -211,6 +217,13 @@ export class ChatService {
       meta: { role: 'chat', projectId },
       onEvent: (event) => {
         switch (event.type) {
+          case 'retry':
+            // Tour relancé : on efface le texte partiel de la tentative ratée (même id, texte vide).
+            if (current) {
+              current.text = '';
+              this.emit(projectId, { kind: 'message', message: { ...current } });
+            }
+            break;
           case 'thinking':
             this.emit(projectId, { kind: 'status', running: true, thinking: true });
             break;
@@ -268,10 +281,25 @@ export class ChatService {
     }
   }
 
+  private lockFor(projectId: string, file: string): Mutex {
+    const key = `${projectId}:${file}`;
+    let m = this.writeLocks.get(key);
+    if (!m) {
+      m = new Mutex();
+      this.writeLocks.set(key, m);
+    }
+    return m;
+  }
+
   private appendLine(projectId: string, file: string, value: unknown): Promise<void> {
-    return fs.appendFile(this.deps.store.resolve(projectId, file), `${JSON.stringify(value)}\n`).catch(async () => {
-      await this.deps.store.writeFile(projectId, file, `${JSON.stringify(value)}\n`, true);
-    });
+    // Sérialisé par fichier/projet : préserve l'ordre d'émission des événements (voir le
+    // commentaire sur `writeLocks`), plutôt que de laisser plusieurs `fs.appendFile` concurrents
+    // s'entrelacer.
+    return this.lockFor(projectId, file).run(() =>
+      fs.appendFile(this.deps.store.resolve(projectId, file), `${JSON.stringify(value)}\n`).catch(async () => {
+        await this.deps.store.writeFile(projectId, file, `${JSON.stringify(value)}\n`, true);
+      }),
+    );
   }
 
   private appendApi(projectId: string, message: BetaMessageParam): Promise<void> {

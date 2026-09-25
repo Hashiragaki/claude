@@ -173,3 +173,27 @@ describe('runAgent : comptabilité et routage', () => {
     for (const req of llm.requests) expect(req.meta).toEqual(meta);
   });
 });
+
+describe('runAgent — relance après une entrée illisible', () => {
+  it("émet « retry » avant de relancer le tour, pour que l'appelant oublie le texte partiel", async () => {
+    const { FakeLlmClient, textBlock } = await import('./fake');
+    const { runAgent } = await import('./agent');
+    const llm = new FakeLlmClient([
+      () => {
+        throw new SyntaxError('JSON illisible');
+      },
+      { content: [textBlock('bonne réponse')] },
+    ]);
+    const events: string[] = [];
+    const result = await runAgent({
+      llm,
+      system: 's',
+      messages: [{ role: 'user', content: 'go' }],
+      tools: [],
+      onEvent: (e) => events.push(e.type),
+    });
+    expect(result.text).toBe('bonne réponse');
+    expect(events.indexOf('retry')).toBeGreaterThanOrEqual(0);
+    expect(events.indexOf('retry')).toBeLessThan(events.indexOf('text'));
+  });
+});

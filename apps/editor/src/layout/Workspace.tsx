@@ -23,6 +23,7 @@ import {
   panelRequests,
   resetLayoutRequests,
   store,
+  useApp,
   type OpenDocument,
 } from '../state/app';
 
@@ -159,6 +160,15 @@ function openDocumentPanel(api: DockviewApi, doc: OpenDocument): void {
 /** Espace de travail à panneaux dockables (onglets, groupes, glisser-déposer). */
 export function Workspace() {
   const apiRef = useRef<DockviewApi | null>(null);
+  const locale = useApp((s) => s.locale);
+
+  // Retitre les onglets dockview quand la langue change : addPanel() ne fixe le titre qu'une
+  // fois, à la création du panneau, et rien d'autre ne le retraduit ensuite.
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    for (const id of PANEL_IDS) api.getPanel(id)?.api.setTitle(title(id));
+  }, [locale]);
 
   useEffect(() => {
     const offPanel = panelRequests.on((id) => {
@@ -175,8 +185,12 @@ export function Workspace() {
     const offReset = resetLayoutRequests.on(() => {
       const api = apiRef.current;
       if (!api) return;
+      // buildDefaultLayout() appelle api.clear(), qui déclenche onDidRemovePanel pour chaque
+      // panneau (dont les onglets de documents) et vide donc store.documents. Il faut capturer
+      // la liste des documents ouverts AVANT, sinon il ne reste plus rien à rouvrir ensuite.
+      const openDocs = store.get().documents;
       buildDefaultLayout(api);
-      for (const doc of store.get().documents) openDocumentPanel(api, doc);
+      for (const doc of openDocs) openDocumentPanel(api, doc);
     });
     return () => {
       offPanel();

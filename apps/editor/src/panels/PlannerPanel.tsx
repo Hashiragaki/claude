@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { startAutopilot, stopAutopilot, useAutopilot } from '../autopilot';
 import { requireProjectId, toastError, useApp } from '../state/app';
+import { computeKanbanDropIndex } from '../state/appLogic';
 import { PRIORITY_LABELS, STATUS_LABELS, TaskDialog } from './TaskDialog';
 
 const COLUMNS: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'done'];
@@ -150,7 +151,10 @@ function Kanban() {
     setDropColumn(null);
     const id = e.dataTransfer.getData('text/forge-task');
     if (!id) return;
-    const index = visible.filter((t) => t.status === status).length;
+    // moveTask attend un index dans la colonne COMPLÈTE (voir planner.ts), pas dans la vue
+    // filtrée par jalon affichée ici (`visible`) : sinon la carte se retrouve mal placée dès
+    // qu'un filtre de jalon masque des tâches de la colonne.
+    const index = computeKanbanDropIndex(tasks, status, id);
     void api.moveTask(requireProjectId(), id, status, index).catch(toastError);
   };
 

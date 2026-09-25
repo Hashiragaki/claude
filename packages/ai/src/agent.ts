@@ -31,6 +31,8 @@ export function defineTool<I>(tool: AgentTool<I>): AgentTool<I> {
 export type AgentEvent =
   | { type: 'text'; delta: string }
   | { type: 'thinking' }
+  /** Le tour en cours est relancé : le texte déjà diffusé pour ce tour doit être oublié. */
+  | { type: 'retry' }
   | { type: 'tool_start'; id: string; name: string; input: unknown }
   | { type: 'tool_end'; id: string; name: string; ok: boolean; result: string }
   /** Message ajouté à l'historique (à persister tel quel, dans l'ordre). */
@@ -109,7 +111,10 @@ export async function runAgent(options: AgentRunOptions): Promise<AgentRunResult
       jsonRetries = 0;
     } catch (error) {
       // Entrée d'outil illisible pendant le streaming : on relance le tour (quelques fois).
-      if (!isApiError(error) && jsonRetries++ < 2) continue;
+      if (!isApiError(error) && jsonRetries++ < 2) {
+        emit({ type: 'retry' });
+        continue;
+      }
       throw error;
     }
     usage = addUsage(usage, usageOf(response));

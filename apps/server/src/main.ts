@@ -25,6 +25,10 @@ try {
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
+    // Filet de sécurité : `app.close()` doit déjà être rapide (voir `forceCloseConnections` dans
+    // `createServer`), mais on force la sortie plutôt que de laisser le process comme zombie.
+    const forceExit = setTimeout(() => process.exit(0), 5000);
+    forceExit.unref();
     void app.close().then(() => process.exit(0));
   });
 }

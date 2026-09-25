@@ -250,12 +250,10 @@ export class GenerationService {
     }
     if (budgetNote) info.note = budgetNote;
 
-    const alias = req.alias ?? parent?.alias;
     const asset: AssetMeta = {
       id,
       kind: generator.kind,
       name,
-      ...(alias ? { alias } : {}),
       file,
       ...(source ? { source } : {}),
       extra,
@@ -266,13 +264,20 @@ export class GenerationService {
       ...(prompt ? { prompt } : {}),
       params: params as Record<string, unknown>,
       seed,
-      ...(parent ? { parentId: parent.id } : {}),
       version: parent ? parent.version + 1 : 1,
       info,
       createdAt: nowIso(),
     };
     await this.store.updateManifest(projectId, (m) => {
+      // L'alias et le parent sont relus dans le manifeste courant (verrouillé par la mutation) :
+      // la génération peut avoir pris plusieurs minutes, pendant lesquelles l'alias ou le parent
+      // ont pu changer (ou disparaître), et on ne veut pas écraser ces changements avec l'état lu
+      // au tout début de la génération.
+      const liveParent = req.parentId ? m.assets.find((a) => a.id === req.parentId) : undefined;
+      if (req.parentId && liveParent) asset.parentId = liveParent.id;
+      const alias = req.alias ?? liveParent?.alias;
       if (alias) {
+        asset.alias = alias;
         // L'alias passe à la nouvelle version : les scripts utilisent toujours la plus récente.
         for (const other of m.assets) if (other.alias?.toLowerCase() === alias.toLowerCase()) delete other.alias;
       }

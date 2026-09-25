@@ -12,6 +12,7 @@ import {
   type ProjectSummary,
 } from '../api';
 import { autopilotStore, getAutopilot, type AutopilotStatus } from '../autopilot';
+import { createSequencer, mergeJobUpdate } from './appLogic';
 import { Store, useSelector } from './store';
 
 export interface LogEntry {
@@ -127,7 +128,11 @@ export async function refreshProjects(): Promise<void> {
 
 let events: EventSource | null = null;
 
+/** Jeton anti-course : seule la dernière `openProject()` lancée peut écrire dans le store. */
+const openSequencer = createSequencer();
+
 export async function openProject(id: string): Promise<void> {
+  const seq = openSequencer.next();
   closeProject();
   const [project, planner, chat, jobs] = await Promise.all([
     api.getProject(id),
@@ -135,6 +140,9 @@ export async function openProject(id: string): Promise<void> {
     api.chat(id),
     api.jobs(id),
   ]);
+  // Un openProject() plus récent a démarré entre-temps (double clic, ou changement de projet
+  // pendant le chargement) : ce résultat est périmé, on ne touche pas au store.
+  if (!openSequencer.isCurrent(seq)) return;
   localStorage.setItem('forge:lastProject', id);
   store.set({
     project,
@@ -177,7 +185,11 @@ export async function deleteProject(id: string): Promise<void> {
 export async function refreshManifest(): Promise<void> {
   const id = store.get().project?.id;
   if (!id) return;
-  store.set({ project: await api.getProject(id) });
+  const project = await api.getProject(id);
+  // Le projet a été fermé ou changé pendant la requête : ce manifeste est celui d'un autre
+  // projet (ou d'aucun), il ne faut pas l'écrire dans le store.
+  if (store.get().project?.id !== id) return;
+  store.set({ project });
 }
 
 export async function updateProject(patch: Parameters<typeof api.updateProject>[1]): Promise<void> {
@@ -189,6 +201,9 @@ export async function validateProject(): Promise<Diagnostic[]> {
   const id = store.get().project?.id;
   if (!id) return [];
   const diagnostics = await api.validate(id);
+  // Le projet a été fermé ou changé pendant la requête : ces diagnostics ne concernent plus
+  // le projet actuellement ouvert.
+  if (store.get().project?.id !== id) return diagnostics;
   store.set({ diagnostics });
   for (const d of diagnostics.filter((x) => x.severity === 'error')) {
     log('error', 'validation', `${d.file}${d.line ? `:${d.line}` : ''} — ${d.message}`);
@@ -208,14 +223,45 @@ export function requireProjectId(): string {
 
 let plannerTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Relit chat, jobs, projet et planner depuis le serveur après une (re)connexion SSE. */
+async function resyncProject(projectId: string): Promise<void> {
+  const [project, planner, chat, jobs] = await Promise.all([
+    api.getProject(projectId),
+    api.planner(projectId),
+    api.chat(projectId),
+    api.jobs(projectId),
+  ]);
+  if (store.get().project?.id !== projectId) return;
+  store.set({
+    project,
+    planner: { data: planner.data, review: planner.review },
+    chat: { messages: chat.messages, running: chat.running, thinking: false, ai: chat.ai },
+    jobs,
+  });
+}
+
 function connectEvents(projectId: string): void {
-  events = new EventSource(api.eventsUrl(projectId));
+  // Ferme un flux précédent encore ouvert (ex. deux openProject() qui se chevauchent) : sinon
+  // ses événements continuent de modifier le store même après avoir été « remplacés » ici.
+  events?.close();
+  const source = new EventSource(api.eventsUrl(projectId));
+  events = source;
+  let firstOpen = true;
+  source.addEventListener('open', () => {
+    if (firstOpen) {
+      // Première connexion : le snapshot vient d'être chargé par openProject(), inutile de le
+      // relire tout de suite.
+      firstOpen = false;
+      return;
+    }
+    // Reconnexion automatique de l'EventSource (ex. redémarrage du serveur pendant une
+    // réponse en cours) : des événements ont pu être manqués pendant la coupure, on
+    // resynchronise donc l'état depuis le serveur.
+    void resyncProject(projectId);
+  });
   events.addEventListener('job', (e) => {
     const job = JSON.parse((e as MessageEvent).data) as Job;
-    store.set((s) => {
-      const jobs = s.jobs.filter((j) => j.id !== job.id);
-      return { jobs: [job, ...jobs].slice(0, 100) };
-    });
+    store.set((s) => ({ jobs: mergeJobUpdate(s.jobs, job).slice(0, 100) }));
     if (job.status === 'error') log('error', 'génération', `${job.label} : ${job.error ?? 'échec'}`);
     if (job.status === 'done') log('info', 'génération', `${job.label} : terminé`);
   });
@@ -258,10 +304,22 @@ function applyChatEvent(event: ChatEvent): void {
         if (event.message.role === 'assistant') chat.thinking = false;
         break;
       }
-      case 'delta':
+      case 'delta': {
         chat.thinking = false;
-        chat.messages = chat.messages.map((m) => (m.id === event.id ? { ...m, text: m.text + event.delta } : m));
+        const index = chat.messages.findIndex((m) => m.id === event.id);
+        if (index >= 0) {
+          chat.messages = chat.messages.map((m, i) => (i === index ? { ...m, text: m.text + event.delta } : m));
+        } else {
+          // Le message initial ('message', texte vide) n'a pas été vu par ce client (connecté
+          // après coup : rechargement de page, deuxième onglet) : on le recrée à partir des
+          // deltas plutôt que de les jeter, sinon la réponse de l'assistant reste invisible.
+          chat.messages = [
+            ...chat.messages,
+            { id: event.id, role: 'assistant', text: event.delta, at: new Date().toISOString() },
+          ];
+        }
         break;
+      }
       case 'status':
         chat.running = event.running;
         chat.thinking = event.running && Boolean(event.thinking);
@@ -278,6 +336,8 @@ export async function refreshPlanner(): Promise<void> {
   const id = store.get().project?.id;
   if (!id) return;
   const planner = await api.planner(id);
+  // Idem : ne pas écraser le planner d'un autre projet ouvert entre-temps.
+  if (store.get().project?.id !== id) return;
   store.set({ planner: { data: planner.data, review: planner.review } });
 }
 
@@ -288,7 +348,9 @@ export async function refreshPlanner(): Promise<void> {
 export async function generateAsset(req: GenerateRequest): Promise<void> {
   const id = requireProjectId();
   const job = await api.generate(id, req);
-  store.set((s) => ({ jobs: [job, ...s.jobs.filter((j) => j.id !== job.id)] }));
+  // Le job a pu déjà se terminer via SSE avant que cette réponse POST (encore 'queued' ou
+  // 'running') ne revienne : mergeJobUpdate garde alors la version terminée.
+  store.set((s) => ({ jobs: mergeJobUpdate(s.jobs, job) }));
   log('info', 'génération', `Lancé : ${job.label}`);
 }
 

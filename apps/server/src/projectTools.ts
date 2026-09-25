@@ -11,8 +11,10 @@ const WRITABLE_DIRS = ['scripts/', 'data/', 'maps/', 'notes/', 'scenes/'];
 export interface ProjectToolDeps {
   store: ProjectStore;
   projects: ProjectService;
-  /** Lance une génération (via la file de jobs) et attend l'asset. */
-  generate(request: GenerateRequest): Promise<AssetMeta>;
+  /** Lance une génération (via la file de jobs) et attend l'asset ; annulée si `signal` s'aborte. */
+  generate(request: GenerateRequest, signal?: AbortSignal): Promise<AssetMeta>;
+  /** Appelé après une écriture réussie de `write_file`, pour que l'éditeur recharge le fichier. */
+  onFileWritten?(path: string): void;
   aiAvailable: boolean;
 }
 
@@ -100,6 +102,9 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
         const target = checkWritable(path);
         if (target.endsWith('.json')) JSON.parse(content);
         await deps.store.writeFile(projectId, target, content);
+        // Sans cet événement, un éditeur déjà ouvert sur ce fichier garde l'ancien contenu et son
+        // prochain autosave écraserait l'écriture de l'IA (voir ProjectToolDeps.onFileWritten).
+        deps.onFileWritten?.(target);
         const diagnostics = await deps.projects.validate(projectId);
         const relevant = diagnostics.filter((d) => d.severity !== 'info');
         return `Fichier écrit : ${target}.\n${
@@ -148,8 +153,8 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
           instruction: z.string().optional(),
           review: z.boolean().optional().describe('Critique visuelle du rendu par l\'IA (mettre à false pour aller plus vite)'),
         }),
-        run: async (input) => {
-          const asset = await deps.generate({ ...input, params: input.params ?? {}, mode: 'ai' });
+        run: async (input, signal) => {
+          const asset = await deps.generate({ ...input, params: input.params ?? {}, mode: 'ai' }, signal);
           return `Asset créé : ${describeAsset(asset)}`;
         },
       }),
