@@ -62,6 +62,28 @@ export function battlerAsset(
   } satisfies TemplateAssetRequest;
 }
 
+export type BackgroundScene =
+  | 'cafe' | 'street' | 'park' | 'bedroom' | 'classroom' | 'forest' | 'beach' | 'castle' | 'space' | 'generic';
+
+/** Décor plein écran (fond de combat, écran titre…). */
+export function backgroundAsset(
+  alias: string,
+  name: string,
+  scene: BackgroundScene,
+  seed: number,
+  prompt: string,
+  timeOfDay: 'day' | 'sunset' | 'night' = 'day',
+) {
+  return {
+    alias,
+    name,
+    generator: 'image.svg',
+    params: { subject: 'background', scene, timeOfDay, width: 960, height: 540, prompt },
+    seed,
+    tags: ['rpg', 'décor'],
+  } satisfies TemplateAssetRequest;
+}
+
 export function musicAsset(alias: string, name: string, mood: MusicMood, seed: number, prompt: string) {
   return {
     alias,

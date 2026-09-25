@@ -518,7 +518,12 @@ export class RpgRuntime implements GameRuntime {
   // -------------------------------------------------------------------------
 
   private async saveSlots(): Promise<SlotView[]> {
-    const infos = await this.ctx.saves.list();
+    let infos: Awaited<ReturnType<RuntimeContext['saves']['list']>> = [];
+    try {
+      infos = await this.ctx.saves.list();
+    } catch (error) {
+      this.ctx.log('warn', `Sauvegardes illisibles : ${error instanceof Error ? error.message : String(error)}`);
+    }
     return SAVE_SLOTS.map((slot, i) => {
       const info = infos.find((s) => s.slot === slot);
       const name = this.t('rpg.slot', { n: i + 1 });
@@ -536,7 +541,12 @@ export class RpgRuntime implements GameRuntime {
     const leader = state.party[0];
     const mapName = this.session.world?.map.name || state.map;
     const label = leader ? `${mapName} — ${leader.name} ${this.t('rpg.level')} ${leader.level}` : mapName;
-    await this.ctx.saves.save(slot, state, label, Math.floor(state.playTime));
+    try {
+      await this.ctx.saves.save(slot, state, label, Math.floor(state.playTime));
+    } catch (error) {
+      this.ctx.log('warn', `Sauvegarde impossible : ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
     this.ctx.log('info', this.t('save.saved'));
     return true;
   }
@@ -544,12 +554,13 @@ export class RpgRuntime implements GameRuntime {
   /** Charge un emplacement et reconstruit la carte (écran déjà au noir). */
   private async loadSlot(slot: string): Promise<boolean> {
     const epoch = this.epoch;
-    const data = await this.ctx.saves.load(slot);
-    this.guard(epoch);
-    if (!data) return false;
     try {
+      const data = await this.ctx.saves.load(slot);
+      this.guard(epoch);
+      if (!data) return false;
       this.session.deserialize(data.state);
     } catch (error) {
+      if (error instanceof Cancelled) throw error;
       this.ctx.log('warn', `${this.t('rpg.loadFailed')} ${error instanceof Error ? error.message : ''}`);
       return false;
     }

@@ -230,11 +230,33 @@ export const CommandSchema: z.ZodType<Command, Command> = z.discriminatedUnion('
   z.object({ type: z.literal('comment'), text: z.string() }),
 ]);
 
-export const COMMAND_TYPES: readonly CommandType[] = [
-  'text', 'choice', 'if', 'setSwitch', 'setSelfSwitch', 'setVariable', 'giveItem', 'giveGold', 'teleport',
-  'battle', 'wait', 'playSfx', 'playMusic', 'stopMusic', 'moveRoute', 'healParty', 'erase', 'setFlag',
-  'gameOver', 'returnToTitle', 'script', 'comment',
-];
+/** Documentation courte de chaque commande (éditeur, outils IA). */
+export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
+  text: 'Affiche un message { speaker?, text } ; `[expr]` insère une variable ou un calcul.',
+  choice: 'Propose des options { options: [{ label, commands }], cancel? (index exécuté si annulation) }.',
+  if: 'Condition { condition, then, else? } : switch, variable, item, gold, selfSwitch ou script.',
+  setSwitch: 'Interrupteur global { name, value? (ON par défaut) }.',
+  setSelfSwitch: 'Interrupteur local A–D { letter, value?, event? (cet événement par défaut) }.',
+  setVariable: 'Variable { name, op?: set|add|sub|mul|div|mod|random, value, max? (pour random) }.',
+  giveItem: 'Donne des objets { item, count? (négatif = retire) }.',
+  giveGold: 'Donne de l\'or { amount (négatif = retire) }.',
+  teleport: 'Transfère le joueur { map, x, y, direction? }.',
+  battle: 'Combat { troop, canEscape?, canLose?, onWin?, onLose?, onEscape? } ; défaite sans canLose = game over.',
+  wait: 'Pause { seconds }.',
+  playSfx: 'Joue un effet sonore { ref }.',
+  playMusic: 'Change la musique { ref }.',
+  stopMusic: 'Arrête la musique.',
+  moveRoute: 'Trajet { target: player|this|id, steps: [up, down, left, right, turnUp…, wait], wait? (défaut vrai) }.',
+  healParty: 'Soigne entièrement l\'équipe (PV, PM, K.O.).',
+  erase: 'Efface cet événement jusqu\'au prochain chargement de la carte.',
+  setFlag: 'Drapeau de jeu { flag: encounters|menu|save|dash, value }.',
+  gameOver: 'Fin de partie (écran de game over).',
+  returnToTitle: 'Retour à l\'écran titre.',
+  script: 'Instruction de script { code } (ex. `quete += 1`, `gold -= 10`).',
+  comment: 'Commentaire sans effet { text }.',
+};
+
+export const COMMAND_TYPES = Object.keys(COMMAND_DESCRIPTIONS) as CommandType[];
 
 // ---------------------------------------------------------------------------
 // Événements et cartes

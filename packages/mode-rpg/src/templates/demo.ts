@@ -1,6 +1,6 @@
 import type { ProjectTemplate } from '@forge/core';
 import type { RpgDatabaseInput, RpgSystemInput } from '../schema';
-import { battlerAsset, charsetAsset, musicAsset, sfxAsset, tilesetAsset } from './assets';
+import { backgroundAsset, battlerAsset, charsetAsset, musicAsset, sfxAsset, tilesetAsset } from './assets';
 import { buildInnMap, buildVillageMap } from './demoMaps';
 
 export const DEMO_SYSTEM: RpgSystemInput = {
@@ -25,6 +25,7 @@ export const DEMO_SYSTEM: RpgSystemInput = {
     coin: 'son piece',
     door: 'son porte',
   },
+  battleback: 'fond combat',
 };
 
 export const DEMO_DATABASE: RpgDatabaseInput = {
@@ -280,6 +281,7 @@ export const demoTemplate: ProjectTemplate = {
     battlerAsset('battler slime', 'Slime', 'slime', '#57c46a', 3001, 'Petit slime vert souriant'),
     battlerAsset('battler chauve-souris', 'Chauve-souris', 'bat', '#6a4c9c', 3002, 'Chauve-souris violette'),
     battlerAsset('battler roi slime', 'Roi Slime', 'slime', '#3f7de0', 3003, 'Roi Slime géant et bleu, couronne dorée'),
+    backgroundAsset('fond combat', 'Fond de combat', 'forest', 3004, 'Clairière paisible près d\'un étang'),
     musicAsset('musique titre', 'Thème principal', 'epic', 4001, 'Thème héroïque et entraînant'),
     musicAsset('musique village', 'Village de Brume', 'village', 4002, 'Mélodie paisible de village'),
     musicAsset('musique auberge', 'Auberge', 'calm', 4003, 'Ambiance chaleureuse et calme'),

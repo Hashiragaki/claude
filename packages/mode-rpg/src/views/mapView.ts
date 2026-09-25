@@ -36,6 +36,8 @@ class CharacterSprite extends Container {
     this.reset();
     this.frames = frames;
     if (frames) {
+      // Charset haute résolution : ramené à la grille de 16 px.
+      this.sprite.scale.set(frames.frameWidth > S * 1.5 ? S / frames.frameWidth : 1);
       this.sprite.visible = true;
     } else {
       this.placeholder = placeholderCharacter(ref);
