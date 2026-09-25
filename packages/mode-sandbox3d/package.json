@@ -1,0 +1,23 @@
+{
+  "name": "@forge/mode-sandbox3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mode bac à sable 3D (exploration, modèles et animations glTF).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/render3d": "workspace:*",
+    "three": "^0.186.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@forge/editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Éditeur Forge (interface sombre type suite créative, panneaux dockables).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@adobe/react-spectrum": "^3.47.5",
+    "@spectrum-icons/workflow": "^4.3.2",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
+    "codemirror": "^6.0.2",
+    "@forge/core": "workspace:*",
+    "@forge/render2d": "workspace:*",
+    "@forge/render3d": "workspace:*",
+    "@forge/mode-vn": "workspace:*",
+    "@forge/mode-rpg": "workspace:*",
+    "@forge/mode-sandbox3d": "workspace:*",
+    "@forge/planner": "workspace:*",
+    "dockview-react": "^8.3.1",
+    "pixi.js": "^8.21.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.1"
+  }
+}

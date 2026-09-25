@@ -1,0 +1,27 @@
+{
+  "name": "forge-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Forge — moteur de jeu web avec génération d'assets par IA, modes RPG / Visual Novel / 3D et planificateur long terme.",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,editor -c blue,magenta \"pnpm --filter @forge/server dev\" \"pnpm --filter @forge/editor dev\"",
+    "build": "pnpm typecheck && pnpm --filter @forge/editor build",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "start": "pnpm --filter @forge/server start"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.19.0",
+    "concurrently": "^10.0.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

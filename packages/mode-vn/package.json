@@ -1,0 +1,20 @@
+{
+  "name": "@forge/mode-vn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mode Visual Novel (langage de script inspiré de Ren'Py).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/render2d": "workspace:*",
+    "pixi.js": "^8.21.0",
+    "zod": "^4.6.5"
+  }
+}

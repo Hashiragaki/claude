@@ -1,0 +1,24 @@
+{
+  "name": "@forge/generators",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Générateurs d'assets (images SVG, pixel-art, tilesets, sons, musique, 3D, animations) pilotés par IA ou procéduraux.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "zod": "^4.6.5",
+    "three": "^0.186.1",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "@types/node": "^22.19.0"
+  }
+}

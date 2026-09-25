@@ -1,0 +1,19 @@
+{
+  "name": "@forge/planner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Planification long terme : jalons, tâches, dépendances, calendrier, agent de planification.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/ai": "workspace:*",
+    "zod": "^4.6.5"
+  }
+}

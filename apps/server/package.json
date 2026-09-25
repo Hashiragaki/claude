@@ -1,0 +1,31 @@
+{
+  "name": "@forge/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Serveur Forge : projets, génération d'assets, jobs, chat IA et planificateur.",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/ai": "workspace:*",
+    "@forge/core": "workspace:*",
+    "@forge/generators": "workspace:*",
+    "@forge/planner": "workspace:*",
+    "@forge/mode-vn": "workspace:*",
+    "@forge/mode-rpg": "workspace:*",
+    "@forge/mode-sandbox3d": "workspace:*",
+    "@fastify/static": "^10.1.4",
+    "@resvg/resvg-js": "^2.6.2",
+    "fastify": "^5.12.5",
+    "fflate": "^0.8.3",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0"
+  }
+}

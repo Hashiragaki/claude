@@ -1,0 +1,21 @@
+{
+  "name": "@forge/render3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rendu 3D Three.js partagé (vue, glTF, animations).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0"
+  }
+}
