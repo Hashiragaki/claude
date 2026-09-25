@@ -146,6 +146,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
           tags: z.array(z.string()).optional(),
           parentId: z.string().optional(),
           instruction: z.string().optional(),
+          review: z.boolean().optional().describe('Critique visuelle du rendu par l\'IA (mettre à false pour aller plus vite)'),
         }),
         run: async (input) => {
           const asset = await deps.generate({ ...input, params: input.params ?? {}, mode: 'ai' });

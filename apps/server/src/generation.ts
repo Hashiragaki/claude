@@ -1,6 +1,13 @@
-import { StructuredGenerationError, generateStructured, type LlmClient } from '@forge/ai';
-import { Rng, nowIso, shortId, slugify, type AssetMeta, type AssetOrigin } from '@forge/core';
-import { GENERATORS, getGenerator, type GeneratorDefinition } from '@forge/generators';
+import { StructuredGenerationError, generateStructured, type LlmClient, type StructuredReview } from '@forge/ai';
+import { Rng, nowIso, shortId, slugify, type AssetKind, type AssetMeta, type AssetOrigin } from '@forge/core';
+import {
+  GENERATORS,
+  getGenerator,
+  readPngSize,
+  upscalePngNearest,
+  type GeneratorDefinition,
+  type GeneratorResult,
+} from '@forge/generators';
 import { z } from 'zod';
 import { rasterizeSvg } from './rasterize';
 import type { ProjectStore } from './storage';
@@ -20,6 +27,12 @@ export const GenerateRequestSchema = z.object({
   /** Instruction de retouche appliquée à la spec de `parentId` (nécessite l'IA). */
   instruction: z.string().optional(),
   origin: z.enum(['ai', 'procedural', 'import', 'template']).optional(),
+  /**
+   * Critique visuelle du rendu par l'IA (voir `GenerationServiceOptions.visionReview` pour le
+   * défaut quand cette clé est absente). Ignorée hors génération par IA ou pour un générateur non
+   * `reviewable`.
+   */
+  review: z.boolean().optional(),
 });
 export type GenerateRequest = z.input<typeof GenerateRequestSchema>;
 
@@ -33,6 +46,9 @@ const KIND_DIRS: Record<string, string> = {
   model: 'models',
 };
 
+/** Types d'assets dont le rendu est une image qu'on peut montrer à l'IA pour critique. */
+const REVIEWABLE_KINDS: ReadonlySet<AssetKind> = new Set(['image', 'charset', 'tileset', 'spritesheet']);
+
 /** Description publique d'un générateur (pour l'éditeur). */
 export function describeGenerators() {
   return GENERATORS.map((g: GeneratorDefinition) => ({
@@ -41,7 +57,36 @@ export function describeGenerators() {
     label: g.label,
     description: g.description,
     params: z.toJSONSchema(g.paramsSchema, { unrepresentable: 'any', io: 'input' }),
+    reviewable: REVIEWABLE_KINDS.has(g.kind),
   }));
+}
+
+export interface GenerationServiceOptions {
+  /**
+   * Active la critique visuelle par défaut, quand la requête ne précise pas `review`. Par défaut,
+   * lit la variable d'environnement `FORGE_VISION_REVIEW` (désactivée seulement si elle vaut `off`).
+   */
+  visionReview?: boolean;
+}
+
+/** Rendu mis en cache pendant la critique visuelle, réutilisé s'il correspond à la spec finale. */
+interface RenderCache {
+  spec: unknown;
+  result: GeneratorResult;
+}
+
+/** Rend un `GeneratorResult` en image à montrer à l'IA pour critique (voir `StructuredReview.render`). */
+function buildReviewRender(result: GeneratorResult): { image?: { data: Uint8Array; mediaType: 'image/png' }; note?: string } | null {
+  const main = result.files.find((f) => f.role === 'main');
+  if (!main || !(main.data instanceof Uint8Array)) return null;
+  const size = readPngSize(main.data);
+  if (!size) return null;
+  const largest = Math.max(size.width, size.height);
+  const needsUpscale = Boolean(result.info.pixelArt) || largest < 256;
+  if (!needsUpscale) return { image: { data: main.data, mediaType: 'image/png' }, note: `Rendu ${size.width}×${size.height}` };
+  const factor = Math.min(8, Math.max(2, Math.floor(512 / largest)));
+  const upscaled = upscalePngNearest(main.data, factor);
+  return { image: { data: upscaled, mediaType: 'image/png' }, note: `Rendu ${size.width}×${size.height} (agrandi ×${factor})` };
 }
 
 /**
@@ -49,10 +94,15 @@ export function describeGenerators() {
  * le manifeste, avec historique de versions et alias unique.
  */
 export class GenerationService {
+  private readonly visionReview: boolean;
+
   constructor(
     private readonly store: ProjectStore,
     private readonly llm: LlmClient | null,
-  ) {}
+    options: GenerationServiceOptions = {},
+  ) {
+    this.visionReview = options.visionReview ?? process.env.FORGE_VISION_REVIEW !== 'off';
+  }
 
   get aiAvailable(): boolean {
     return this.llm !== null;
@@ -80,16 +130,29 @@ export class GenerationService {
       throw new Error('L\'IA n\'est pas configurée (ANTHROPIC_API_KEY) : utilisez le mode procédural.');
     }
 
+    // Critique active seulement quand l'IA produit la spec (génération ou retouche), pour un
+    // générateur dont le rendu est une image, et si la requête ou le défaut du service l'activent.
+    const aiUsed = useAi || Boolean(req.instruction && parent);
+    const reviewEnabled = aiUsed && REVIEWABLE_KINDS.has(generator.kind) && (req.review ?? this.visionReview);
+
     let spec: unknown;
     let origin: AssetOrigin;
+    let reviews = 0;
+    let cache: RenderCache | undefined;
     if (req.instruction && parent) {
       report('Retouche par l\'IA…');
       const current = await this.loadSpec(projectId, parent);
-      spec = await this.askAi(generator, generator.buildEditPrompt(current, req.instruction, params), report, signal);
+      const ai = await this.askAi(generator, generator.buildEditPrompt(current, req.instruction, params), params, reviewEnabled, report, signal);
+      spec = ai.value;
+      reviews = ai.reviews;
+      cache = ai.cache;
       origin = 'ai';
     } else if (useAi) {
       report('Génération par l\'IA…');
-      spec = await this.askAi(generator, generator.buildPrompt(params), report, signal);
+      const ai = await this.askAi(generator, generator.buildPrompt(params), params, reviewEnabled, report, signal);
+      spec = ai.value;
+      reviews = ai.reviews;
+      cache = ai.cache;
       origin = 'ai';
     } else {
       report('Génération procédurale…');
@@ -100,7 +163,8 @@ export class GenerationService {
     signal?.throwIfAborted();
 
     report('Rendu…');
-    const result = await generator.render(spec, params, { rasterizeSvg });
+    // Le dernier tour de critique a déjà rendu cette spec exacte : pas la peine de la refaire.
+    const result = cache && cache.spec === spec ? cache.result : await generator.render(spec, params, { rasterizeSvg });
 
     const prompt = typeof (params as { prompt?: unknown }).prompt === 'string' ? (params as { prompt: string }).prompt : '';
     const name = req.name ?? parent?.name ?? (prompt ? truncateWords(prompt, 6) : generator.label);
@@ -145,7 +209,7 @@ export class GenerationService {
       seed,
       ...(parent ? { parentId: parent.id } : {}),
       version: parent ? parent.version + 1 : 1,
-      info: result.info,
+      info: reviews > 0 ? { ...result.info, reviewRounds: reviews } : result.info,
       createdAt: nowIso(),
     };
     await this.store.updateManifest(projectId, (m) => {
@@ -158,12 +222,30 @@ export class GenerationService {
     return asset;
   }
 
+  /**
+   * Demande la spec à l'IA (via `generateStructured`), avec critique visuelle optionnelle du
+   * rendu. Renvoie aussi le rendu mis en cache pendant la critique, pour éviter de le refaire.
+   */
   private async askAi(
     generator: GeneratorDefinition,
     prompt: string,
+    params: unknown,
+    reviewEnabled: boolean,
     report: (progress: string) => void,
     signal?: AbortSignal,
-  ): Promise<unknown> {
+  ): Promise<{ value: unknown; reviews: number; cache?: RenderCache }> {
+    let cache: RenderCache | undefined;
+    const review: StructuredReview<unknown> | undefined = reviewEnabled
+      ? {
+          maxRounds: 1,
+          instructions: generator.reviewHint,
+          render: async (value) => {
+            const result = await generator.render(value, params, { rasterizeSvg });
+            cache = { spec: value, result };
+            return buildReviewRender(result);
+          },
+        }
+      : undefined;
     try {
       const result = await generateStructured({
         llm: this.llm as LlmClient,
@@ -174,8 +256,10 @@ export class GenerationService {
         onAttempt: (attempt, error) => {
           if (attempt > 1) report(`Correction par l'IA (essai ${attempt})… ${error ? error.split('\n')[0] : ''}`);
         },
+        review,
+        onReview: () => report('Critique du rendu par l\'IA…'),
       });
-      return result.value;
+      return { value: result.value, reviews: result.reviews, cache };
     } catch (error) {
       if (error instanceof StructuredGenerationError) throw new Error(`L'IA n'a pas produit un résultat valide : ${error.lastError}`);
       throw error;
