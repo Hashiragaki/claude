@@ -7,6 +7,7 @@ import {
   type PlatformerSystem,
   type PlatformerSystemInput,
 } from './schema';
+import type { PlatformerInput } from './types';
 
 /** Outils partagés par les tests (non exportés par le paquet). */
 
@@ -76,4 +77,12 @@ export function makeSystem(overrides: Partial<PlatformerSystemInput> = {}): Plat
     playerCharset: 'chara test',
     ...overrides,
   });
+}
+
+/** Commande joueur « neutre » (rien d'appuyé). */
+export const NO_INPUT: PlatformerInput = { left: false, right: false, jumpHeld: false, jumpPressed: false, down: false };
+
+/** Construit une commande joueur pour les tests (tout à `false` sauf les surcharges). */
+export function input(overrides: Partial<PlatformerInput> = {}): PlatformerInput {
+  return { ...NO_INPUT, ...overrides };
 }

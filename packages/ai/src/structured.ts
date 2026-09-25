@@ -188,7 +188,8 @@ function isStrictSchemaError(error: unknown): boolean {
  */
 export async function generateStructured<T>(request: StructuredRequest<T>): Promise<StructuredResult<T>> {
   const toolName = request.toolName ?? 'submit_result';
-  const toolDescription = request.toolDescription ?? 'Soumet le résultat final, au format JSON décrit par le schéma.';
+  const toolDescription =
+    request.toolDescription ?? 'Soumet le résultat final, au format JSON décrit par le schéma.';
   const maxAttempts = request.maxAttempts ?? 3;
   const review = request.review;
   const maxRounds = review ? (review.maxRounds ?? 1) : 0;
@@ -204,7 +205,14 @@ export async function generateStructured<T>(request: StructuredRequest<T>): Prom
     }) as BetaToolUnion;
   let tool = buildTool(strictActive);
   const send = async (messages: BetaMessageParam[], overrides: { model?: string; effort?: Effort } = {}) => {
-    const req = { system: request.system, messages, tools: [tool], maxTokens: request.maxTokens ?? 32000, meta: request.meta, ...overrides };
+    const req = {
+      system: request.system,
+      messages,
+      tools: [tool],
+      maxTokens: request.maxTokens ?? 32000,
+      meta: request.meta,
+      ...overrides,
+    };
     try {
       return await request.llm.send(req, {}, request.signal);
     } catch (error) {
@@ -249,7 +257,9 @@ export async function generateStructured<T>(request: StructuredRequest<T>): Prom
         lastError = 'JSON invalide dans l\'appel d\'outil.';
         continue;
       }
-      if (lastValid !== undefined) return { value: lastValid, attempts: attempt, usage, reviews: rounds, escalated: false };
+      if (lastValid !== undefined) {
+        return { value: lastValid, attempts: attempt, usage, reviews: rounds, escalated: false };
+      }
       throw error;
     }
     usage = addUsage(usage, usageOf(response));

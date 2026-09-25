@@ -37,7 +37,12 @@ export class FakeLlmClient implements LlmClient {
     const hasTool = (partial.content as BetaContentBlock[]).some((b) => b.type === 'tool_use');
     // `usage` fourni peut être partiel (ex. seulement les compteurs de cache) : on complète les
     // compteurs manquants avec les valeurs par défaut plutôt que de remplacer l'objet entier.
-    const defaultUsage = { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 };
+    const defaultUsage = {
+      input_tokens: 10,
+      output_tokens: 20,
+      cache_read_input_tokens: 0,
+      cache_creation_input_tokens: 0,
+    };
     const usage = { ...defaultUsage, ...(partial.usage as Partial<typeof defaultUsage> | undefined) };
     return {
       id: `msg_fake_${this.requests.length}`,

@@ -79,9 +79,8 @@ describe('estimateCost', () => {
   });
 
   it('0 pour un modèle inconnu', () => {
-    expect(estimateCost('modele-inconnu', { inputTokens: 100, outputTokens: 100, cacheReadTokens: 0, cacheWriteTokens: 0 })).toBe(
-      0,
-    );
+    const usage = { inputTokens: 100, outputTokens: 100, cacheReadTokens: 0, cacheWriteTokens: 0 };
+    expect(estimateCost('modele-inconnu', usage)).toBe(0);
   });
 });
 

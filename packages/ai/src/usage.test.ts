@@ -46,7 +46,7 @@ describe('generateStructured : comptabilité et routage', () => {
     for (const req of llm.requests) expect(req.meta).toEqual(meta);
   });
 
-  it('escalade après épuisement des essais (sans valeur valide) : model/effort escaladés, escalated=true', async () => {
+  it('escalade après échec de tous les essais : model/effort escaladés, escalated à true', async () => {
     const llm = new FakeLlmClient([
       { content: [toolUseBlock('submit_result', { color: 'nope1' }, 'toolu_1')] },
       { content: [toolUseBlock('submit_result', { color: 'nope2' }, 'toolu_2')] },
