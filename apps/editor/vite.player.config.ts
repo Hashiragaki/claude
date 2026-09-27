@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 // Lecteur autonome utilisé par l'export web : charge le projet depuis ./project/.
 export default defineConfig({
   root: 'player',
+  publicDir: '../public',
   base: './',
   build: {
     outDir: '../dist-player',
