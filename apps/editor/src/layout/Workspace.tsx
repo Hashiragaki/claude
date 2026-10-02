@@ -45,7 +45,8 @@ const components: Record<string, FunctionComponent<IDockviewPanelProps>> = {
   document: (props) => <DocumentPanel docId={(props.params as { docId: string }).docId} />,
 };
 
-type PanelId = 'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files' | 'usage' | 'history';
+type PanelId =
+  'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files' | 'usage' | 'history';
 
 const TITLE_KEYS: Record<Exclude<PanelId, 'usage' | 'history'>, Parameters<typeof translate>[1]> = {
   game: 'panel.game',
@@ -145,7 +146,7 @@ function buildDefaultLayout(api: DockviewApi): void {
     'console',
     'inspector',
     'usage',
-  'history',
+    'history',
   ];
   for (const id of order) {
     addDefault(api, id, narrow);
