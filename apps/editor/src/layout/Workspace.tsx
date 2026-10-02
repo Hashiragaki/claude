@@ -79,10 +79,18 @@ const PANEL_IDS: readonly PanelId[] = [
   'usage',
 ];
 
+const NARROW_QUERY = '(max-width: 767px)';
+const isNarrow = () => window.matchMedia(NARROW_QUERY).matches;
+
 /** Position par défaut de chaque panneau (utilisée aussi pour le rouvrir après fermeture). */
-function addDefault(api: DockviewApi, id: PanelId): void {
+function addDefault(api: DockviewApi, id: PanelId, narrow = isNarrow()): void {
   const has = (panel: string) => Boolean(api.getPanel(panel));
   const base = { id, component: id, title: title(id) };
+  // Fenêtre étroite : un seul groupe à onglets, pour éviter des panneaux minuscules.
+  if (narrow && id !== 'game' && has('game')) {
+    api.addPanel({ ...base, position: { referencePanel: 'game', direction: 'within' } });
+    return;
+  }
   switch (id) {
     case 'game':
       api.addPanel(base);
@@ -121,6 +129,7 @@ function addDefault(api: DockviewApi, id: PanelId): void {
 }
 
 function buildDefaultLayout(api: DockviewApi): void {
+  const narrow = isNarrow();
   api.clear();
   const order: PanelId[] = [
     'game',
@@ -134,11 +143,13 @@ function buildDefaultLayout(api: DockviewApi): void {
     'usage',
   ];
   for (const id of order) {
-    addDefault(api, id);
+    addDefault(api, id, narrow);
   }
   api.getPanel('game')?.api.setActive();
-  api.getPanel('assets')?.api.setActive();
-  api.getPanel('chat')?.api.setActive();
+  if (!narrow) {
+    api.getPanel('assets')?.api.setActive();
+    api.getPanel('chat')?.api.setActive();
+  }
 }
 
 function openDocumentPanel(api: DockviewApi, doc: OpenDocument): void {
@@ -192,7 +203,12 @@ export function Workspace() {
       buildDefaultLayout(api);
       for (const doc of openDocs) openDocumentPanel(api, doc);
     });
+    // Passage étroit/large : recompose la disposition (les documents ouverts sont conservés).
+    const mql = window.matchMedia(NARROW_QUERY);
+    const onNarrowChange = () => resetLayoutRequests.emit();
+    mql.addEventListener('change', onNarrowChange);
     return () => {
+      mql.removeEventListener('change', onNarrowChange);
       offPanel();
       offDoc();
       offReset();

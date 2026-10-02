@@ -14,7 +14,7 @@ import {
 } from '@adobe/react-spectrum';
 import Play from '@spectrum-icons/workflow/Play';
 import Stop from '@spectrum-icons/workflow/Stop';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useT } from '../i18n';
 import { NewProjectDialog } from '../panels/Home';
@@ -25,7 +25,22 @@ const MODE_LABELS: Record<string, string> = {
   rpg: 'RPG',
   sandbox3d: '3D',
   platformer: 'Plateformer',
+  pointclick: 'Point & click',
 };
+
+/** Vrai quand la fenêtre est plus étroite que `max` pixels. */
+function useNarrow(max: number): boolean {
+  const query = `(max-width: ${max - 1}px)`;
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setNarrow(mql.matches);
+    onChange();
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [query]);
+  return narrow;
+}
 
 export function TopBar() {
   const t = useT();
@@ -35,6 +50,7 @@ export function TopBar() {
   const locale = useApp((s) => s.locale);
   const diagnostics = useApp((s) => s.diagnostics);
   const [dialog, setDialog] = useState<null | 'new' | 'about'>(null);
+  const narrow = useNarrow(600);
   const errors = diagnostics.filter((d) => d.severity === 'error').length;
 
   const onFileAction = (key: React.Key) => {
@@ -57,31 +73,58 @@ export function TopBar() {
     if (key === 'about') setDialog('about');
   };
 
+  const onMenuAction = (key: React.Key) => {
+    if (key === 'new' || key === 'close' || key === 'export') onFileAction(key);
+    else onWindowAction(key);
+  };
+
   return (
     <header className="fg-topbar">
       <div className="fg-appicon" title="Forge">
         Fg
       </div>
-      <MenuTrigger>
-        <ActionButton isQuiet>{t('menu.file')}</ActionButton>
-        <Menu onAction={onFileAction} disabledKeys={project ? [] : ['close', 'export']}>
-          <Section>
-            <Item key="new">{t('menu.newProject')}</Item>
-          </Section>
-          <Section>
-            <Item key="export">{t('menu.export')}</Item>
-            <Item key="close">{t('menu.closeProject')}</Item>
-          </Section>
-        </Menu>
-      </MenuTrigger>
-      <MenuTrigger>
-        <ActionButton isQuiet>{t('menu.window')}</ActionButton>
-        <Menu onAction={onWindowAction} disabledKeys={project ? [] : ['reset']}>
-          <Item key="reset">{t('menu.resetLayout')}</Item>
-          <Item key="lang">{t('menu.language')}</Item>
-          <Item key="about">{t('menu.about')}</Item>
-        </Menu>
-      </MenuTrigger>
+      {narrow ? (
+        <MenuTrigger>
+          <ActionButton isQuiet aria-label="Menu">
+            <span aria-hidden="true">☰</span>
+          </ActionButton>
+          <Menu onAction={onMenuAction} disabledKeys={project ? [] : ['close', 'export', 'reset']}>
+            <Section>
+              <Item key="new">{t('menu.newProject')}</Item>
+              <Item key="export">{t('menu.export')}</Item>
+              <Item key="close">{t('menu.closeProject')}</Item>
+            </Section>
+            <Section>
+              <Item key="reset">{t('menu.resetLayout')}</Item>
+              <Item key="lang">{t('menu.language')}</Item>
+              <Item key="about">{t('menu.about')}</Item>
+            </Section>
+          </Menu>
+        </MenuTrigger>
+      ) : (
+        <>
+          <MenuTrigger>
+            <ActionButton isQuiet>{t('menu.file')}</ActionButton>
+            <Menu onAction={onFileAction} disabledKeys={project ? [] : ['close', 'export']}>
+              <Section>
+                <Item key="new">{t('menu.newProject')}</Item>
+              </Section>
+              <Section>
+                <Item key="export">{t('menu.export')}</Item>
+                <Item key="close">{t('menu.closeProject')}</Item>
+              </Section>
+            </Menu>
+          </MenuTrigger>
+          <MenuTrigger>
+            <ActionButton isQuiet>{t('menu.window')}</ActionButton>
+            <Menu onAction={onWindowAction} disabledKeys={project ? [] : ['reset']}>
+              <Item key="reset">{t('menu.resetLayout')}</Item>
+              <Item key="lang">{t('menu.language')}</Item>
+              <Item key="about">{t('menu.about')}</Item>
+            </Menu>
+          </MenuTrigger>
+        </>
+      )}
       <div className="fg-title">
         {project ? (
           <>
@@ -94,15 +137,14 @@ export function TopBar() {
       </div>
       <div className="fg-spacer" />
       {project && errors > 0 && (
-        <StatusLight variant="negative">
-          {errors} erreur{errors > 1 ? 's' : ''}
-        </StatusLight>
+        <StatusLight variant="negative">{narrow ? errors : `${errors} erreur${errors > 1 ? 's' : ''}`}</StatusLight>
       )}
       <TooltipTrigger>
         <ActionButton isQuiet aria-label="État de l'IA">
-          <StatusLight variant={health?.ai.enabled ? 'positive' : 'neutral'}>
-            {health?.ai.enabled ? t('ai.on') : t('ai.off')}
-          </StatusLight>
+          <span className="fg-ai-pill">
+            <span className={`fg-dot ${health?.ai.enabled ? 'on' : 'off'}`} />
+            <span className="fg-ai-label">{health?.ai.enabled ? t('ai.on') : t('ai.off')}</span>
+          </span>
         </ActionButton>
         <Tooltip>
           {health?.ai.enabled
@@ -114,12 +156,12 @@ export function TopBar() {
         (playing ? (
           <Button variant="negative" onPress={stopPlay}>
             <Stop />
-            <Text>{t('action.stop')}</Text>
+            <Text UNSAFE_className="fg-btn-label">{t('action.stop')}</Text>
           </Button>
         ) : (
           <Button variant="accent" onPress={() => play()}>
             <Play />
-            <Text>{t('action.play')}</Text>
+            <Text UNSAFE_className="fg-btn-label">{t('action.play')}</Text>
           </Button>
         ))}
       <DialogContainer onDismiss={() => setDialog(null)}>

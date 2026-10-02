@@ -25,6 +25,7 @@ const MODE_ART: Record<string, { gradient: string; label: string }> = {
   vn: { gradient: 'linear-gradient(135deg, #c2458b 0%, #6a3db8 100%)', label: 'Visual Novel' },
   rpg: { gradient: 'linear-gradient(135deg, #2f9e5e 0%, #1f6e9e 100%)', label: 'RPG' },
   sandbox3d: { gradient: 'linear-gradient(135deg, #e0782f 0%, #b8403d 100%)', label: '3D' },
+  pointclick: { gradient: 'linear-gradient(135deg, #14b8a6 0%, #0e7490 100%)', label: 'POINT & CLICK' },
   platformer: { gradient: 'linear-gradient(135deg, #3d8bc8 0%, #f2b632 100%)', label: 'Plateformer' },
 };
 
@@ -46,7 +47,7 @@ export function Home() {
       <div className="fg-home-inner">
         <div className="fg-hero">
           <div className="fg-appicon">Fg</div>
-          <div>
+          <div className="fg-hero-text">
             <h1>Forge</h1>
             <p>
               Créez des jeux avec l'aide de l'IA : visual novels, RPG et scènes 3D, assets générés, planning suivi par
@@ -54,7 +55,11 @@ export function Home() {
             </p>
           </div>
           <div className="fg-spacer" />
-          <Button variant="accent" onPress={() => setCreating({ mode: modes[0]?.id ?? 'vn', template: '' })}>
+          <Button
+            variant="accent"
+            UNSAFE_className="fg-hero-cta"
+            onPress={() => setCreating({ mode: modes[0]?.id ?? 'vn', template: '' })}
+          >
             <Add />
             <Text>{t('home.new')}</Text>
           </Button>
@@ -131,7 +136,7 @@ export function Home() {
                     {p.description || '—'}
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
+                <div className="fg-project-meta">
                   {p.assetCount} assets · modifié le {new Date(p.updatedAt).toLocaleDateString('fr-FR')}
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
