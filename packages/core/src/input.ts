@@ -48,6 +48,7 @@ export class InputManager {
   private readonly downKeys = new Set<string>();
   private readonly virtualDown = new Set<Action>();
   private gamepadDown = new Set<Action>();
+  private readonly touchDown = new Set<Action>();
   private current = new Set<Action>();
   private previous = new Set<Action>();
   private pendingPresses = new Set<Action>();
@@ -168,6 +169,27 @@ export class InputManager {
     this.virtualDown.delete(action);
   }
 
+  /**
+   * Maintient ou relâche une action virtuelle (manette tactile), à la façon de la manette :
+   * `isDown` tant qu'elle est maintenue, `justPressed` à la frame du front montant.
+   * Indépendant de `press`/`release` : plusieurs sources ne s'écrasent pas.
+   */
+  setVirtual(action: Action, down: boolean): void {
+    if (down === this.touchDown.has(action)) return;
+    if (down) {
+      this.touchDown.add(action);
+      this.pendingPresses.add(action);
+    } else {
+      this.touchDown.delete(action);
+    }
+    this.events.emit('action', { action, pressed: down });
+  }
+
+  /** Relâche toutes les actions virtuelles tactiles (perte de focus, destruction). */
+  clearVirtual(): void {
+    for (const a of [...this.touchDown]) this.setVirtual(a, false);
+  }
+
   /** Appui bref : pressé puis relâché, détecté à la prochaine frame. */
   tap(action: Action): void {
     this.pendingPresses.add(action);
@@ -186,6 +208,7 @@ export class InputManager {
     const now = new Set<Action>(this.virtualDown);
     for (const code of this.downKeys) for (const a of this.keyToActions.get(code) ?? []) now.add(a);
     for (const a of this.gamepadDown) now.add(a);
+    for (const a of this.touchDown) now.add(a);
     this.current = now;
     const just = new Set<Action>(this.pendingPresses);
     for (const a of now) if (!this.previous.has(a)) just.add(a);

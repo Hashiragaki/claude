@@ -1,5 +1,6 @@
 import { TILE_SIZE } from '@forge/core';
 import { Container, Graphics, Sprite, Texture, type DestroyOptions } from 'pixi.js';
+import { buildShore } from '../autotile';
 import { DIRECTION_ROW, type Character, type EventCharacter } from '../character';
 import type { Direction, LayerName, RpgMap } from '../schema';
 import type { RpgWorld } from '../world';
@@ -113,6 +114,7 @@ export class MapView extends Container {
     this.zoom = world.system.zoom;
     this.scale.set(this.zoom);
     for (const layer of ['ground', 'decor', 'overhead'] as const) this.fillLayer(this.layers[layer], map, layer);
+    this.drawShores(this.layers.ground, map);
     if (this.ctx.debug) this.drawCollisions(world);
     this.playerSprite.setCharset(leader, leaderRef ?? 'joueur');
     this.playerSprite.key = null;
@@ -154,6 +156,23 @@ export class MapView extends Container {
       sprite.height = S;
       target.addChild(sprite);
     }
+  }
+
+  /** Rives des étendues d'eau (autotile au rendu) : un seul Graphics statique, calculé à la construction. */
+  private drawShores(target: Container, map: RpgMap): void {
+    const rects = buildShore(map.width, map.height, map.layers.ground);
+    if (rects.length === 0) return;
+    const g = new Graphics();
+    const styles = {
+      sand: { color: 0xdcc88c, alpha: 1 },
+      foam: { color: 0xeaf6ff, alpha: 0.85 },
+      blend: { color: 0xffffff, alpha: 0.2 },
+    };
+    for (const kind of ['sand', 'foam', 'blend'] as const) {
+      for (const r of rects) if (r.kind === kind) g.rect(r.x, r.y, r.w, r.h);
+      g.fill(styles[kind]);
+    }
+    target.addChild(g);
   }
 
   /** Débogage : cases infranchissables en rouge. */

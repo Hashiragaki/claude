@@ -7,7 +7,15 @@ import SaveFloppy from '@spectrum-icons/workflow/SaveFloppy';
 import Stop from '@spectrum-icons/workflow/Stop';
 import VolumeMute from '@spectrum-icons/workflow/VolumeMute';
 import VolumeThree from '@spectrum-icons/workflow/VolumeThree';
-import { Engine, HttpProjectFiles, LocalSaveStorage, loadProjectBundle } from '@forge/core';
+import {
+  createTouchControls,
+  Engine,
+  HttpProjectFiles,
+  LocalSaveStorage,
+  loadProjectBundle,
+  touchLayoutForMode,
+  type TouchControls,
+} from '@forge/core';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { modes } from '../modes';
@@ -30,6 +38,7 @@ export function GamePanel() {
       return;
     }
     let engine: Engine | null = null;
+    let touch: TouchControls | null = null;
     let cancelled = false;
     setStatus('loading');
     (async () => {
@@ -66,6 +75,8 @@ export function GamePanel() {
       await engine.start();
       if (!cancelled) {
         setStatus('running');
+        // Manettes virtuelles sur écran tactile (selon le mode).
+        touch = createTouchControls(engine.input, mount, touchLayoutForMode(bundle.manifest.mode));
         mount.focus({ preventScroll: true });
       }
     })().catch((error: unknown) => {
@@ -75,6 +86,7 @@ export function GamePanel() {
     });
     return () => {
       cancelled = true;
+      touch?.destroy();
       engine?.destroy();
       playSession.set({ engine: null, paused: false });
       mount.innerHTML = '';

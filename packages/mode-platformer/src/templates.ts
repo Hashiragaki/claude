@@ -4,7 +4,7 @@ import { PLATFORMER_SYSTEM_PATH, levelPath, type PlatformerSystemInput } from '.
 
 /**
  * Modèles de projet du mode plateformer : un niveau minimal (« plateformer-empty ») et une
- * démo jouable de deux niveaux (« plateformer-demo »). Voir `packages/mode-rpg/src/templates.ts`
+ * démo jouable de trois niveaux (« plateformer-demo »). Voir `packages/mode-rpg/src/templates.ts`
  * pour le modèle imité.
  */
 
@@ -101,6 +101,7 @@ function buildEmptyLevel() {
 const EMPTY_SYSTEM: PlatformerSystemInput = {
   title: 'Mon plateformer',
   levels: ['niveau1'],
+  zoom: 2,
   playerCharset: 'charset-joueur',
   levelMusic: 'musique-prairie',
   sfx: { jump: 'sfx-saut', coin: 'sfx-piece', hurt: 'sfx-coup', spring: 'sfx-bonus' },
@@ -146,7 +147,7 @@ export const platformerEmptyTemplate: ProjectTemplate = {
 };
 
 // ---------------------------------------------------------------------------
-// Modèle « démo » : deux niveaux (prairie puis grotte)
+// Modèle « démo » : trois niveaux (prairie, grotte, citadelle)
 // ---------------------------------------------------------------------------
 
 /** Prairie (120 × 15) : pièces, ennemis marcheurs, ressort, plateformes, point de contrôle, panneau, trous. */
@@ -167,6 +168,11 @@ function buildPrairieLevel() {
       .platform(25, 29, 8)
       .coins(26, 28, 7)
       .enemy(34, 11, { kind: 'walker', range: 4 })
+      .platform(31, 35, 9)
+      .coins(32, 34, 8)
+      // Secret : plateforme haute au-dessus de la première plateforme flottante
+      .platform(22, 24, 5)
+      .coins(22, 24, 4)
       // Deuxième trou
       .pit(41, 43)
       // Troisième plateau : ressort vers des blocs flottants, point de contrôle
@@ -175,16 +181,29 @@ function buildPrairieLevel() {
       .blocks(50, 54, 6, 'brick')
       .coins(51, 53, 5)
       .checkpoint(65, 11)
+      .enemy(58, 11, { kind: 'hopper', range: 4 })
+      .platform(58, 62, 9)
+      .coins(59, 61, 8)
+      // Secret : blocs hauts au-dessus des briques
+      .blocks(56, 58, 3, 'stone')
+      .coins(56, 58, 2)
       // Troisième trou
       .pit(71, 73)
       // Quatrième plateau : ennemi et pièces
       .ground(74, 95, 12)
       .enemy(80, 11, { kind: 'walker', range: 5 })
       .coins(85, 89, 10)
+      .enemy(90, 11, { kind: 'hopper', range: 3 })
+      .platform(82, 86, 8)
+      .coins(83, 85, 7)
+      .checkpoint(76, 11)
       // Quatrième trou
       .pit(96, 98)
       // Plateau final : panneau d'aide et arrivée
       .ground(99, 119, 12)
+      .enemy(108, 11, { kind: 'hopper', range: 4 })
+      .platform(104, 108, 8)
+      .coins(105, 107, 7)
       .sign(101, 11, 'Sautez par-dessus les trous et évitez les ennemis. Bonne chance !')
       .goal(117, 11)
       .start(2, 11)
@@ -206,6 +225,13 @@ function buildGrotteLevel() {
       .spikes(11, 14, 12)
       .water(20, 26, 12)
       .enemy(30, 11, { kind: 'hopper', range: 4 })
+      .enemy(5, 11, { kind: 'walker', range: 3 })
+      .platform(21, 25, 9)
+      .coins(22, 24, 8)
+      // Secret : escalier de plateformes vers des pièces cachées
+      .platform(32, 34, 9)
+      .platform(36, 38, 6)
+      .coins(36, 38, 5)
       // Premier gouffre, franchi par une plateforme à sens unique
       .pit(41, 45)
       .platform(41, 45, 10)
@@ -213,6 +239,10 @@ function buildGrotteLevel() {
       .ground(46, 70, 12)
       .checkpoint(50, 11)
       .spikes(60, 63, 12)
+      .enemy(55, 11, { kind: 'walker', range: 4 })
+      .platform(56, 59, 9)
+      .coins(56, 59, 8)
+      .enemy(67, 11, { kind: 'hopper', range: 2 })
       // Deuxième gouffre, franchi par une plateforme à sens unique
       .pit(71, 74)
       .platform(71, 74, 9)
@@ -222,13 +252,59 @@ function buildGrotteLevel() {
       .coins(90, 94, 10)
       .goal(97, 11)
       .start(2, 11)
+      .next('citadelle')
+      .build()
+  );
+}
+
+/** Citadelle (110 × 15) : blocs de pierre, pics, ennemis variés, secret en hauteur. */
+function buildCitadelleLevel() {
+  return (
+    new LevelBuilder('citadelle', 110, 15, 'tileset-chateau')
+      .name('Citadelle')
+      .background('fond-chateau')
+      .backgroundColor('#2a2438')
+      .music('musique-chateau')
+      .ground(0, 18, 12)
+      .enemy(12, 11, { kind: 'walker', range: 4 })
+      .pit(19, 22)
+      .blocks(19, 22, 9, 'stone')
+      .coins(19, 22, 8)
+      .ground(23, 50, 12)
+      .spikes(28, 30, 12)
+      .platform(32, 36, 9)
+      .enemy(40, 11, { kind: 'hopper', range: 4 })
+      .checkpoint(44, 11)
+      // Secret : escalier de plateformes vers un trésor
+      .platform(26, 28, 9)
+      .platform(30, 32, 6)
+      .coins(30, 32, 5)
+      .pit(51, 54)
+      .platform(51, 54, 10)
+      .ground(55, 80, 12)
+      .spring(58, 11)
+      .blocks(60, 66, 6, 'brick')
+      .coins(61, 65, 5)
+      .enemy(70, 11, { kind: 'walker', range: 5 })
+      .enemy(76, 11, { kind: 'hopper', range: 2 })
+      .spikes(72, 73, 12)
+      .pit(81, 84)
+      .platform(81, 84, 9)
+      .ground(85, 109, 12)
+      .checkpoint(88, 11)
+      .enemy(94, 11, { kind: 'hopper', range: 4 })
+      .platform(98, 102, 9)
+      .coins(98, 102, 8)
+      .goal(106, 11)
+      .start(2, 11)
       .build()
   );
 }
 
 const DEMO_SYSTEM: PlatformerSystemInput = {
   title: 'Les Cavernes de Lumen',
-  levels: ['prairie', 'grotte'],
+  levels: ['prairie', 'grotte', 'citadelle'],
+  zoom: 2,
   startLevel: 'prairie',
   playerCharset: 'charset-joueur',
   sfx: { jump: 'sfx-saut', coin: 'sfx-piece', hurt: 'sfx-coup', spring: 'sfx-bonus' },
@@ -237,7 +313,7 @@ const DEMO_SYSTEM: PlatformerSystemInput = {
 export const platformerDemoTemplate: ProjectTemplate = {
   id: 'platformer-demo',
   name: 'Plateformer démo',
-  description: 'Deux niveaux jouables : une prairie à ciel ouvert puis une grotte chronométrée.',
+  description: 'Trois niveaux jouables : une prairie, une grotte chronométrée puis une citadelle.',
   manifest: {
     resolution: { width: 480, height: 270 },
     pixelArt: true,
@@ -248,10 +324,12 @@ export const platformerDemoTemplate: ProjectTemplate = {
     { path: PLATFORMER_SYSTEM_PATH, content: DEMO_SYSTEM },
     { path: levelPath('prairie'), content: buildPrairieLevel() },
     { path: levelPath('grotte'), content: buildGrotteLevel() },
+    { path: levelPath('citadelle'), content: buildCitadelleLevel() },
   ],
   assets: [
     tilesetSideAsset('tileset-prairie', 'Tuiles : prairie', 'grassland', 5001, 'Prairie ensoleillée, herbe et terre'),
     tilesetSideAsset('tileset-grotte', 'Tuiles : grotte', 'cave', 5002, 'Grotte sombre, pierre et stalactites'),
+    tilesetSideAsset('tileset-chateau', 'Tuiles : citadelle', 'castle', 5012, 'Citadelle de pierre, créneaux'),
     charsetAsset(
       'charset-joueur',
       'Joueur',
@@ -269,6 +347,8 @@ export const platformerDemoTemplate: ProjectTemplate = {
     backgroundAsset('fond-prairie', 'Fond : prairie', 5004, 'Collines vertes et ciel bleu, vue lointaine'),
     backgroundAsset('fond-grotte', 'Fond : grotte', 5005, 'Parois de roche sombres, lueurs bleutées lointaines'),
     musicAsset('musique-prairie', 'Musique : prairie', 'happy', 5006, 'Thème guilleret de prairie ensoleillée'),
+    backgroundAsset('fond-chateau', 'Fond : citadelle', 5013, 'Remparts de pierre au crépuscule, tours lointaines'),
+    musicAsset('musique-chateau', 'Musique : citadelle', 'epic', 5014, 'Thème épique de citadelle'),
     musicAsset('musique-grotte', 'Musique : grotte', 'mysterious', 5007, 'Thème mystérieux et feutré de grotte'),
     sfxAsset('sfx-saut', 'Son : saut', 'jump', 5008, 'Petit saut sautillant'),
     sfxAsset('sfx-piece', 'Son : pièce', 'coin', 5009, 'Pièce ramassée, joyeuse'),

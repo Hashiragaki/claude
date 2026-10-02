@@ -12,3 +12,4 @@ export * from './project';
 export * from './rng';
 export * from './save';
 export * from './tiles';
+export * from './touch';
