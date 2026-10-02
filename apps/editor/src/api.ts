@@ -129,6 +129,27 @@ export interface UsageSummary {
   recent: UsageEvent[];
 }
 
+export type HistorySource = 'user' | 'ai' | 'autopilot' | 'restore' | 'manual';
+
+/** Point de restauration (état des fichiers texte du projet à un instant donné). */
+export interface HistoryEntry {
+  id: string;
+  at: string;
+  label: string;
+  source: HistorySource;
+  /** Nombre de fichiers qui diffèrent de l'état actuel. */
+  fileCount: number;
+  files: { path: string; change: 'modified' | 'removed' | 'added' }[];
+}
+
+export interface HistoryFile {
+  path: string;
+  /** Contenu dans l'instantané (`null` si le fichier n'existait pas). */
+  snapshot: string | null;
+  /** Contenu actuel (`null` si le fichier n'existe plus). */
+  current: string | null;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -196,6 +217,16 @@ export const api = {
   writeJson: (id: string, path: string, data: unknown) =>
     request<{ ok: boolean }>('PUT', api.fileUrl(id, path), `${JSON.stringify(data, null, 2)}\n`),
   deleteFile: (id: string, path: string) => request<{ ok: boolean }>('DELETE', api.fileUrl(id, path)),
+
+  history: (id: string) => request<HistoryEntry[]>('GET', `${p(id)}/history`),
+  createSnapshot: (id: string, label?: string) => request<{ id: string }>('POST', `${p(id)}/history`, { label }),
+  historyFile: (id: string, snapId: string, path: string) =>
+    request<HistoryFile>('GET', `${p(id)}/history/${encodeURIComponent(snapId)}/file?path=${encodeURIComponent(path)}`),
+  restoreSnapshot: (id: string, snapId: string) =>
+    request<{ ok: boolean; restored: string[]; deleted: string[] }>(
+      'POST',
+      `${p(id)}/history/${encodeURIComponent(snapId)}/restore`,
+    ),
 
   generate: (id: string, req: GenerateRequest) => request<Job>('POST', `${p(id)}/generate`, req),
   jobs: (id: string) => request<Job[]>('GET', `${p(id)}/jobs`),

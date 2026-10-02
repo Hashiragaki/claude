@@ -48,6 +48,18 @@ const STARTER_PLANS: Record<string, { milestone: string; tasks: { title: string;
       { title: 'Faire tester le prototype à une personne', hours: 1 },
     ],
   },
+  pointclick: {
+    milestone: 'Premier chapitre jouable',
+    tasks: [
+      { title: "Écrire le pitch, l'énigme principale et la solution pas à pas", hours: 2 },
+      { title: 'Lister les scènes, les objets et les combinaisons', hours: 1 },
+      { title: 'Générer les décors, les icônes d’objets et le personnage', hours: 1, ai: true },
+      { title: 'Placer les zones cliquables et les zones de marche', hours: 2 },
+      { title: 'Écrire les dialogues et les descriptions', hours: 2 },
+      { title: 'Composer la musique et les effets sonores', hours: 1, ai: true },
+      { title: 'Faire tester le chapitre à une personne', hours: 1 },
+    ],
+  },
 };
 
 /** Planificateurs des projets : chargés à la demande, sauvegardés à chaque modification. */

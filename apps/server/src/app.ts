@@ -1,6 +1,15 @@
 import { existsSync } from 'node:fs';
 import { ClaudeCodeLlmClient, ClaudeLlmClient, DEFAULT_MODEL, RoutedLlmClient, type LlmClient } from '@forge/ai';
-import { AssetKindSchema, guessMime, nowIso, shortId, slugify, type AssetMeta, type ModeRegistry } from '@forge/core';
+import {
+  AssetKindSchema,
+  guessMime,
+  normalizeProjectPath,
+  nowIso,
+  shortId,
+  slugify,
+  type AssetMeta,
+  type ModeRegistry,
+} from '@forge/core';
 import { STATUS_LABELS, TaskStatusSchema, scheduleTasks, type PlanInput, type TaskInput } from '@forge/planner';
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
@@ -11,6 +20,7 @@ import { ChatService } from './chat';
 import type { ServerConfig } from './config';
 import { EventHub } from './events';
 import { exportProject } from './exporter';
+import { ProjectHistory } from './history';
 import { GenerationService, describeGenerators, type GenerateRequest } from './generation';
 import { JobQueue } from './jobs';
 import { createModeRegistry } from './modes';
@@ -38,6 +48,7 @@ export interface ForgeServer {
   chat: ChatService;
   autopilot: AutopilotService;
   lock: AgentLock;
+  history: ProjectHistory;
 }
 
 const KIND_DIRS: Record<string, string> = {
@@ -89,6 +100,9 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   const planners = new PlannerService(store, hub);
   const projects = new ProjectService(store, modes, generation, planners, hub);
   const lock = new AgentLock();
+  const history = new ProjectHistory(store, {
+    onFileChanged: (projectId, file, action) => hub.publish(projectId, { type: 'file', data: { action, path: file } }),
+  });
 
   /** Génération via la file de jobs, avec diffusion du nouvel asset. */
   const enqueueGeneration = (projectId: string, request: GenerateRequest) => {
@@ -114,6 +128,16 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
       return done;
     },
     onFileWritten: (path: string) => hub.publish(projectId, { type: 'file', data: { action: 'written', path } }),
+    beforeWrite: async (path: string) => {
+      if (lock.holder(projectId) === 'autopilot') {
+        const title = autopilot.status(projectId).currentTaskTitle;
+        return history.beforeAiWrite(projectId, 'autopilot', title ?? 'Pilote automatique', path);
+      }
+      const messages = await chat.history(projectId);
+      const last = [...messages].reverse().find((m) => m.role === 'user');
+      const label = last ? last.text.replace(/s+/g, ' ').slice(0, 80) : 'Assistant IA';
+      return history.beforeAiWrite(projectId, 'ai', label, path);
+    },
   });
 
   const chat = new ChatService({ store, planners, hub, llm, lock, toolDeps });
@@ -249,6 +273,7 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
         : typeof body === 'string'
           ? body
           : '';
+    await history.noteUserWrite(id, rel);
     await store.writeFile(id, rel, data);
     await store.updateManifest(id, () => undefined);
     hub.publish(id, { type: 'file', data: { action: 'written', path: rel } });
@@ -256,9 +281,41 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
   });
 
   app.delete<{ Params: IdParams & { '*': string } }>('/api/projects/:id/files/*', async (request) => {
+    await history.noteUserWrite(request.params.id, request.params['*']);
     await store.deleteFile(request.params.id, request.params['*']);
     hub.publish(request.params.id, { type: 'file', data: { action: 'deleted', path: request.params['*'] } });
     return { ok: true };
+  });
+
+  // Historique (points de restauration des fichiers texte)
+  app.get<{ Params: IdParams }>('/api/projects/:id/history', async (request) => {
+    await store.readManifest(request.params.id);
+    return history.list(request.params.id);
+  });
+
+  app.post<{ Params: IdParams }>('/api/projects/:id/history', async (request, reply) => {
+    const body = z.object({ label: z.string().max(200).optional() }).parse(request.body ?? {});
+    await store.readManifest(request.params.id);
+    return reply.status(201).send(await history.manual(request.params.id, body.label ?? ''));
+  });
+
+  app.get<{ Params: IdParams & { snapId: string }; Querystring: { path?: string } }>(
+    '/api/projects/:id/history/:snapId/file',
+    async (request) => {
+      const file = z.string().min(1).parse(request.query.path);
+      return history.fileDiff(request.params.id, request.params.snapId, normalizeProjectPath(file));
+    },
+  );
+
+  app.post<{ Params: IdParams & { snapId: string } }>('/api/projects/:id/history/:snapId/restore', async (request) => {
+    const { id, snapId } = request.params;
+    if (lock.holder(id) !== null || chat.isRunning(id)) {
+      throw Object.assign(new Error("L'assistant IA travaille sur ce projet : attendez la fin ou arrêtez-le."), {
+        statusCode: 409,
+      });
+    }
+    await store.readManifest(id);
+    return { ok: true, ...(await history.restore(id, snapId)) };
   });
 
   // Événements temps réel
@@ -579,5 +636,5 @@ export async function createServer(options: AppOptions): Promise<ForgeServer> {
     });
   }
 
-  return { app, store, hub, jobs, generation, projects, planners, chat, autopilot, lock };
+  return { app, store, hub, jobs, generation, projects, planners, chat, autopilot, lock, history };
 }

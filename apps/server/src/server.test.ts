@@ -49,7 +49,7 @@ describe('serveur Forge (hors-ligne)', () => {
     const health = (await server.app.inject('/api/health')).json();
     expect(health).toMatchObject({ ok: true, ai: { enabled: false } });
     const modes = (await server.app.inject('/api/modes')).json() as { id: string; templates: unknown[] }[];
-    expect(modes.map((m) => m.id).sort()).toEqual(['platformer', 'rpg', 'sandbox3d', 'vn']);
+    expect(modes.map((m) => m.id).sort()).toEqual(['platformer', 'pointclick', 'rpg', 'sandbox3d', 'vn']);
     expect(modes.every((m) => m.templates.length >= 2)).toBe(true);
     const generators = (await server.app.inject('/api/generators')).json() as {
       id: string;
@@ -191,6 +191,7 @@ describe('serveur Forge (hors-ligne)', () => {
       ['rpg', 'rpg-demo'],
       ['sandbox3d', 'sandbox3d-demo'],
       ['platformer', 'platformer-demo'],
+      ['pointclick', 'pointclick-demo'],
     ] as const) {
       const created = (
         await server.app.inject({

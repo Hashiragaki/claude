@@ -16,6 +16,7 @@ import { InspectorPanel } from '../panels/InspectorPanel';
 import { PlannerPanel } from '../panels/PlannerPanel';
 import { PropertiesPanel } from '../panels/PropertiesPanel';
 import { UsagePanel } from '../panels/UsagePanel';
+import { HistoryPanel } from '../panels/HistoryPanel';
 import { translate } from '../i18n';
 import {
   closeDocument,
@@ -40,12 +41,13 @@ const components: Record<string, FunctionComponent<IDockviewPanelProps>> = {
   inspector: () => <InspectorPanel />,
   files: () => <FilesPanel />,
   usage: () => <UsagePanel />,
+  history: () => <HistoryPanel />,
   document: (props) => <DocumentPanel docId={(props.params as { docId: string }).docId} />,
 };
 
-type PanelId = 'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files' | 'usage';
+type PanelId = 'game' | 'assets' | 'properties' | 'chat' | 'planner' | 'console' | 'inspector' | 'files' | 'usage' | 'history';
 
-const TITLE_KEYS: Record<Exclude<PanelId, 'usage'>, Parameters<typeof translate>[1]> = {
+const TITLE_KEYS: Record<Exclude<PanelId, 'usage' | 'history'>, Parameters<typeof translate>[1]> = {
   game: 'panel.game',
   assets: 'panel.assets',
   properties: 'panel.properties',
@@ -59,12 +61,13 @@ const TITLE_KEYS: Record<Exclude<PanelId, 'usage'>, Parameters<typeof translate>
 /** Titres hors i18n.ts (hors périmètre de cette tâche) : bilingue directement ici. */
 const EXTRA_TITLES: Partial<Record<PanelId, { fr: string; en: string }>> = {
   usage: { fr: 'Coûts IA', en: 'AI costs' },
+  history: { fr: 'Historique', en: 'History' },
 };
 
 function title(id: PanelId): string {
   const extra = EXTRA_TITLES[id];
   if (extra) return extra[store.get().locale];
-  return translate(store.get().locale, TITLE_KEYS[id as Exclude<PanelId, 'usage'>]);
+  return translate(store.get().locale, TITLE_KEYS[id as Exclude<PanelId, 'usage' | 'history'>]);
 }
 
 const PANEL_IDS: readonly PanelId[] = [
@@ -77,6 +80,7 @@ const PANEL_IDS: readonly PanelId[] = [
   'inspector',
   'files',
   'usage',
+  'history',
 ];
 
 const NARROW_QUERY = '(max-width: 767px)';
@@ -141,6 +145,7 @@ function buildDefaultLayout(api: DockviewApi): void {
     'console',
     'inspector',
     'usage',
+  'history',
   ];
   for (const id of order) {
     addDefault(api, id, narrow);

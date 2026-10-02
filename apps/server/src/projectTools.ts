@@ -15,6 +15,8 @@ export interface ProjectToolDeps {
   generate(request: GenerateRequest, signal?: AbortSignal): Promise<AssetMeta>;
   /** Appelé après une écriture réussie de `write_file`, pour que l'éditeur recharge le fichier. */
   onFileWritten?(path: string): void;
+  /** Appelé avant une écriture de `write_file` (point de restauration de l'historique). */
+  beforeWrite?(path: string): Promise<void>;
   aiAvailable: boolean;
 }
 
@@ -103,6 +105,7 @@ export function createProjectTools(projectId: string, deps: ProjectToolDeps): Ag
       run: async ({ path, content }) => {
         const target = checkWritable(path);
         if (target.endsWith('.json')) JSON.parse(content);
+        await deps.beforeWrite?.(target);
         await deps.store.writeFile(projectId, target, content);
         // Sans cet événement, un éditeur déjà ouvert sur ce fichier garde l'ancien contenu et son
         // prochain autosave écraserait l'écriture de l'IA (voir ProjectToolDeps.onFileWritten).

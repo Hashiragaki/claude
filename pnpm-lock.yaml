@@ -56,6 +56,9 @@ importers:
       '@forge/mode-platformer':
         specifier: workspace:*
         version: link:../../packages/mode-platformer
+      '@forge/mode-pointclick':
+        specifier: workspace:*
+        version: link:../../packages/mode-pointclick
       '@forge/mode-rpg':
         specifier: workspace:*
         version: link:../../packages/mode-rpg
@@ -132,6 +135,9 @@ importers:
       '@forge/mode-platformer':
         specifier: workspace:*
         version: link:../../packages/mode-platformer
+      '@forge/mode-pointclick':
+        specifier: workspace:*
+        version: link:../../packages/mode-pointclick
       '@forge/mode-rpg':
         specifier: workspace:*
         version: link:../../packages/mode-rpg

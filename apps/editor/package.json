@@ -20,6 +20,7 @@
     "@codemirror/view": "^6.43.13",
     "@forge/core": "workspace:*",
     "@forge/mode-platformer": "workspace:*",
+    "@forge/mode-pointclick": "workspace:*",
     "@forge/mode-rpg": "workspace:*",
     "@forge/mode-sandbox3d": "workspace:*",
     "@forge/mode-vn": "workspace:*",

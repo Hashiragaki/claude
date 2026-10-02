@@ -6,6 +6,7 @@ import Data from '@spectrum-icons/workflow/Data';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Folder from '@spectrum-icons/workflow/Folder';
 import GraphGantt from '@spectrum-icons/workflow/GraphGantt';
+import History from '@spectrum-icons/workflow/History';
 import Home from '@spectrum-icons/workflow/Home';
 import Images from '@spectrum-icons/workflow/Images';
 import MapView from '@spectrum-icons/workflow/MapView';
@@ -82,6 +83,7 @@ export function ToolRail() {
     { key: 'files', label: 'Fichiers', icon: <Folder />, onPress: () => showPanel('files') },
     { key: 'inspector', label: 'Inspecteur de variables', icon: <Variable />, onPress: () => showPanel('inspector') },
     { key: 'console', label: 'Console', icon: <Code />, onPress: () => showPanel('console') },
+    { key: 'history', label: 'Historique', icon: <History />, onPress: () => showPanel('history') },
   ];
   const render = (item: RailItem) => (
     <TooltipTrigger key={item.key} placement="end" delay={300}>
