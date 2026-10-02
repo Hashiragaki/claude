@@ -1,0 +1,20 @@
+{
+  "name": "@forge/mode-pointclick",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mode point & click (scènes illustrées, zones cliquables, inventaire, combinaisons d'objets, dialogues à choix).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/render2d": "workspace:*",
+    "pixi.js": "^8.21.0",
+    "zod": "^4.6.5"
+  }
+}
