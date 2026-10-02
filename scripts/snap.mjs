@@ -12,12 +12,13 @@
  * les PNG et `report.json` (erreurs console et exceptions de la page). Code de sortie 1 si erreurs.
  */
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
+const WIN = process.platform === 'win32';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EDITOR = path.join(ROOT, 'apps/editor');
 
@@ -50,7 +51,8 @@ try {
     cwd: ROOT,
     env: { ...process.env, FORGE_DATA_DIR: dataDir, FORGE_AI: 'off', PORT: String(serverPort) },
     stdio: ['ignore', 'pipe', 'pipe'],
-    detached: true,
+    detached: !WIN,
+    shell: WIN,
   });
   children.push(server);
   let serverLog = '';
@@ -87,13 +89,14 @@ try {
   );
 
   const requireFromEditor = createRequire(path.join(EDITOR, 'package.json'));
-  const { createServer } = await import(requireFromEditor.resolve('vite'));
+  const { createServer } = await import(pathToFileURL(requireFromEditor.resolve('vite')).href);
   viteServer = await createServer({
     configFile: path.join(EDITOR, 'vite.player.config.ts'),
     // Racine = apps/editor : player/index.html importe ../src/player/main.ts (hors de player/).
     root: EDITOR,
     logLevel: 'error',
     server: {
+      host: '127.0.0.1',
       port: vitePort,
       strictPort: true,
       proxy: {
@@ -107,9 +110,10 @@ try {
   await viteServer.listen();
 
   const requireFromRoot = createRequire(path.join(ROOT, 'package.json'));
-  const playwright = await import(requireFromRoot.resolve('@playwright/test'));
+  const playwright = await import(pathToFileURL(requireFromRoot.resolve('@playwright/test')).href);
   const chromium = playwright.chromium ?? playwright.default.chromium;
-  const executablePath = process.env.FORGE_CHROMIUM ?? '/opt/pw-browsers/chromium';
+  const executablePath =
+    process.env.FORGE_CHROMIUM ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
   browser = await chromium.launch({ executablePath, args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width, height } });
   page.on('console', (msg) => {
@@ -156,7 +160,9 @@ try {
   await viteServer?.close().catch(() => undefined);
   for (const child of children) {
     try {
-      process.kill(-child.pid, 'SIGTERM');
+      // Windows : le serveur tourne sous un shell, tuer l'arbre entier.
+      if (WIN) spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+      else process.kill(-child.pid, 'SIGTERM');
     } catch {
       child.kill('SIGTERM');
     }
