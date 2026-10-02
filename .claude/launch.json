@@ -7,6 +7,13 @@
       "runtimeArgs": ["dev"],
       "port": 5173,
       "url": "http://127.0.0.1:5173"
+    },
+    {
+      "name": "minifantasy",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "C:/Users/hashi/Desktop/Claude/minifantasy-city", "dev"],
+      "port": 5173,
+      "url": "http://127.0.0.1:5173"
     }
   ]
 }
